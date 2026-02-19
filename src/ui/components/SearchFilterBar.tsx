@@ -11,6 +11,22 @@ const SORT_LABELS: Record<SortOption, string> = {
   token: 'Token Name',
 };
 
+const NODE_TYPE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'TEXT', label: 'Text' },
+  { value: 'RECTANGLE', label: 'Rectangle' },
+  { value: 'ELLIPSE', label: 'Ellipse' },
+  { value: 'LINE', label: 'Line' },
+  { value: 'FRAME', label: 'Frame' },
+  { value: 'SECTION', label: 'Section' },
+  { value: 'GROUP', label: 'Group' },
+  { value: 'COMPONENT', label: 'Component' },
+  { value: 'INSTANCE', label: 'Instance' },
+  { value: 'VECTOR', label: 'Vector' },
+  { value: 'STAR', label: 'Star' },
+  { value: 'POLYGON', label: 'Polygon' },
+  { value: 'BOOLEAN_OPERATION', label: 'Boolean operation' },
+];
+
 interface SearchFilterBarProps {
   searchText: string;
   onSearchChange: (text: string) => void;
@@ -18,6 +34,8 @@ interface SearchFilterBarProps {
   onBindingFilterChange: (filter: BindingFilter) => void;
   propertyFilters: Set<PropertyType>;
   onPropertyFilterToggle: (property: PropertyType) => void;
+  nodeTypeFilters: Set<string>;
+  onNodeTypeFilterToggle: (nodeType: string) => void;
   onClearFilters: () => void;
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
@@ -32,6 +50,8 @@ export function SearchFilterBar({
   onBindingFilterChange,
   propertyFilters,
   onPropertyFilterToggle,
+  nodeTypeFilters,
+  onNodeTypeFilterToggle,
   onClearFilters,
   sortBy,
   onSortChange,
@@ -44,17 +64,23 @@ export function SearchFilterBar({
   const sortRef = useRef<HTMLDivElement>(null);
 
   const activeFilterCount =
-    (bindingFilter !== 'all' ? 1 : 0) + propertyFilters.size + (includeVectors ? 1 : 0);
+    (bindingFilter !== 'all' ? 1 : 0) +
+    propertyFilters.size +
+    nodeTypeFilters.size +
+    (includeVectors ? 1 : 0);
 
-  const hasActiveFilters =
-    searchText.length > 0 || activeFilterCount > 0;
+  const hasActiveFilters = searchText.length > 0 || activeFilterCount > 0;
 
   const isSortCustom = sortBy !== 'usage';
 
   useEffect(() => {
     if (!filterOpen && !sortOpen) return;
     const handleClick = (e: MouseEvent) => {
-      if (filterOpen && filterRef.current && !filterRef.current.contains(e.target as Node)) {
+      if (
+        filterOpen &&
+        filterRef.current &&
+        !filterRef.current.contains(e.target as Node)
+      ) {
         setFilterOpen(false);
       }
       if (sortOpen && sortRef.current && !sortRef.current.contains(e.target as Node)) {
@@ -67,15 +93,15 @@ export function SearchFilterBar({
 
   return (
     <div className="px-4 py-3 border-b border-figma-border/80 bg-figma-surface">
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 min-h-8 bg-figma-bg/80 rounded-md border border-figma-border/60 focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-bg/80 rounded-md border border-figma-border/60 focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
           <Search size={14} className="ml-3 text-figma-text-secondary/80 shrink-0" />
           <input
             type="text"
             value={searchText}
             onInput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
             placeholder="Search hex, token…"
-            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-2 pr-2 focus:outline-none placeholder:text-figma-text-secondary/70"
+            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-2 pr-2 focus:outline-none placeholder:text-sm placeholder:text-figma-text-secondary/70"
           />
           {searchText.length > 0 && (
             <button
@@ -88,14 +114,17 @@ export function SearchFilterBar({
           )}
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="relative" ref={sortRef}>
             <button
-              onClick={() => { setSortOpen(!sortOpen); setFilterOpen(false); }}
-              className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+              onClick={() => {
+                setSortOpen(!sortOpen);
+                setFilterOpen(false);
+              }}
+              className={`flex items-center justify-center w-8 h-8 rounded-md border transition-colors ${
                 sortOpen || isSortCustom
-                  ? 'bg-figma-blue text-white'
-                  : 'text-figma-text-secondary/80 hover:text-figma-text hover:bg-figma-bg/80'
+                  ? 'bg-figma-text border-figma-text text-white shadow-sm'
+                  : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               title={`Sort: ${SORT_LABELS[sortBy]}`}
             >
@@ -106,15 +135,21 @@ export function SearchFilterBar({
               <div className="absolute right-0 top-full mt-1.5 w-44 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
                 <div className="py-1.5">
                   <div className="px-3 py-1.5">
-                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">Sort by</span>
+                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
+                      Sort by
+                    </span>
                   </div>
-                  <div className="px-1.5">
+                  <div className="w-full border-t border-figma-border" />
+                  <div className="w-full pt-2">
                     {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
                       <MenuItem
                         key={key}
                         label={SORT_LABELS[key]}
                         active={sortBy === key}
-                        onClick={() => { onSortChange(key); setSortOpen(false); }}
+                        onClick={() => {
+                          onSortChange(key);
+                          setSortOpen(false);
+                        }}
                       />
                     ))}
                   </div>
@@ -125,11 +160,14 @@ export function SearchFilterBar({
 
           <div className="relative" ref={filterRef}>
             <button
-              onClick={() => { setFilterOpen(!filterOpen); setSortOpen(false); }}
-              className={`relative flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+              onClick={() => {
+                setFilterOpen(!filterOpen);
+                setSortOpen(false);
+              }}
+              className={`relative flex items-center justify-center w-8 h-8 rounded-md border transition-colors ${
                 filterOpen || activeFilterCount > 0
-                  ? 'bg-figma-blue text-white'
-                  : 'text-figma-text-secondary/80 hover:text-figma-text hover:bg-figma-bg/80'
+                  ? 'bg-figma-text border-figma-text text-white shadow-sm'
+                  : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               title="Filters"
             >
@@ -145,19 +183,27 @@ export function SearchFilterBar({
               <div className="absolute right-0 top-full mt-1.5 w-52 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
                 <div className="py-1.5">
                   <div className="px-3 py-2 flex items-center justify-between">
-                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">Filters</span>
+                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
+                      Filters
+                    </span>
                     {hasActiveFilters && (
                       <button
-                        onClick={() => { onClearFilters(); setFilterOpen(false); }}
+                        onClick={() => {
+                          onClearFilters();
+                          setFilterOpen(false);
+                        }}
                         className="text-[11px] text-figma-blue hover:underline"
                       >
                         Clear all
                       </button>
                     )}
                   </div>
+                  <div className="w-full border-t border-figma-border" />
 
-                  <SectionLabel label="Binding" />
-                  <div className="px-1.5">
+                  <div className="pt-2">
+                    <SectionLabel label="Binding" />
+                  </div>
+                  <div className="w-full">
                     <MenuItem
                       label="All"
                       active={bindingFilter === 'all'}
@@ -176,7 +222,7 @@ export function SearchFilterBar({
                   </div>
 
                   <SectionLabel label="Property" />
-                  <div className="px-1.5">
+                  <div className="w-full">
                     <MenuItem
                       label="Fill"
                       active={propertyFilters.has('fill')}
@@ -197,8 +243,21 @@ export function SearchFilterBar({
                     />
                   </div>
 
+                  <SectionLabel label="Node type" />
+                  <div className="w-full">
+                    {NODE_TYPE_OPTIONS.map(({ value, label }) => (
+                      <MenuItem
+                        key={value}
+                        label={label}
+                        active={nodeTypeFilters.has(value)}
+                        onClick={() => onNodeTypeFilterToggle(value)}
+                        checkbox
+                      />
+                    ))}
+                  </div>
+
                   <SectionLabel label="Scope" />
-                  <div className="px-1.5 pb-1">
+                  <div className="w-full pb-1">
                     <MenuItem
                       label="Include vectors"
                       active={includeVectors}
@@ -218,7 +277,7 @@ export function SearchFilterBar({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <div className="px-3 pt-2 pb-1">
+    <div className="px-3 pt-1 pb-2">
       <span className="text-[10px] font-medium text-figma-text-secondary/80 uppercase tracking-wider">
         {label}
       </span>
@@ -237,7 +296,7 @@ function MenuItem({ label, active, onClick, checkbox }: MenuItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md flex items-center gap-2.5 transition-colors ${
+      className={`w-full text-left px-3 py-1 text-xs rounded-none flex items-center gap-2.5 transition-colors ${
         active
           ? 'bg-figma-blue/8 text-figma-blue font-medium'
           : 'text-figma-text hover:bg-figma-bg/80'
@@ -252,7 +311,16 @@ function MenuItem({ label, active, onClick, checkbox }: MenuItemProps) {
           }`}
         >
           {active && (
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="8"
+              height="8"
+              viewBox="0 0 8 8"
+              fill="none"
+              stroke="white"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M1.5 4L3.2 5.7L6.5 2.3" />
             </svg>
           )}

@@ -68,7 +68,7 @@ export function ColorRow({
       className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors"
       title="Token-bound color"
     >
-      <Tags size={14} strokeWidth={1.75} />
+      <Tags size={14} strokeWidth={2.25} />
     </span>
   ) : (
     <span className="text-figma-orange text-xs flex items-center gap-0.5">
@@ -147,40 +147,41 @@ export function ColorRow({
         </div>
       </div>
 
-      {isExpanded && (() => {
-        const nodesToShow = color.nodes.filter((n) => n.propertyType !== 'text');
-        if (nodesToShow.length === 0) return null;
-        const slice = nodesToShow.slice(0, 20);
-        return (
-          <div className="bg-figma-bg/50 pt-0 pb-2 w-full">
-            {slice.map((nodeRef, idx) => (
-              <div
-                key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
-                className="w-full py-2 px-4 hover:bg-figma-surface cursor-pointer flex items-center justify-between gap-3 text-xs"
-                onClick={() => onElementClick(nodeRef.nodeId)}
-              >
-                <div className="flex-1 min-w-0 flex items-center gap-3">
-                  <NodeTypeIcon nodeType={nodeRef.nodeType} />
-                  <div className="min-w-0">
-                    <div className="text-figma-text truncate">{nodeRef.nodeName}</div>
-                    <div className="text-figma-text-secondary text-xs truncate">
-                      {nodeRef.layerPath}
+      {isExpanded &&
+        (() => {
+          const nodesToShow = color.nodes.filter((n) => n.propertyType !== 'text');
+          if (nodesToShow.length === 0) return null;
+          const slice = nodesToShow.slice(0, 20);
+          return (
+            <div className="bg-figma-bg/50 pt-0 pb-2 w-full">
+              {slice.map((nodeRef, idx) => (
+                <div
+                  key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
+                  className="w-full py-2 px-4 hover:bg-figma-surface cursor-pointer flex items-center justify-between gap-3 text-xs"
+                  onClick={() => onElementClick(nodeRef.nodeId)}
+                >
+                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                    <NodeTypeIcon nodeType={nodeRef.nodeType} />
+                    <div className="min-w-0">
+                      <div className="text-figma-text truncate">{nodeRef.nodeName}</div>
+                      <div className="text-figma-text-secondary text-xs truncate">
+                        {nodeRef.layerPath}
+                      </div>
                     </div>
                   </div>
+                  <span className="text-figma-text-secondary shrink-0">
+                    {nodeRef.propertyType}
+                  </span>
                 </div>
-                <span className="text-figma-text-secondary shrink-0">
-                  {nodeRef.propertyType}
-                </span>
-              </div>
-            ))}
-            {nodesToShow.length > 20 && (
-              <div className="text-figma-text-secondary text-xs text-center py-2 px-4">
-                +{nodesToShow.length - 20} more elements
-              </div>
-            )}
-          </div>
-        );
-      })()}
+              ))}
+              {nodesToShow.length > 20 && (
+                <div className="text-figma-text-secondary text-xs text-center py-2 px-4">
+                  +{nodesToShow.length - 20} more elements
+                </div>
+              )}
+            </div>
+          );
+        })()}
     </div>
   );
 }

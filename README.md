@@ -4,14 +4,15 @@ A Figma plugin for color detection, auditing, and selection.
 
 ## Features
 
-- **Complete Color Visibility**: Scans the current page to detect every unique color (fills, strokes, text, effects)
-- **Token Detection**: Clearly distinguishes between design tokens (variables/styles) and hard-coded hex values
-- **Scoped Scanning**: Select a frame, section, or group to audit just that component
-- **Actionable Selection**: Click any color to select all elements using it
-- **Search & Filter**: Find colors by hex, token name, or property type
-- **Live Updates**: Results update automatically as you edit your design
-- **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows
-- **Copy to Clipboard**: Click any color swatch to copy its value
+- **Complete Color Visibility**: Scans the current page to detect every unique color (fills, strokes, effects). Text layers contribute via their fill/stroke only; vector node types (e.g. VECTOR, ELLIPSE) are excluded by default with an optional "Include vectors" filter.
+- **Token Detection**: Distinguishes design tokens (bound variables) from hard-coded hex; token and library indicators with icons.
+- **Scoped Scanning**: Select one or more nodes (any type—frame, text, rectangle, etc.) to limit the audit to that scope. Multi-selection is supported.
+- **Actionable Selection**: Click any color row to select all elements using it; expand a row to see element sub-list with node type icons; click an element to zoom to it. "Select All" (crosshair) does not reset scope.
+- **Search & Filter**: Search by hex or token name. Filter by binding (All / Token-bound / Hard-coded), property (Fill, Stroke, Effect), and scope (Include vectors). Sort by usage, hex, or token name. Summary strip reflects the filtered list.
+- **Live Updates**: Results update when the document or selection changes; hidden nodes are excluded from the scan.
+- **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows.
+- **Copy to Clipboard**: Click any color swatch to copy its value.
+- **Resizable Panel**: Resize from the right edge, bottom edge, or bottom-right corner (min 360×560, max 800×840).
 
 ## Development
 
@@ -84,13 +85,13 @@ The plugin will be built to the `dist/` directory with:
 
 ## Usage
 
-1. Open Color Inspector from the Plugins menu
-2. The plugin automatically scans the current page
-3. **Optional**: Select a frame, section, or group before opening to scope the scan
-4. Browse, search, and filter colors in the panel
-5. Click any color row to select all elements using that color
-6. Click a color swatch to copy its value to clipboard
-7. Expand a row to see individual elements and zoom to them
+1. Open Color Inspector from the Plugins menu.
+2. The plugin automatically scans the current page (or your selection if one or more nodes are selected).
+3. **Optional**: Select one or more nodes (any type) before or after opening to scope the scan. Use the × next to the scope indicator to clear and scan the entire page.
+4. Use the search bar and filter/sort icons to narrow and order the list. The summary (Colors, Token-bound, Hard-coded, Elements) reflects the filtered results.
+5. Click a color row to select all elements using that color; expand the row to see the element list with node type icons; click an element to zoom to it.
+6. Click a color swatch to copy its value to the clipboard.
+7. Resize the panel by dragging the right edge, bottom edge, or bottom-right corner.
 
 ## License
 

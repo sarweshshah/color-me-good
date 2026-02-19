@@ -5,7 +5,7 @@ export function Footer() {
         <button
           className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
           onClick={() => {
-            window.open('https://github.com/color-inspector/help', '_blank');
+            window.open('https://github.com/sarweshshah/color-inspector#readme', '_blank');
           }}
         >
           Help

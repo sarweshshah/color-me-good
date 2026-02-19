@@ -12,9 +12,10 @@ let documentDebounce: number | null = null;
 let isScanning = false;
 let includeVectors = false;
 let ignoreNextSelectionChange = false;
+let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
 figma.showUI(__html__, {
-  width: 560,
+  width: 440,
   height: 640,
   themeColors: true,
 });
@@ -70,14 +71,66 @@ async function handleSelectNodes(nodeIds: string[]): Promise<void> {
   }
 }
 
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+const ZOOM_DURATION_MS = 280;
+const ZOOM_PADDING = 40;
+
 async function handleZoomToNode(nodeId: string): Promise<void> {
   try {
     const node = await figma.getNodeByIdAsync(nodeId);
-    if (node && 'id' in node) {
-      ignoreNextSelectionChange = true;
-      figma.currentPage.selection = [node as SceneNode];
-      figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
+    if (!node || !('id' in node)) return;
+
+    ignoreNextSelectionChange = true;
+    figma.currentPage.selection = [node as SceneNode];
+
+    const sceneNode = node as SceneNode;
+    const bounds = 'absoluteBoundingBox' in sceneNode ? (sceneNode as LayoutMixin).absoluteBoundingBox : null;
+
+    if (!bounds) {
+      figma.viewport.scrollAndZoomIntoView([sceneNode]);
+      return;
     }
+
+    const startCenter = { ...figma.viewport.center };
+    const startZoom = figma.viewport.zoom;
+    const nodeCenterX = bounds.x + bounds.width / 2;
+    const nodeCenterY = bounds.y + bounds.height / 2;
+    const vp = figma.viewport.bounds;
+    const pad = ZOOM_PADDING * 2;
+    const targetZoom = Math.min(
+      startZoom,
+      startZoom * vp.width / (bounds.width + pad),
+      startZoom * vp.height / (bounds.height + pad)
+    );
+    const targetZoomClamped = Math.max(0.01, Math.min(4, targetZoom));
+
+    if (zoomToNodeTimer != null) clearTimeout(zoomToNodeTimer);
+    const startTime = Date.now();
+    const tick = () => {
+      const elapsed = Date.now() - startTime;
+      const t = Math.min(1, elapsed / ZOOM_DURATION_MS);
+      const eased = easeOutCubic(t);
+
+      figma.viewport.center = {
+        x: lerp(startCenter.x, nodeCenterX, eased),
+        y: lerp(startCenter.y, nodeCenterY, eased),
+      };
+      figma.viewport.zoom = lerp(startZoom, targetZoomClamped, eased);
+
+      if (t < 1) {
+        zoomToNodeTimer = setTimeout(tick, 16);
+      } else {
+        zoomToNodeTimer = null;
+      }
+    };
+    tick();
   } catch (error) {
     console.error('Failed to zoom to node:', error);
   }

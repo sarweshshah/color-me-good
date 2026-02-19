@@ -88,6 +88,7 @@ export function App() {
   const [searchText, setSearchText] = useState('');
   const [bindingFilter, setBindingFilter] = useState<BindingFilter>('all');
   const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(new Set());
+  const [nodeTypeFilters, setNodeTypeFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>('usage');
   const [includeVectors, setIncludeVectors] = useState(false);
 
@@ -112,10 +113,20 @@ export function App() {
     });
   };
 
+  const handleNodeTypeFilterToggle = (nodeType: string) => {
+    setNodeTypeFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(nodeType)) next.delete(nodeType);
+      else next.add(nodeType);
+      return next;
+    });
+  };
+
   const handleClearFilters = () => {
     setSearchText('');
     setBindingFilter('all');
     setPropertyFilters(new Set());
+    setNodeTypeFilters(new Set());
     if (includeVectors) {
       setIncludeVectors(false);
       postMessage({ type: 'set-include-vectors', includeVectors: false });
@@ -147,6 +158,12 @@ export function App() {
       );
     }
 
+    if (nodeTypeFilters.size > 0) {
+      filtered = filtered.filter((c) =>
+        c.nodes.some((n) => n.nodeType && nodeTypeFilters.has(n.nodeType))
+      );
+    }
+
     const sorted = [...filtered];
     switch (sortBy) {
       case 'usage':
@@ -169,7 +186,7 @@ export function App() {
     }
 
     return sorted;
-  }, [state.colors, searchText, bindingFilter, propertyFilters, sortBy]);
+  }, [state.colors, searchText, bindingFilter, propertyFilters, nodeTypeFilters, sortBy]);
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
@@ -265,6 +282,8 @@ export function App() {
         onSortChange={setSortBy}
         includeVectors={includeVectors}
         onIncludeVectorsChange={handleIncludeVectorsChange}
+        nodeTypeFilters={nodeTypeFilters}
+        onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
       />
 
       <ColorList
