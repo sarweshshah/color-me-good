@@ -3,7 +3,45 @@ import { SerializedColorEntry } from '../../shared/types';
 import { Swatch } from './Swatch';
 import { formatHex } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
-import { Tags, Circle, LibraryBig, Crosshair } from 'lucide-preact';
+import {
+  Tags,
+  Circle,
+  LibraryBig,
+  Crosshair,
+  Type,
+  Square,
+  Minus,
+  Layers,
+  Layout,
+  Component,
+  PenTool,
+  Box,
+} from 'lucide-preact';
+
+const NODE_TYPE_ICONS: Record<string, typeof Box> = {
+  TEXT: Type,
+  RECTANGLE: Square,
+  ELLIPSE: Circle,
+  LINE: Minus,
+  FRAME: Layout,
+  SECTION: Layout,
+  GROUP: Layers,
+  COMPONENT: Component,
+  INSTANCE: Box,
+  VECTOR: PenTool,
+  STAR: Square,
+  POLYGON: Square,
+  BOOLEAN_OPERATION: PenTool,
+};
+
+function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
+  const Icon = (nodeType && NODE_TYPE_ICONS[nodeType]) || Box;
+  return (
+    <span className="w-6 h-6 flex items-center justify-center shrink-0 text-figma-text-secondary">
+      <Icon size={16} />
+    </span>
+  );
+}
 
 interface ColorRowProps {
   color: SerializedColorEntry;
@@ -23,11 +61,13 @@ export function ColorRow({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
 
-  const displayName =
-    color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
+  const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
   const badge = color.isTokenBound ? (
-    <span className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors" title="Token-bound color">
+    <span
+      className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors"
+      title="Token-bound color"
+    >
       <Tags size={14} strokeWidth={1.75} />
     </span>
   ) : (
@@ -37,7 +77,10 @@ export function ColorRow({
   );
 
   const libraryIcon = color.isLibraryVariable && (
-    <span className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors" title="Library variable">
+    <span
+      className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors"
+      title="Library variable"
+    >
       <LibraryBig size={14} strokeWidth={1.75} />
     </span>
   );
@@ -52,7 +95,9 @@ export function ColorRow({
   };
 
   return (
-    <div className={`border-b border-figma-border ${isSelected ? 'bg-figma-blue/10' : ''}`}>
+    <div
+      className={`border-b border-figma-border ${isSelected ? 'bg-figma-blue/10' : ''}`}
+    >
       <div
         className="px-4 py-2.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
@@ -60,11 +105,7 @@ export function ColorRow({
           setIsExpanded(!isExpanded);
         }}
       >
-        <div
-          className="relative"
-          onClick={handleCopy}
-          title="Click to copy"
-        >
+        <div className="relative" onClick={handleCopy} title="Click to copy">
           <Swatch color={color} size={24} />
           {showCopied && (
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-figma-green text-white text-xs px-2 py-1 rounded whitespace-nowrap">
@@ -72,7 +113,7 @@ export function ColorRow({
             </div>
           )}
         </div>
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-figma-text text-sm font-medium truncate">
@@ -89,7 +130,8 @@ export function ColorRow({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-figma-text-secondary text-xs">
+          <span className="text-figma-text-secondary text-xs flex items-center gap-1.5">
+            <Layers size={12} className="shrink-0" />
             {color.usageCount}
           </span>
           <button
@@ -105,32 +147,40 @@ export function ColorRow({
         </div>
       </div>
 
-      {isExpanded && color.nodes.length > 0 && (
-        <div className="bg-figma-bg/50 px-4 py-2">
-          {color.nodes.slice(0, 20).map((nodeRef, idx) => (
-            <div
-              key={`${nodeRef.nodeId}-${idx}`}
-              className="py-1.5 px-2 hover:bg-figma-surface rounded cursor-pointer flex items-center justify-between text-xs"
-              onClick={() => onElementClick(nodeRef.nodeId)}
-            >
-              <div className="flex-1 min-w-0">
-                <div className="text-figma-text truncate">{nodeRef.nodeName}</div>
-                <div className="text-figma-text-secondary text-xs truncate">
-                  {nodeRef.layerPath}
+      {isExpanded && (() => {
+        const nodesToShow = color.nodes.filter((n) => n.propertyType !== 'text');
+        if (nodesToShow.length === 0) return null;
+        const slice = nodesToShow.slice(0, 20);
+        return (
+          <div className="bg-figma-bg/50 pt-0 pb-2 w-full">
+            {slice.map((nodeRef, idx) => (
+              <div
+                key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
+                className="w-full py-2 px-4 hover:bg-figma-surface cursor-pointer flex items-center justify-between gap-3 text-xs"
+                onClick={() => onElementClick(nodeRef.nodeId)}
+              >
+                <div className="flex-1 min-w-0 flex items-center gap-3">
+                  <NodeTypeIcon nodeType={nodeRef.nodeType} />
+                  <div className="min-w-0">
+                    <div className="text-figma-text truncate">{nodeRef.nodeName}</div>
+                    <div className="text-figma-text-secondary text-xs truncate">
+                      {nodeRef.layerPath}
+                    </div>
+                  </div>
                 </div>
+                <span className="text-figma-text-secondary shrink-0">
+                  {nodeRef.propertyType}
+                </span>
               </div>
-              <span className="text-figma-text-secondary ml-2">
-                {nodeRef.propertyType}
-              </span>
-            </div>
-          ))}
-          {color.nodes.length > 20 && (
-            <div className="text-figma-text-secondary text-xs text-center py-2">
-              +{color.nodes.length - 20} more elements
-            </div>
-          )}
-        </div>
-      )}
+            ))}
+            {nodesToShow.length > 20 && (
+              <div className="text-figma-text-secondary text-xs text-center py-2 px-4">
+                +{nodesToShow.length - 20} more elements
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 }

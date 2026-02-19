@@ -38,7 +38,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'resize':
       figma.ui.resize(
-        Math.max(360, Math.min(800, msg.width)),
+        Math.max(420, Math.min(800, msg.width)),
         Math.max(560, Math.min(840, msg.height))
       );
       break;
@@ -51,15 +51,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
 
 async function handleSelectNodes(nodeIds: string[]): Promise<void> {
   try {
-    const nodes = await Promise.all(
-      nodeIds.map((id) => figma.getNodeByIdAsync(id))
-    );
+    const nodes = await Promise.all(nodeIds.map((id) => figma.getNodeByIdAsync(id)));
     const validNodes = nodes.filter(
       (node): node is SceneNode => node !== null && 'id' in node
     );
     ignoreNextSelectionChange = true;
     figma.currentPage.selection = validNodes;
-    
+
     if (validNodes.length > 0) {
       figma.viewport.scrollAndZoomIntoView(validNodes);
     }
@@ -143,7 +141,10 @@ function getScopeId(): string | null {
   const sel = figma.currentPage.selection;
   if (sel.length === 0) return null;
   if (sel.length === 1) return sel[0].id;
-  return sel.map((n) => n.id).sort().join(',');
+  return sel
+    .map((n) => n.id)
+    .sort()
+    .join(',');
 }
 
 function setupListeners(): void {
@@ -180,9 +181,7 @@ function setupListeners(): void {
         cachedResults &&
         scopeNodeIds &&
         event.documentChanges.some(
-          (change) =>
-            change.type === 'DELETE' &&
-            scopeNodeIds.includes(change.id)
+          (change) => change.type === 'DELETE' && scopeNodeIds.includes(change.id)
         )
       ) {
         figma.currentPage.selection = [];

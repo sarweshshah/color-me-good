@@ -13,7 +13,9 @@ const MAX_WIDTH = 800;
 const MIN_HEIGHT = 560;
 const MAX_HEIGHT = 840;
 
-function ResizeHandle({ postMessage }: { postMessage: (msg: any) => void }) {
+type ResizeMode = 'corner' | 'right' | 'bottom';
+
+function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
   const dragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
   const startSize = useRef({ w: 0, h: 0 });
@@ -28,34 +30,54 @@ function ResizeHandle({ postMessage }: { postMessage: (msg: any) => void }) {
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
 
-  const onPointerMove = useCallback((e: PointerEvent) => {
-    if (!dragging.current) return;
-    const dx = e.clientX - startPos.current.x;
-    const dy = e.clientY - startPos.current.y;
-    const newW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startSize.current.w + dx));
-    const newH = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, startSize.current.h + dy));
-    postMessage({ type: 'resize', width: Math.round(newW), height: Math.round(newH) });
-  }, [postMessage]);
+  const onPointerMove = useCallback(
+    (e: PointerEvent) => {
+      if (!dragging.current) return;
+      const dx = e.clientX - startPos.current.x;
+      const dy = e.clientY - startPos.current.y;
+      let newW = startSize.current.w;
+      let newH = startSize.current.h;
+      if (mode === 'corner' || mode === 'right') newW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startSize.current.w + dx));
+      if (mode === 'corner' || mode === 'bottom') newH = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, startSize.current.h + dy));
+      postMessage({ type: 'resize', width: Math.round(newW), height: Math.round(newH) });
+    },
+    [postMessage, mode]
+  );
 
   const onPointerUp = useCallback(() => {
     dragging.current = false;
   }, []);
 
+  return { onPointerDown, onPointerMove, onPointerUp };
+}
+
+function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
+  const corner = useResize(postMessage, 'corner');
+  const right = useResize(postMessage, 'right');
+  const bottom = useResize(postMessage, 'bottom');
+
+  const z = { zIndex: 9999 };
   return (
-    <div
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-      style={{
-        position: 'fixed',
-        right: 0,
-        bottom: 0,
-        width: '16px',
-        height: '16px',
-        cursor: 'nwse-resize',
-        zIndex: 9999,
-      }}
-    />
+    <>
+      <div
+        onPointerDown={corner.onPointerDown}
+        onPointerMove={corner.onPointerMove}
+        onPointerUp={corner.onPointerUp}
+        style={{ position: 'fixed', right: 0, bottom: 0, width: 16, height: 16, cursor: 'nwse-resize', ...z }}
+      />
+      <div
+        onPointerDown={right.onPointerDown}
+        onPointerMove={right.onPointerMove}
+        onPointerUp={right.onPointerUp}
+        style={{ position: 'fixed', right: 0, top: 0, bottom: 20, width: 10, cursor: 'ew-resize', ...z }}
+      />
+      <div
+        onPointerDown={bottom.onPointerDown}
+        onPointerMove={bottom.onPointerMove}
+        onPointerUp={bottom.onPointerUp}
+        style={{ position: 'fixed', bottom: 0, left: 0, right: 20, height: 10, cursor: 'ns-resize', ...z }}
+      />
+    </>
   );
 }
 
@@ -65,9 +87,7 @@ export function App() {
 
   const [searchText, setSearchText] = useState('');
   const [bindingFilter, setBindingFilter] = useState<BindingFilter>('all');
-  const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(
-    new Set()
-  );
+  const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>('usage');
   const [includeVectors, setIncludeVectors] = useState(false);
 
@@ -169,7 +189,7 @@ export function App() {
   if (state.isScanning) {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
-        <ResizeHandle postMessage={postMessage} />
+        <ResizeHandles postMessage={postMessage} />
         <div className="text-center">
           <div className="text-figma-text text-sm mb-2">Scanning...</div>
           {state.scanProgress && (
@@ -196,7 +216,7 @@ export function App() {
   if (state.error) {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
-        <ResizeHandle postMessage={postMessage} />
+        <ResizeHandles postMessage={postMessage} />
         <div className="text-center px-6">
           <div className="text-figma-orange text-sm mb-2">Error</div>
           <div className="text-figma-text-secondary text-xs">{state.error}</div>
@@ -208,7 +228,7 @@ export function App() {
   if (!state.context || state.colors.length === 0) {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
-        <ResizeHandle postMessage={postMessage} />
+        <ResizeHandles postMessage={postMessage} />
         <Header context={state.context} onClearScope={handleClearScope} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
@@ -227,10 +247,10 @@ export function App() {
 
   return (
     <div className="h-screen bg-figma-bg flex flex-col">
-      <ResizeHandle postMessage={postMessage} />
+      <ResizeHandles postMessage={postMessage} />
       <Header context={state.context} onClearScope={handleClearScope} />
       <SummaryStrip
-        colors={state.colors}
+        colors={filteredAndSortedColors}
         totalNodesScanned={state.context.totalNodesScanned}
       />
       <SearchFilterBar

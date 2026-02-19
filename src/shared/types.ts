@@ -26,6 +26,7 @@ export interface GradientData {
 export interface NodeRef {
   nodeId: string;
   nodeName: string;
+  nodeType: string;
   layerPath: string;
   propertyType: PropertyType;
   propertyIndex: number;

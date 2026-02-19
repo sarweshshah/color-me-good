@@ -66,170 +66,162 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen]);
 
   return (
-    <div className="bg-figma-bg px-4 py-2.5 border-b border-figma-border">
+    <div className="px-4 py-3 border-b border-figma-border/80 bg-figma-surface">
       <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-figma-surface rounded border border-figma-border focus-within:border-figma-blue">
-          <Search size={14} className="ml-2.5 text-figma-text-secondary shrink-0" />
+        <div className="flex-1 flex items-center gap-2 min-h-8 bg-figma-bg/80 rounded-md border border-figma-border/60 focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
+          <Search size={14} className="ml-3 text-figma-text-secondary/80 shrink-0" />
           <input
             type="text"
             value={searchText}
             onInput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
-            placeholder="Search by hex, token name..."
-            className="flex-1 bg-transparent text-figma-text text-xs py-2 pr-3 focus:outline-none"
+            placeholder="Search hex, token…"
+            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-2 pr-2 focus:outline-none placeholder:text-figma-text-secondary/70"
           />
           {searchText.length > 0 && (
             <button
               onClick={() => onSearchChange('')}
-              className="mr-2 text-figma-text-secondary hover:text-figma-text transition-colors"
+              className="mr-2 p-0.5 rounded text-figma-text-secondary/70 hover:text-figma-text hover:bg-figma-border/40 transition-colors"
+              aria-label="Clear search"
             >
               <X size={12} />
             </button>
           )}
         </div>
 
-        <div className="relative" ref={sortRef}>
-          <button
-            onClick={() => { setSortOpen(!sortOpen); setFilterOpen(false); }}
-            className={`relative p-2 rounded border transition-colors ${
-              sortOpen || isSortCustom
-                ? 'bg-figma-blue border-figma-blue text-white'
-                : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary'
-            }`}
-            title={`Sort: ${SORT_LABELS[sortBy]}`}
-          >
-            <ArrowUpDown size={14} />
-          </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => { setSortOpen(!sortOpen); setFilterOpen(false); }}
+              className={`flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+                sortOpen || isSortCustom
+                  ? 'bg-figma-blue text-white'
+                  : 'text-figma-text-secondary/80 hover:text-figma-text hover:bg-figma-bg/80'
+              }`}
+              title={`Sort: ${SORT_LABELS[sortBy]}`}
+            >
+              <ArrowUpDown size={14} strokeWidth={2} />
+            </button>
 
-          {sortOpen && (
-            <div className="absolute right-0 top-full mt-1 w-48 bg-figma-surface border border-figma-border rounded-lg shadow-lg z-50 py-2">
-              <div className="px-3 py-1.5">
-                <span className="text-figma-text text-xs font-semibold">Sort by</span>
+            {sortOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-44 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
+                <div className="py-1.5">
+                  <div className="px-3 py-1.5">
+                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">Sort by</span>
+                  </div>
+                  <div className="px-1.5">
+                    {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
+                      <MenuItem
+                        key={key}
+                        label={SORT_LABELS[key]}
+                        active={sortBy === key}
+                        onClick={() => { onSortChange(key); setSortOpen(false); }}
+                      />
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div className="mx-3 my-1.5 h-px bg-figma-border" />
-              <div className="px-2 flex flex-col gap-0.5">
-                {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
-                  <MenuItem
-                    key={key}
-                    label={SORT_LABELS[key]}
-                    active={sortBy === key}
-                    onClick={() => { onSortChange(key); setSortOpen(false); }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="relative" ref={filterRef}>
-          <button
-            onClick={() => { setFilterOpen(!filterOpen); setSortOpen(false); }}
-            className={`relative p-2 rounded border transition-colors ${
-              filterOpen || activeFilterCount > 0
-                ? 'bg-figma-blue border-figma-blue text-white'
-                : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary'
-            }`}
-            title="Filters"
-          >
-            <SlidersVertical size={14} />
-            {activeFilterCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-figma-orange text-white text-[9px] font-bold rounded-full flex items-center justify-center">
-                {activeFilterCount}
-              </span>
             )}
-          </button>
+          </div>
 
-          {filterOpen && (
-            <div className="absolute right-0 top-full mt-1 w-52 bg-figma-surface border border-figma-border rounded-lg shadow-lg z-50 py-2">
-              <div className="px-3 py-1.5 flex items-center justify-between">
-                <span className="text-figma-text text-xs font-semibold">Filters</span>
-                {hasActiveFilters && (
-                  <button
-                    onClick={() => { onClearFilters(); setFilterOpen(false); }}
-                    className="text-[10px] text-figma-text-secondary hover:text-figma-blue transition-colors"
-                  >
-                    Clear all
-                  </button>
-                )}
-              </div>
-
-              <div className="mx-3 my-1.5 h-px bg-figma-border" />
-
-              <div className="px-3 py-1">
-                <span className="text-[10px] text-figma-text-secondary uppercase tracking-wider font-medium">
-                  Binding
+          <div className="relative" ref={filterRef}>
+            <button
+              onClick={() => { setFilterOpen(!filterOpen); setSortOpen(false); }}
+              className={`relative flex items-center justify-center w-8 h-8 rounded-md transition-colors ${
+                filterOpen || activeFilterCount > 0
+                  ? 'bg-figma-blue text-white'
+                  : 'text-figma-text-secondary/80 hover:text-figma-text hover:bg-figma-bg/80'
+              }`}
+              title="Filters"
+            >
+              <SlidersVertical size={14} strokeWidth={2} />
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                  {activeFilterCount}
                 </span>
-              </div>
-              <div className="px-2 flex flex-col gap-0.5">
-                <MenuItem
-                  label="All"
-                  active={bindingFilter === 'all'}
-                  onClick={() => onBindingFilterChange('all')}
-                />
-                <MenuItem
-                  label="Token-bound"
-                  active={bindingFilter === 'token-bound'}
-                  onClick={() => onBindingFilterChange('token-bound')}
-                />
-                <MenuItem
-                  label="Hard-coded"
-                  active={bindingFilter === 'hard-coded'}
-                  onClick={() => onBindingFilterChange('hard-coded')}
-                />
-              </div>
+              )}
+            </button>
 
-              <div className="mx-3 my-1.5 h-px bg-figma-border" />
+            {filterOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-52 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
+                <div className="py-1.5">
+                  <div className="px-3 py-2 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">Filters</span>
+                    {hasActiveFilters && (
+                      <button
+                        onClick={() => { onClearFilters(); setFilterOpen(false); }}
+                        className="text-[11px] text-figma-blue hover:underline"
+                      >
+                        Clear all
+                      </button>
+                    )}
+                  </div>
 
-              <div className="px-3 py-1">
-                <span className="text-[10px] text-figma-text-secondary uppercase tracking-wider font-medium">
-                  Property
-                </span>
-              </div>
-              <div className="px-2 flex flex-col gap-0.5">
-                <MenuItem
-                  label="Fill"
-                  active={propertyFilters.has('fill')}
-                  onClick={() => onPropertyFilterToggle('fill')}
-                  checkbox
-                />
-                <MenuItem
-                  label="Stroke"
-                  active={propertyFilters.has('stroke')}
-                  onClick={() => onPropertyFilterToggle('stroke')}
-                  checkbox
-                />
-                <MenuItem
-                  label="Text"
-                  active={propertyFilters.has('text')}
-                  onClick={() => onPropertyFilterToggle('text')}
-                  checkbox
-                />
-                <MenuItem
-                  label="Effect"
-                  active={propertyFilters.has('effect')}
-                  onClick={() => onPropertyFilterToggle('effect')}
-                  checkbox
-                />
-              </div>
+                  <SectionLabel label="Binding" />
+                  <div className="px-1.5">
+                    <MenuItem
+                      label="All"
+                      active={bindingFilter === 'all'}
+                      onClick={() => onBindingFilterChange('all')}
+                    />
+                    <MenuItem
+                      label="Token-bound"
+                      active={bindingFilter === 'token-bound'}
+                      onClick={() => onBindingFilterChange('token-bound')}
+                    />
+                    <MenuItem
+                      label="Hard-coded"
+                      active={bindingFilter === 'hard-coded'}
+                      onClick={() => onBindingFilterChange('hard-coded')}
+                    />
+                  </div>
 
-              <div className="mx-3 my-1.5 h-px bg-figma-border" />
+                  <SectionLabel label="Property" />
+                  <div className="px-1.5">
+                    <MenuItem
+                      label="Fill"
+                      active={propertyFilters.has('fill')}
+                      onClick={() => onPropertyFilterToggle('fill')}
+                      checkbox
+                    />
+                    <MenuItem
+                      label="Stroke"
+                      active={propertyFilters.has('stroke')}
+                      onClick={() => onPropertyFilterToggle('stroke')}
+                      checkbox
+                    />
+                    <MenuItem
+                      label="Effect"
+                      active={propertyFilters.has('effect')}
+                      onClick={() => onPropertyFilterToggle('effect')}
+                      checkbox
+                    />
+                  </div>
 
-              <div className="px-3 py-1">
-                <span className="text-[10px] text-figma-text-secondary uppercase tracking-wider font-medium">
-                  Scope
-                </span>
+                  <SectionLabel label="Scope" />
+                  <div className="px-1.5 pb-1">
+                    <MenuItem
+                      label="Include vectors"
+                      active={includeVectors}
+                      onClick={() => onIncludeVectorsChange(!includeVectors)}
+                      checkbox
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="px-2 flex flex-col gap-0.5">
-                <MenuItem
-                  label="Include vectors"
-                  active={includeVectors}
-                  onClick={() => onIncludeVectorsChange(!includeVectors)}
-                  checkbox
-                />
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <div className="px-3 pt-2 pb-1">
+      <span className="text-[10px] font-medium text-figma-text-secondary/80 uppercase tracking-wider">
+        {label}
+      </span>
     </div>
   );
 }
@@ -245,23 +237,23 @@ function MenuItem({ label, active, onClick, checkbox }: MenuItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left px-2 py-1.5 text-xs rounded flex items-center gap-2 transition-colors ${
+      className={`w-full text-left px-2.5 py-1.5 text-xs rounded-md flex items-center gap-2.5 transition-colors ${
         active
-          ? 'bg-figma-blue/10 text-figma-blue'
-          : 'text-figma-text hover:bg-figma-bg'
+          ? 'bg-figma-blue/8 text-figma-blue font-medium'
+          : 'text-figma-text hover:bg-figma-bg/80'
       }`}
     >
       {checkbox && (
         <span
-          className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 ${
+          className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
             active
               ? 'bg-figma-blue border-figma-blue'
-              : 'border-figma-border'
+              : 'border-figma-border/80 bg-figma-surface'
           }`}
         >
           {active && (
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-              <path d="M1.5 4L3.2 5.7L6.5 2.3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1.5 4L3.2 5.7L6.5 2.3" />
             </svg>
           )}
         </span>

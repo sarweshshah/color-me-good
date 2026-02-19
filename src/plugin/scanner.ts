@@ -197,10 +197,6 @@ async function extractColorsFromNode(
       }
     }
   }
-
-    if (node.type === 'TEXT') {
-      await extractTextColors(node, layerPath, colorMap);
-    }
   } catch (error) {
     console.warn(`Failed to extract colors from node ${node.id}:`, error);
   }
@@ -230,6 +226,7 @@ async function addSolidColor(
   const nodeRef: NodeRef = {
     nodeId: node.id,
     nodeName: node.name,
+    nodeType: node.type,
     layerPath,
     propertyType,
     propertyIndex,
@@ -294,6 +291,7 @@ async function addGradientColor(
   const nodeRef: NodeRef = {
     nodeId: node.id,
     nodeName: node.name,
+    nodeType: node.type,
     layerPath,
     propertyType,
     propertyIndex,
@@ -324,65 +322,3 @@ async function addGradientColor(
   }
 }
 
-async function extractTextColors(
-  textNode: TextNode,
-  layerPath: string,
-  colorMap: ColorMap
-): Promise<void> {
-  try {
-    const segments = textNode.getStyledTextSegments(['fills']);
-
-    for (const segment of segments) {
-      if (!segment.fills || !Array.isArray(segment.fills)) continue;
-
-      for (let i = 0; i < segment.fills.length; i++) {
-        const paint = segment.fills[i];
-        if (paint.type !== 'SOLID' || paint.visible === false) continue;
-
-        const rgba = {
-          r: paint.color.r,
-          g: paint.color.g,
-          b: paint.color.b,
-          a: paint.opacity ?? 1,
-        };
-
-        const hex = rgbaToHex(rgba);
-        const dedupKey = hex;
-
-        const nodeRef: NodeRef = {
-          nodeId: textNode.id,
-          nodeName: textNode.name,
-          layerPath,
-          propertyType: 'text',
-          propertyIndex: segment.start,
-        };
-
-        if (!colorMap[dedupKey]) {
-          colorMap[dedupKey] = {
-            type: 'solid',
-            hex,
-            rgba,
-            gradient: null,
-            dedupKey,
-            tokenName: null,
-            tokenCollection: null,
-            isLibraryVariable: false,
-            styleName: null,
-            styleId: null,
-            propertyTypes: new Set(['text']),
-            nodes: [nodeRef],
-            usageCount: 1,
-            isTokenBound: false,
-          };
-        } else {
-          const entry = colorMap[dedupKey];
-          entry.propertyTypes.add('text');
-          entry.nodes.push(nodeRef);
-          entry.usageCount++;
-        }
-      }
-    }
-  } catch (error) {
-    console.warn(`Failed to extract text colors from node ${textNode.id}:`, error);
-  }
-}
