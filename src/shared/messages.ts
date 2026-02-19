@@ -10,7 +10,8 @@ export type UIMessage =
   | SelectNodesMessage
   | ZoomToNodeMessage
   | ClearScopeMessage
-  | RequestRescanMessage;
+  | RequestRescanMessage
+  | ResizeMessage;
 
 export interface ScanProgressMessage {
   type: 'scan-progress';
@@ -50,4 +51,10 @@ export interface ClearScopeMessage {
 
 export interface RequestRescanMessage {
   type: 'request-rescan';
+}
+
+export interface ResizeMessage {
+  type: 'resize';
+  width: number;
+  height: number;
 }

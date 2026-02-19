@@ -1,4 +1,5 @@
 import { ScanContext } from '../../shared/types';
+import { X } from 'lucide-preact';
 
 interface HeaderProps {
   context: ScanContext | null;
@@ -29,7 +30,7 @@ export function Header({ context, onClearScope }: HeaderProps) {
               className="ml-1 text-figma-text-secondary hover:text-figma-text transition-colors"
               title="Clear scope and scan entire page"
             >
-              ×
+              <X size={14} />
             </button>
           )}
         </div>

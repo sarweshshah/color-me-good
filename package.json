@@ -19,8 +19,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "preact": "^10.19.3",
-    "@tanstack/virtual-core": "^3.10.8"
+    "@tanstack/virtual-core": "^3.10.8",
+    "lucide-preact": "^0.574.0",
+    "preact": "^10.19.3"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.98.0",

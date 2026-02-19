@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'preact/hooks';
+import { useState, useMemo, useCallback, useRef } from 'preact/hooks';
+import { GripVertical } from 'lucide-preact';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
@@ -8,6 +9,59 @@ import { SortControls, SortOption } from './components/SortControls';
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
+
+const MIN_WIDTH = 360;
+const MAX_WIDTH = 800;
+const MIN_HEIGHT = 560;
+const MAX_HEIGHT = 840;
+
+function ResizeHandle({ postMessage }: { postMessage: (msg: any) => void }) {
+  const dragging = useRef(false);
+  const startPos = useRef({ x: 0, y: 0 });
+  const startSize = useRef({ w: 0, h: 0 });
+
+  const onPointerDown = useCallback((e: PointerEvent) => {
+    dragging.current = true;
+    startPos.current = { x: e.clientX, y: e.clientY };
+    startSize.current = {
+      w: document.documentElement.clientWidth,
+      h: document.documentElement.clientHeight,
+    };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, []);
+
+  const onPointerMove = useCallback((e: PointerEvent) => {
+    if (!dragging.current) return;
+    const dx = e.clientX - startPos.current.x;
+    const dy = e.clientY - startPos.current.y;
+    const newW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startSize.current.w + dx));
+    const newH = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, startSize.current.h + dy));
+    postMessage({ type: 'resize', width: Math.round(newW), height: Math.round(newH) });
+  }, [postMessage]);
+
+  const onPointerUp = useCallback(() => {
+    dragging.current = false;
+  }, []);
+
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: 'fixed',
+        right: 0,
+        bottom: 0,
+        width: '16px',
+        height: '16px',
+        cursor: 'nwse-resize',
+        zIndex: 9999,
+      }}
+    >
+      <GripVertical size={14} color="#999" style={{ transform: 'rotate(-45deg)' }} />
+    </div>
+  );
+}
 
 export function App() {
   const { state, postMessage } = usePluginMessages();
@@ -109,6 +163,7 @@ export function App() {
   if (state.isScanning) {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
+        <ResizeHandle postMessage={postMessage} />
         <div className="text-center">
           <div className="text-figma-text text-sm mb-2">Scanning...</div>
           {state.scanProgress && (
@@ -135,6 +190,7 @@ export function App() {
   if (state.error) {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
+        <ResizeHandle postMessage={postMessage} />
         <div className="text-center px-6">
           <div className="text-figma-orange text-sm mb-2">Error</div>
           <div className="text-figma-text-secondary text-xs">{state.error}</div>
@@ -146,6 +202,7 @@ export function App() {
   if (!state.context || state.colors.length === 0) {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
+        <ResizeHandle postMessage={postMessage} />
         <Header context={state.context} onClearScope={handleClearScope} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
@@ -164,6 +221,7 @@ export function App() {
 
   return (
     <div className="h-screen bg-figma-bg flex flex-col">
+      <ResizeHandle postMessage={postMessage} />
       <Header context={state.context} onClearScope={handleClearScope} />
       <SummaryStrip
         colors={state.colors}

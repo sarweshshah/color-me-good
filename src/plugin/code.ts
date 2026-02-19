@@ -11,8 +11,8 @@ let debounceTimer: number | null = null;
 let isScanning = false;
 
 figma.showUI(__html__, {
-  width: 1080,
-  height: 840,
+  width: 560,
+  height: 640,
   themeColors: true,
 });
 
@@ -30,6 +30,12 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'request-rescan':
       await performScan();
+      break;
+    case 'resize':
+      figma.ui.resize(
+        Math.max(360, Math.min(800, msg.width)),
+        Math.max(560, Math.min(840, msg.height))
+      );
       break;
   }
 };

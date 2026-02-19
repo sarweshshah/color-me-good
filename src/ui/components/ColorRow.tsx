@@ -3,6 +3,7 @@ import { SerializedColorEntry } from '../../shared/types';
 import { Swatch } from './Swatch';
 import { formatHex } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
+import { Link, Circle, LibraryBig } from 'lucide-preact';
 
 interface ColorRowProps {
   color: SerializedColorEntry;
@@ -26,14 +27,18 @@ export function ColorRow({
     color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
   const badge = color.isTokenBound ? (
-    <span className="text-figma-green text-xs">✓ Token</span>
+    <span className="text-figma-green text-xs flex items-center gap-0.5">
+      <Link size={12} /> Token
+    </span>
   ) : (
-    <span className="text-figma-orange text-xs">● Hard-coded</span>
+    <span className="text-figma-orange text-xs flex items-center gap-0.5">
+      <Circle size={8} fill="currentColor" /> Hard-coded
+    </span>
   );
 
   const libraryIcon = color.isLibraryVariable && (
-    <span className="text-figma-blue text-xs" title="Library variable">
-      📚
+    <span className="text-figma-text-secondary text-xs flex items-center" title="Library variable">
+      <LibraryBig size={14} />
     </span>
   );
 
