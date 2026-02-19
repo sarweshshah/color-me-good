@@ -6,12 +6,22 @@ import {
   GradientData,
   GradientType,
 } from '../shared/types';
-import { rgbaToHex, hashGradient, buildLayerPath, isValidScopeNode } from './utils';
-import { resolveVariableBinding, resolveStyleBinding } from './variable-resolver';
+import { rgbaToHex, hashGradient, buildLayerPath } from './utils';
+import { resolveVariableBinding } from './variable-resolver';
+
+const VECTOR_NODE_TYPES: Set<string> = new Set([
+  'VECTOR',
+  'LINE',
+  'STAR',
+  'POLYGON',
+  'ELLIPSE',
+  'BOOLEAN_OPERATION',
+]);
 
 export interface ScanOptions {
   onProgress?: (scanned: number, total: number) => void;
   onError?: (error: Error) => void;
+  includeVectors?: boolean;
 }
 
 interface ColorMap {
@@ -25,15 +35,21 @@ export async function scanCurrentPage(
 
   const context = resolveScanContext();
 
-  const rootNodes =
-    context.mode === 'selection' && context.scopeNodeId
-      ? [await figma.getNodeByIdAsync(context.scopeNodeId) as SceneNode]
-      : (figma.currentPage.children as SceneNode[]);
+  let rootNodes: SceneNode[];
+  if (context.mode === 'selection' && context.scopeNodeIds) {
+    const resolved = await Promise.all(
+      context.scopeNodeIds.map((id) => figma.getNodeByIdAsync(id))
+    );
+    rootNodes = resolved.filter((n): n is SceneNode => n !== null);
+  } else {
+    rootNodes = figma.currentPage.children as SceneNode[];
+  }
 
   let totalNodes = 0;
   let scannedNodes = 0;
 
   function countNodes(node: SceneNode): number {
+    if ('visible' in node && !node.visible) return 0;
     let count = 1;
     if ('children' in node) {
       for (const child of node.children) {
@@ -57,6 +73,8 @@ export async function scanCurrentPage(
   }
 
   async function* traverseNodes(node: SceneNode): AsyncGenerator<SceneNode> {
+    if ('visible' in node && !node.visible) return;
+
     yield node;
     scannedNodes++;
 
@@ -77,6 +95,7 @@ export async function scanCurrentPage(
       if (!root) continue;
 
       for await (const node of traverseNodes(root)) {
+        if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
         await extractColorsFromNode(node, colorMap);
       }
     }
@@ -102,39 +121,27 @@ export async function scanCurrentPage(
 function resolveScanContext(): ScanContext {
   const selection = figma.currentPage.selection;
 
-  if (selection.length > 1) {
-    figma.notify('Tip: Select a single frame, section, or group to scope your scan', {
-      timeout: 3000,
-    });
-  }
-
-  if (
-    selection.length === 1 &&
-    isValidScopeNode(selection[0])
-  ) {
-    const node = selection[0];
+  if (selection.length >= 1) {
+    const ids = selection.map((n) => n.id);
+    const name =
+      selection.length === 1
+        ? selection[0].name
+        : `${selection.length} elements`;
     return {
       mode: 'selection',
-      scopeNodeId: node.id,
-      scopeNodeName: node.name,
-      scopeNodeType: node.type as 'FRAME' | 'SECTION' | 'GROUP',
+      scopeNodeId: ids[0],
+      scopeNodeIds: ids,
+      scopeNodeName: name,
+      scopeNodeType: selection.length === 1 ? selection[0].type : null,
       totalNodesScanned: 0,
       timestamp: '',
     };
   }
 
-  if (
-    selection.length === 1 &&
-    !isValidScopeNode(selection[0])
-  ) {
-    figma.notify('Tip: Select a frame, section, or group to scope your scan', {
-      timeout: 3000,
-    });
-  }
-
   return {
     mode: 'page',
     scopeNodeId: null,
+    scopeNodeIds: null,
     scopeNodeName: null,
     scopeNodeType: null,
     totalNodesScanned: 0,
@@ -218,13 +225,7 @@ async function addSolidColor(
   const hex = rgbaToHex(rgba);
   const dedupKey = hex;
 
-  let tokenInfo = await resolveVariableBinding(boundVariable);
-  
-  if (!tokenInfo && 'fillStyleId' in node && propertyType === 'fill') {
-    tokenInfo = await resolveStyleBinding(node.fillStyleId as string);
-  } else if (!tokenInfo && 'strokeStyleId' in node && propertyType === 'stroke') {
-    tokenInfo = await resolveStyleBinding(node.strokeStyleId as string);
-  }
+  const tokenInfo = await resolveVariableBinding(boundVariable);
 
   const nodeRef: NodeRef = {
     nodeId: node.id,
@@ -244,8 +245,8 @@ async function addSolidColor(
       tokenName: tokenInfo?.tokenName ?? null,
       tokenCollection: tokenInfo?.tokenCollection ?? null,
       isLibraryVariable: tokenInfo?.isLibraryVariable ?? false,
-      styleName: tokenInfo?.styleName ?? null,
-      styleId: tokenInfo?.styleId ?? null,
+      styleName: null,
+      styleId: null,
       propertyTypes: new Set([propertyType]),
       nodes: [nodeRef],
       usageCount: 1,
@@ -256,13 +257,6 @@ async function addSolidColor(
     entry.propertyTypes.add(propertyType);
     entry.nodes.push(nodeRef);
     entry.usageCount++;
-    
-    if (tokenInfo && !entry.isTokenBound) {
-      entry.tokenName = tokenInfo.tokenName;
-      entry.tokenCollection = tokenInfo.tokenCollection;
-      entry.isLibraryVariable = tokenInfo.isLibraryVariable;
-      entry.isTokenBound = true;
-    }
   }
 }
 

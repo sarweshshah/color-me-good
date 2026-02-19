@@ -50,11 +50,12 @@ export interface ColorEntry {
 
 export type ScanMode = 'page' | 'selection';
 
-export type ScopeNodeType = 'FRAME' | 'SECTION' | 'GROUP';
+export type ScopeNodeType = string;
 
 export interface ScanContext {
   mode: ScanMode;
   scopeNodeId: string | null;
+  scopeNodeIds: string[] | null;
   scopeNodeName: string | null;
   scopeNodeType: ScopeNodeType | null;
   totalNodesScanned: number;

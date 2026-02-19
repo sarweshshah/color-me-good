@@ -7,8 +7,11 @@ let cachedResults: {
   context: ScanContext;
 } | null = null;
 
-let debounceTimer: number | null = null;
+let selectionDebounce: number | null = null;
+let documentDebounce: number | null = null;
 let isScanning = false;
+let includeVectors = false;
+let ignoreNextSelectionChange = false;
 
 figma.showUI(__html__, {
   width: 560,
@@ -25,7 +28,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       await handleZoomToNode(msg.nodeId);
       break;
     case 'clear-scope':
+      ignoreNextSelectionChange = true;
       figma.currentPage.selection = [];
+      lastScanScopeId = null;
       await performScan();
       break;
     case 'request-rescan':
@@ -36,6 +41,10 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         Math.max(360, Math.min(800, msg.width)),
         Math.max(560, Math.min(840, msg.height))
       );
+      break;
+    case 'set-include-vectors':
+      includeVectors = msg.includeVectors;
+      await performScan();
       break;
   }
 };
@@ -48,6 +57,7 @@ async function handleSelectNodes(nodeIds: string[]): Promise<void> {
     const validNodes = nodes.filter(
       (node): node is SceneNode => node !== null && 'id' in node
     );
+    ignoreNextSelectionChange = true;
     figma.currentPage.selection = validNodes;
     
     if (validNodes.length > 0) {
@@ -66,6 +76,7 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
   try {
     const node = await figma.getNodeByIdAsync(nodeId);
     if (node && 'id' in node) {
+      ignoreNextSelectionChange = true;
       figma.currentPage.selection = [node as SceneNode];
       figma.viewport.scrollAndZoomIntoView([node as SceneNode]);
     }
@@ -80,6 +91,7 @@ async function performScan(): Promise<void> {
 
   try {
     const result = await scanCurrentPage({
+      includeVectors,
       onProgress: (scanned, total) => {
         figma.ui.postMessage({
           type: 'scan-progress',
@@ -127,33 +139,50 @@ function serializeColors(colors: ColorEntry[]): SerializedColorEntry[] {
 
 let lastScanScopeId: string | null = null;
 
-function setupDocumentChangeListener(): void {
-  figma.on('documentchange', (event) => {
-    if (debounceTimer !== null) {
-      clearTimeout(debounceTimer);
+function getScopeId(): string | null {
+  const sel = figma.currentPage.selection;
+  if (sel.length === 0) return null;
+  if (sel.length === 1) return sel[0].id;
+  return sel.map((n) => n.id).sort().join(',');
+}
+
+function setupListeners(): void {
+  figma.on('selectionchange', () => {
+    if (ignoreNextSelectionChange) {
+      ignoreNextSelectionChange = false;
+      return;
     }
 
-    debounceTimer = setTimeout(async () => {
-      const currentSelection = figma.currentPage.selection;
-      const currentScopeId =
-        currentSelection.length === 1 &&
-        (currentSelection[0].type === 'FRAME' ||
-          currentSelection[0].type === 'SECTION' ||
-          currentSelection[0].type === 'GROUP')
-          ? currentSelection[0].id
-          : null;
+    if (selectionDebounce !== null) {
+      clearTimeout(selectionDebounce);
+    }
 
-      const scopeChanged = currentScopeId !== lastScanScopeId;
+    selectionDebounce = setTimeout(async () => {
+      selectionDebounce = null;
+      const currentScopeId = getScopeId();
+      if (currentScopeId !== lastScanScopeId) {
+        lastScanScopeId = currentScopeId;
+        await performScan();
+      }
+    }, 300) as unknown as number;
+  });
 
-      const scopeNodeId = cachedResults?.context.scopeNodeId;
-      
+  figma.on('documentchange', (event) => {
+    if (documentDebounce !== null) {
+      clearTimeout(documentDebounce);
+    }
+
+    documentDebounce = setTimeout(async () => {
+      documentDebounce = null;
+      const scopeNodeIds = cachedResults?.context.scopeNodeIds;
+
       if (
         cachedResults &&
-        scopeNodeId &&
+        scopeNodeIds &&
         event.documentChanges.some(
           (change) =>
             change.type === 'DELETE' &&
-            change.id === scopeNodeId
+            scopeNodeIds.includes(change.id)
         )
       ) {
         figma.currentPage.selection = [];
@@ -166,12 +195,8 @@ function setupDocumentChangeListener(): void {
         return;
       }
 
-      if (scopeChanged) {
-        lastScanScopeId = currentScopeId;
-        await performScan();
-      } else {
-        await performScan();
-      }
+      lastScanScopeId = getScopeId();
+      await performScan();
     }, 300) as unknown as number;
   });
 }
@@ -187,7 +212,8 @@ async function initPlugin() {
     await performScan();
   }
 
-  setupDocumentChangeListener();
+  lastScanScopeId = getScopeId();
+  setupListeners();
 }
 
 initPlugin();

@@ -11,7 +11,8 @@ export type UIMessage =
   | ZoomToNodeMessage
   | ClearScopeMessage
   | RequestRescanMessage
-  | ResizeMessage;
+  | ResizeMessage
+  | SetIncludeVectorsMessage;
 
 export interface ScanProgressMessage {
   type: 'scan-progress';
@@ -57,4 +58,9 @@ export interface ResizeMessage {
   type: 'resize';
   width: number;
   height: number;
+}
+
+export interface SetIncludeVectorsMessage {
+  type: 'set-include-vectors';
+  includeVectors: boolean;
 }

@@ -3,7 +3,7 @@ import { SerializedColorEntry } from '../../shared/types';
 import { Swatch } from './Swatch';
 import { formatHex } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
-import { Link, Circle, LibraryBig } from 'lucide-preact';
+import { Tags, Circle, LibraryBig, Crosshair } from 'lucide-preact';
 
 interface ColorRowProps {
   color: SerializedColorEntry;
@@ -27,8 +27,8 @@ export function ColorRow({
     color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
   const badge = color.isTokenBound ? (
-    <span className="text-figma-green text-xs flex items-center gap-0.5">
-      <Link size={12} /> Token
+    <span className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors" title="Token-bound color">
+      <Tags size={14} strokeWidth={1.75} />
     </span>
   ) : (
     <span className="text-figma-orange text-xs flex items-center gap-0.5">
@@ -37,8 +37,8 @@ export function ColorRow({
   );
 
   const libraryIcon = color.isLibraryVariable && (
-    <span className="text-figma-text-secondary text-xs flex items-center" title="Library variable">
-      <LibraryBig size={14} />
+    <span className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors" title="Library variable">
+      <LibraryBig size={14} strokeWidth={1.75} />
     </span>
   );
 
@@ -97,9 +97,10 @@ export function ColorRow({
               e.stopPropagation();
               onSelectAll(color, e as unknown as MouseEvent);
             }}
-            className="px-2 py-1 text-xs bg-figma-blue text-white rounded hover:bg-figma-blue/80 transition-colors"
+            className="p-1 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
+            title="Select all elements with this color"
           >
-            Select All
+            <Crosshair size={14} />
           </button>
         </div>
       </div>

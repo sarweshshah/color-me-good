@@ -1,11 +1,9 @@
 import { useState, useMemo, useCallback, useRef } from 'preact/hooks';
-import { GripVertical } from 'lucide-preact';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
 import { SummaryStrip } from './components/SummaryStrip';
-import { SearchFilterBar, BindingFilter } from './components/SearchFilterBar';
-import { SortControls, SortOption } from './components/SortControls';
+import { SearchFilterBar, BindingFilter, SortOption } from './components/SearchFilterBar';
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
@@ -57,9 +55,7 @@ function ResizeHandle({ postMessage }: { postMessage: (msg: any) => void }) {
         cursor: 'nwse-resize',
         zIndex: 9999,
       }}
-    >
-      <GripVertical size={14} color="#999" style={{ transform: 'rotate(-45deg)' }} />
-    </div>
+    />
   );
 }
 
@@ -73,6 +69,12 @@ export function App() {
     new Set()
   );
   const [sortBy, setSortBy] = useState<SortOption>('usage');
+  const [includeVectors, setIncludeVectors] = useState(false);
+
+  const handleIncludeVectorsChange = (include: boolean) => {
+    setIncludeVectors(include);
+    postMessage({ type: 'set-include-vectors', includeVectors: include });
+  };
 
   const handleClearScope = () => {
     postMessage({ type: 'clear-scope' });
@@ -94,6 +96,10 @@ export function App() {
     setSearchText('');
     setBindingFilter('all');
     setPropertyFilters(new Set());
+    if (includeVectors) {
+      setIncludeVectors(false);
+      postMessage({ type: 'set-include-vectors', includeVectors: false });
+    }
   };
 
   const filteredAndSortedColors = useMemo(() => {
@@ -235,8 +241,11 @@ export function App() {
         propertyFilters={propertyFilters}
         onPropertyFilterToggle={handlePropertyFilterToggle}
         onClearFilters={handleClearFilters}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        includeVectors={includeVectors}
+        onIncludeVectorsChange={handleIncludeVectorsChange}
       />
-      <SortControls sortBy={sortBy} onSortChange={setSortBy} />
 
       <ColorList
         colors={filteredAndSortedColors}
