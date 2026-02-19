@@ -1,0 +1,37 @@
+{
+  "name": "color-inspector",
+  "description": "A Figma plugin for color detection, auditing, and selection",
+  "version": "1.0.0",
+  "author": "Sarwesh Shah",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "keywords": [
+    "figma",
+    "figma-plugin",
+    "color",
+    "design-tokens",
+    "design-systems"
+  ],
+  "scripts": {
+    "dev": "tsc && vite build --watch",
+    "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "preact": "^10.19.3",
+    "@tanstack/virtual-core": "^3.10.8"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.98.0",
+    "@preact/preset-vite": "^2.8.1",
+    "@types/node": "^20.11.16",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.35",
+    "rollup": "^4.9.6",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vite-plugin-singlefile": "^2.0.1"
+  }
+}
