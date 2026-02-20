@@ -64,6 +64,21 @@ export function ColorRow({
 
   const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
+  const nodesByType = color.nodes
+    .filter((n) => n.propertyType !== 'text')
+    .reduce(
+      (acc, n) => {
+        const t = n.nodeType || 'Unknown';
+        acc[t] = (acc[t] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
+  const tooltipBreakdown = Object.entries(nodesByType)
+    .sort(([, a], [, b]) => b - a)
+    .map(([type, count]) => `${type.charAt(0)}${type.slice(1).toLowerCase()}: ${count}`)
+    .join('\n');
+
   const badge = color.isTokenBound ? (
     <span
       className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
@@ -131,7 +146,10 @@ export function ColorRow({
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-figma-text-secondary text-[10px] flex items-center gap-1.5">
+          <span
+          className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
+            title={tooltipBreakdown || 'No elements'}
+          >
             <Layers size={10} className="shrink-0" />
             {color.usageCount}
           </span>
