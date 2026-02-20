@@ -10,7 +10,7 @@ interface FooterProps {
 
 export function Footer({ view, onOpenSettings, onBack, onCancel }: FooterProps) {
   return (
-    <footer className="bg-figma-surface border-t border-figma-border px-4 py-2 flex items-center justify-between">
+    <footer className="shrink-0 flex-none bg-figma-surface border-t border-figma-border px-4 py-2 flex items-center justify-between">
       {view === 'settings' ? (
         <div className="w-full flex items-center justify-between">
           <button

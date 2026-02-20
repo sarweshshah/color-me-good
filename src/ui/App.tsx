@@ -444,17 +444,17 @@ export function App() {
       />
       </div>
 
-      <ColorList
-        colors={filteredAndSortedColors}
-        selectedIds={selectedIds}
-        onSelectAll={handleSelectAll}
-        onRowClick={handleRowClick}
-        onElementClick={handleElementClick}
-      />
-
-      <div className="shrink-0">
-        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      <div className="flex-1 min-h-0 flex flex-col">
+        <ColorList
+          colors={filteredAndSortedColors}
+          selectedIds={selectedIds}
+          onSelectAll={handleSelectAll}
+          onRowClick={handleRowClick}
+          onElementClick={handleElementClick}
+        />
       </div>
+
+      <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
     </div>
   );
 }
