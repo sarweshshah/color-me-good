@@ -1,6 +1,10 @@
-# Color Me Good
+<p align="center">
+  <img src="assets/logo.png" alt="Color Me Good" width="128" height="128" />
+</p>
 
-A Figma plugin for color detection, auditing, and selection.
+<h1 align="center">Color Me Good</h1>
+
+<p align="center">A Figma plugin for color detection, auditing, and selection.</p>
 
 ## Features
 

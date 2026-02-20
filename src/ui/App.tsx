@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from 'preact/hooks';
+import { useState, useMemo, useCallback, useRef } from 'preact/hooks';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
@@ -60,45 +60,6 @@ function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
   return { onPointerDown, onPointerMove, onPointerUp };
 }
 
-function ConfirmDiscardModal({
-  onKeepEditing,
-  onDiscard,
-}: {
-  onKeepEditing: () => void;
-  onDiscard: () => void;
-}) {
-  return (
-    <div
-      className="fixed inset-0 bg-black/40 flex items-center justify-center z-[10000]"
-      onClick={(e) => e.target === e.currentTarget && onKeepEditing()}
-    >
-      <div
-        className="bg-figma-surface border border-figma-border rounded-lg shadow-lg p-4 max-w-[280px] mx-4"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="text-sm font-medium text-figma-text mb-1">Discard changes?</div>
-        <div className="text-xs text-figma-text-secondary mb-4">
-          Your changes will not be saved.
-        </div>
-        <div className="flex justify-end gap-2">
-          <button
-            className="px-3 py-1.5 text-xs text-figma-text-secondary hover:text-figma-text border border-figma-border rounded hover:bg-figma-bg"
-            onClick={onKeepEditing}
-          >
-            Keep editing
-          </button>
-          <button
-            className="px-3 py-1.5 text-xs text-white bg-neutral-600 hover:bg-neutral-700 rounded"
-            onClick={onDiscard}
-          >
-            Discard
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
   const corner = useResize(postMessage, 'corner');
   const right = useResize(postMessage, 'right');
@@ -158,9 +119,6 @@ export function App() {
   const { selectedIds, handleClick } = useMultiSelect();
 
   const [view, setView] = useState<'list' | 'settings'>('list');
-  const [settingsDraft, setSettingsDraft] = useState<PluginSettings | null>(null);
-  const [showDiscardModal, setShowDiscardModal] = useState(false);
-  const initialSettingsRef = useRef<PluginSettings | null>(null);
 
   const [searchText, setSearchText] = useState('');
   const [bindingFilter, setBindingFilter] = useState<BindingFilter>('all');
@@ -170,52 +128,12 @@ export function App() {
 
   const includeVectors = state.settings?.includeVectors ?? false;
 
-  // Sync draft when entering settings or when settings load after open
-  useEffect(() => {
-    if (view !== 'settings') return;
-    if (!state.settings) return;
-    if (settingsDraft === null) {
-      initialSettingsRef.current = { ...state.settings };
-      setSettingsDraft({ ...state.settings });
-    }
-  }, [view, state.settings, settingsDraft === null]);
-
   const handleOpenSettings = () => {
-    const s = state.settings;
-    initialSettingsRef.current = s ? { ...s } : null;
-    setSettingsDraft(s ? { ...s } : null);
     setView('settings');
   };
 
-  const handleSettingsDraftChange = (key: keyof PluginSettings, value: boolean) => {
-    setSettingsDraft((prev) => (prev ? { ...prev, [key]: value } : null));
-  };
-
-  const hasSettingsChanges =
-    settingsDraft &&
-    initialSettingsRef.current &&
-    (settingsDraft.includeVectors !== initialSettingsRef.current.includeVectors ||
-      settingsDraft.smoothZoom !== initialSettingsRef.current.smoothZoom);
-
-  const handleSettingsDone = () => {
-    if (settingsDraft) {
-      postMessage({ type: 'set-setting', key: 'includeVectors', value: settingsDraft.includeVectors });
-      postMessage({ type: 'set-setting', key: 'smoothZoom', value: settingsDraft.smoothZoom });
-    }
-    setView('list');
-  };
-
-  const handleSettingsCancel = () => {
-    if (hasSettingsChanges) {
-      setShowDiscardModal(true);
-    } else {
-      setView('list');
-    }
-  };
-
-  const handleConfirmDiscard = () => {
-    setShowDiscardModal(false);
-    setView('list');
+  const handleSettingChange = (key: keyof PluginSettings, value: boolean) => {
+    postMessage({ type: 'set-setting', key, value });
   };
 
   const handleClearScope = () => {
@@ -373,21 +291,14 @@ export function App() {
           <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
         </div>
         <Settings
-          settings={settingsDraft}
-          onSettingChange={handleSettingsDraftChange}
+          settings={state.settings}
+          onSettingChange={handleSettingChange}
         />
         <Footer
           view="settings"
           onOpenSettings={handleOpenSettings}
-          onBack={handleSettingsDone}
-          onCancel={handleSettingsCancel}
+          onBack={() => setView('list')}
         />
-        {showDiscardModal && (
-          <ConfirmDiscardModal
-            onKeepEditing={() => setShowDiscardModal(false)}
-            onDiscard={handleConfirmDiscard}
-          />
-        )}
       </div>
     );
   }
