@@ -8,11 +8,12 @@ A Figma plugin for color detection, auditing, and selection.
 - **Token Detection**: Distinguishes design tokens (bound variables) from hard-coded hex; token and library indicators with icons.
 - **Scoped Scanning**: Select one or more nodes (any type—frame, text, rectangle, etc.) to limit the audit to that scope. Multi-selection is supported.
 - **Actionable Selection**: Click any color row to select all elements using it; expand a row to see element sub-list with node type icons; click an element to zoom to it. "Select All" (crosshair) does not reset scope.
-- **Search & Filter**: Search by hex or token name. Filter by binding (All / Token-bound / Hard-coded), property (Fill, Stroke, Effect), and scope (Include vectors). Sort by usage, hex, or token name. Summary strip reflects the filtered list.
+- **Search & Filter**: Search by hex or token name. Filter by binding (All / Token-bound / Hard-coded), property (Fill, Stroke, Effect), and node type (Text, Shape, Frame, Section, Group, Component, Instance, Vector). Sort by usage, hex, or token name. Summary strip reflects the filtered list; click summary stats to filter by binding.
 - **Live Updates**: Results update when the document or selection changes; hidden nodes are excluded from the scan.
 - **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows.
 - **Copy to Clipboard**: Click any color swatch to copy its value.
-- **Resizable Panel**: Resize from the right edge, bottom edge, or bottom-right corner (min 360×560, max 800×840).
+- **Settings**: Persistent settings (Include vectors, Smooth zoom) via the Settings screen; canceling with unsaved changes prompts to discard.
+- **Resizable Panel**: Default ~440×720; resize from the right edge, bottom edge, or bottom-right corner (min 360×750, max 800×840).
 
 ## Development
 
@@ -59,9 +60,9 @@ The plugin will be built to the `dist/` directory with:
 
 ### UI Thread (`src/ui/`)
 - `main.tsx`: Preact app entry point
-- `App.tsx`: Root component with state management
-- `components/`: All UI components (Header, ColorList, ColorRow, etc.)
-- `hooks/`: Custom hooks for plugin messages and multi-select
+- `App.tsx`: Root component with state management and list/settings views
+- `components/`: Header, SummaryStrip, SearchFilterBar, ColorList, ColorRow, Settings, Footer, etc.
+- `hooks/`: usePluginMessages, useMultiSelect
 - `utils/`: Clipboard and formatting utilities
 
 ### Shared (`src/shared/`)
@@ -75,6 +76,7 @@ The plugin will be built to the `dist/` directory with:
 - **Tailwind CSS**: Utility-first styling
 - **Vite**: Fast build tooling with HMR
 - **Figma Plugin API**: Document traversal, variables, styles, selection
+- **@tanstack/virtual-core**: Virtualized list for smooth scrolling with large color lists
 
 ## Performance
 
@@ -88,10 +90,10 @@ The plugin will be built to the `dist/` directory with:
 1. Open Color Inspector from the Plugins menu.
 2. The plugin automatically scans the current page (or your selection if one or more nodes are selected).
 3. **Optional**: Select one or more nodes (any type) before or after opening to scope the scan. Use the × next to the scope indicator to clear and scan the entire page.
-4. Use the search bar and filter/sort icons to narrow and order the list. The summary (Colors, Token-bound, Hard-coded, Elements) reflects the filtered results.
+4. Use the search bar and filter/sort controls to narrow and order the list. Click summary stats (Colors, Token-bound, Hard-coded) to filter by binding; use the filter menu for property and node type. The summary reflects the filtered results.
 5. Click a color row to select all elements using that color; expand the row to see the element list with node type icons; click an element to zoom to it.
 6. Click a color swatch to copy its value to the clipboard.
-7. Resize the panel by dragging the right edge, bottom edge, or bottom-right corner.
+7. Open Settings from the footer to toggle “Include vectors” and “Smooth zoom”; resize the panel by dragging the right edge, bottom edge, or bottom-right corner.
 
 ## License
 
