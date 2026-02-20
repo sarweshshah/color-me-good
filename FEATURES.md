@@ -1,4 +1,4 @@
-# Color Inspector - Feature Map
+# Color Me Good - Feature Map
 
 ## Core Features (All Implemented ✓)
 
@@ -124,7 +124,7 @@ sequenceDiagram
 
 ```
 ┌────────────────────────────────────────────┐
-│ 🎨 Color Inspector                         │ ← Header
+│ 🎨 Color Me Good                         │ ← Header
 │ Scope: [FrameName] ×                       │   (Scope chip)
 ├────────────────────────────────────────────┤
 │ Colors: 47  Token: 32  Hard: 15  Elem: 214│ ← Summary Strip
@@ -318,6 +318,6 @@ sequenceDiagram
 
 ## Conclusion
 
-The Color Inspector plugin **Phase 1 MVP is complete and ready for testing**. All P0 requirements from the PRD have been implemented with high code quality, full type safety, and comprehensive error handling.
+The Color Me Good plugin **Phase 1 MVP is complete and ready for testing**. All P0 requirements from the PRD have been implemented with high code quality, full type safety, and comprehensive error handling.
 
 The plugin is ready to load in Figma for manual testing and refinement before community release.
