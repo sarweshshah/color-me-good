@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { PluginMessage, UIMessage } from '../../shared/messages';
+import { PluginMessage, UIMessage, PluginSettings } from '../../shared/messages';
 import { SerializedColorEntry, ScanContext } from '../../shared/types';
 
 export interface PluginState {
@@ -8,6 +8,7 @@ export interface PluginState {
   isScanning: boolean;
   scanProgress: { scanned: number; total: number } | null;
   error: string | null;
+  settings: PluginSettings | null;
 }
 
 export function usePluginMessages() {
@@ -17,7 +18,12 @@ export function usePluginMessages() {
     isScanning: false,
     scanProgress: null,
     error: null,
+    settings: null,
   });
+
+  useEffect(() => {
+    parent.postMessage({ pluginMessage: { type: 'get-settings' } }, '*');
+  }, []);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -58,6 +64,13 @@ export function usePluginMessages() {
           setState((prev) => ({
             ...prev,
             context: msg.context,
+          }));
+          break;
+
+        case 'settings':
+          setState((prev) => ({
+            ...prev,
+            settings: msg.settings,
           }));
           break;
       }

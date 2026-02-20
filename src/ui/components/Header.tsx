@@ -27,7 +27,7 @@ export function Header({ context, onClearScope }: HeaderProps) {
       <div className="flex items-center justify-between mb-2">
         <h1 className="text-figma-text font-semibold text-base">Color Inspector</h1>
       </div>
-      
+
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 bg-figma-bg px-3 py-1.5 rounded text-xs">
           <span className="text-figma-text-secondary">Scope:</span>

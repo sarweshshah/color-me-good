@@ -1,5 +1,17 @@
 import { useState, useRef, useEffect } from 'preact/hooks';
-import { SlidersVertical, ArrowUpDown, X, Search } from 'lucide-preact';
+import {
+  Filter,
+  ArrowUpDown,
+  X,
+  Search,
+  Type,
+  Square,
+  Layout,
+  Layers,
+  Component,
+  Box,
+  PenTool,
+} from 'lucide-preact';
 import { PropertyType } from '../../shared/types';
 
 export type BindingFilter = 'all' | 'token-bound' | 'hard-coded';
@@ -11,20 +23,25 @@ const SORT_LABELS: Record<SortOption, string> = {
   token: 'Token Name',
 };
 
-const NODE_TYPE_OPTIONS: { value: string; label: string }[] = [
-  { value: 'TEXT', label: 'Text' },
-  { value: 'RECTANGLE', label: 'Rectangle' },
-  { value: 'ELLIPSE', label: 'Ellipse' },
-  { value: 'LINE', label: 'Line' },
-  { value: 'FRAME', label: 'Frame' },
-  { value: 'SECTION', label: 'Section' },
-  { value: 'GROUP', label: 'Group' },
-  { value: 'COMPONENT', label: 'Component' },
-  { value: 'INSTANCE', label: 'Instance' },
-  { value: 'VECTOR', label: 'Vector' },
-  { value: 'STAR', label: 'Star' },
-  { value: 'POLYGON', label: 'Polygon' },
-  { value: 'BOOLEAN_OPERATION', label: 'Boolean operation' },
+/** Node types shown as a single "Shape" filter option (rectangle, ellipse, line, star, polygon, etc.) */
+export const SHAPE_NODE_TYPES: readonly string[] = [
+  'RECTANGLE',
+  'ELLIPSE',
+  'LINE',
+  'STAR',
+  'POLYGON',
+  'BOOLEAN_OPERATION',
+];
+
+const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
+  { value: 'TEXT', label: 'Text', icon: Type },
+  { value: 'Shape', label: 'Shape', icon: Square },
+  { value: 'FRAME', label: 'Frame', icon: Layout },
+  { value: 'SECTION', label: 'Section', icon: Layout },
+  { value: 'GROUP', label: 'Group', icon: Layers },
+  { value: 'COMPONENT', label: 'Component', icon: Component },
+  { value: 'INSTANCE', label: 'Instance', icon: Box },
+  { value: 'VECTOR', label: 'Vector', icon: PenTool },
 ];
 
 interface SearchFilterBarProps {
@@ -40,7 +57,6 @@ interface SearchFilterBarProps {
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   includeVectors: boolean;
-  onIncludeVectorsChange: (include: boolean) => void;
 }
 
 export function SearchFilterBar({
@@ -56,7 +72,6 @@ export function SearchFilterBar({
   sortBy,
   onSortChange,
   includeVectors,
-  onIncludeVectorsChange,
 }: SearchFilterBarProps) {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
@@ -64,10 +79,11 @@ export function SearchFilterBar({
   const sortRef = useRef<HTMLDivElement>(null);
 
   const activeFilterCount =
-    (bindingFilter !== 'all' ? 1 : 0) +
-    propertyFilters.size +
-    nodeTypeFilters.size +
-    (includeVectors ? 1 : 0);
+    (bindingFilter !== 'all' ? 1 : 0) + propertyFilters.size + nodeTypeFilters.size;
+
+  const nodeTypeOptionsFiltered = includeVectors
+    ? NODE_TYPE_OPTIONS
+    : NODE_TYPE_OPTIONS.filter((o) => o.value !== 'VECTOR');
 
   const hasActiveFilters = searchText.length > 0 || activeFilterCount > 0;
 
@@ -171,7 +187,7 @@ export function SearchFilterBar({
               }`}
               title="Filters"
             >
-              <SlidersVertical size={14} strokeWidth={2} />
+              <Filter size={14} strokeWidth={2} />
               {activeFilterCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-white text-[10px] font-medium rounded-full flex items-center justify-center">
                   {activeFilterCount}
@@ -245,25 +261,23 @@ export function SearchFilterBar({
 
                   <SectionLabel label="Node type" />
                   <div className="w-full">
-                    {NODE_TYPE_OPTIONS.map(({ value, label }) => (
+                    {nodeTypeOptionsFiltered.map(({ value, label, icon: Icon }) => (
                       <MenuItem
                         key={value}
                         label={label}
+                        icon={
+                          Icon ? (
+                            <Icon
+                              size={14}
+                              className="shrink-0 text-figma-text-secondary/60"
+                            />
+                          ) : null
+                        }
                         active={nodeTypeFilters.has(value)}
                         onClick={() => onNodeTypeFilterToggle(value)}
                         checkbox
                       />
                     ))}
-                  </div>
-
-                  <SectionLabel label="Scope" />
-                  <div className="w-full pb-1">
-                    <MenuItem
-                      label="Include vectors"
-                      active={includeVectors}
-                      onClick={() => onIncludeVectorsChange(!includeVectors)}
-                      checkbox
-                    />
                   </div>
                 </div>
               </div>
@@ -287,12 +301,13 @@ function SectionLabel({ label }: { label: string }) {
 
 interface MenuItemProps {
   label: string;
+  icon?: preact.ComponentChildren;
   active: boolean;
   onClick: () => void;
   checkbox?: boolean;
 }
 
-function MenuItem({ label, active, onClick, checkbox }: MenuItemProps) {
+function MenuItem({ label, icon, active, onClick, checkbox }: MenuItemProps) {
   return (
     <button
       onClick={onClick}
@@ -329,6 +344,7 @@ function MenuItem({ label, active, onClick, checkbox }: MenuItemProps) {
       {!checkbox && active && (
         <span className="w-1.5 h-1.5 rounded-full bg-figma-blue shrink-0" />
       )}
+      {icon}
       {label}
     </button>
   );

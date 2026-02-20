@@ -1,6 +1,34 @@
 import { scanCurrentPage } from './scanner';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
-import { UIMessage } from '../shared/messages';
+import { UIMessage, PluginSettings } from '../shared/messages';
+
+const SETTINGS_STORAGE_KEY = 'color-inspector-settings';
+
+const DEFAULT_SETTINGS: PluginSettings = {
+  includeVectors: false,
+  smoothZoom: true,
+};
+
+async function loadSettings(): Promise<PluginSettings> {
+  try {
+    const raw = await figma.clientStorage.getAsync(SETTINGS_STORAGE_KEY);
+    if (raw && typeof raw === 'object' && 'includeVectors' in raw && 'smoothZoom' in raw) {
+      return {
+        includeVectors: Boolean((raw as PluginSettings).includeVectors),
+        smoothZoom: Boolean((raw as PluginSettings).smoothZoom),
+      };
+    }
+  } catch (_) {}
+  return { ...DEFAULT_SETTINGS };
+}
+
+async function saveSettings(settings: PluginSettings): Promise<void> {
+  await figma.clientStorage.setAsync(SETTINGS_STORAGE_KEY, settings);
+}
+
+function sendSettingsToUI(settings: PluginSettings): void {
+  figma.ui.postMessage({ type: 'settings', settings });
+}
 
 let cachedResults: {
   colors: SerializedColorEntry[];
@@ -11,6 +39,7 @@ let selectionDebounce: number | null = null;
 let documentDebounce: number | null = null;
 let isScanning = false;
 let includeVectors = false;
+let smoothZoom = true;
 let ignoreNextSelectionChange = false;
 let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,7 +74,24 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'set-include-vectors':
       includeVectors = msg.includeVectors;
+      await saveSettings({ includeVectors, smoothZoom });
+      sendSettingsToUI({ includeVectors, smoothZoom });
       await performScan();
+      break;
+    case 'get-settings':
+      sendSettingsToUI({ includeVectors, smoothZoom });
+      break;
+    case 'set-setting':
+      if (msg.key === 'includeVectors') {
+        includeVectors = msg.value;
+        await saveSettings({ includeVectors, smoothZoom });
+        sendSettingsToUI({ includeVectors, smoothZoom });
+        await performScan();
+      } else if (msg.key === 'smoothZoom') {
+        smoothZoom = msg.value;
+        await saveSettings({ includeVectors, smoothZoom });
+        sendSettingsToUI({ includeVectors, smoothZoom });
+      }
       break;
   }
 };
@@ -91,6 +137,12 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
     figma.currentPage.selection = [node as SceneNode];
 
     const sceneNode = node as SceneNode;
+
+    if (!smoothZoom) {
+      figma.viewport.scrollAndZoomIntoView([sceneNode]);
+      return;
+    }
+
     const bounds = 'absoluteBoundingBox' in sceneNode ? (sceneNode as LayoutMixin).absoluteBoundingBox : null;
 
     if (!bounds) {
@@ -254,6 +306,10 @@ function setupListeners(): void {
 }
 
 async function initPlugin() {
+  const settings = await loadSettings();
+  includeVectors = settings.includeVectors;
+  smoothZoom = settings.smoothZoom;
+
   if (cachedResults && cachedResults.colors && cachedResults.context) {
     figma.ui.postMessage({
       type: 'scan-complete',

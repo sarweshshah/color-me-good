@@ -1,10 +1,16 @@
 import { SerializedColorEntry, ScanContext } from './types';
 
+export interface PluginSettings {
+  includeVectors: boolean;
+  smoothZoom: boolean;
+}
+
 export type PluginMessage =
   | ScanProgressMessage
   | ScanCompleteMessage
   | ScanErrorMessage
-  | ScopeChangedMessage;
+  | ScopeChangedMessage
+  | SettingsMessage;
 
 export type UIMessage =
   | SelectNodesMessage
@@ -12,7 +18,9 @@ export type UIMessage =
   | ClearScopeMessage
   | RequestRescanMessage
   | ResizeMessage
-  | SetIncludeVectorsMessage;
+  | SetIncludeVectorsMessage
+  | GetSettingsMessage
+  | SetSettingMessage;
 
 export interface ScanProgressMessage {
   type: 'scan-progress';
@@ -63,4 +71,19 @@ export interface ResizeMessage {
 export interface SetIncludeVectorsMessage {
   type: 'set-include-vectors';
   includeVectors: boolean;
+}
+
+export interface SettingsMessage {
+  type: 'settings';
+  settings: PluginSettings;
+}
+
+export interface GetSettingsMessage {
+  type: 'get-settings';
+}
+
+export interface SetSettingMessage {
+  type: 'set-setting';
+  key: keyof PluginSettings;
+  value: boolean;
 }

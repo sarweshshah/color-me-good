@@ -1,17 +1,50 @@
-export function Footer() {
+const HELP_URL = 'https://github.com/sarweshshah/color-inspector#readme';
+const VERSION = '1.0.0';
+
+interface FooterProps {
+  view: 'list' | 'settings';
+  onOpenSettings: () => void;
+  onBack: () => void;
+  onCancel?: () => void;
+}
+
+export function Footer({ view, onOpenSettings, onBack, onCancel }: FooterProps) {
   return (
     <footer className="bg-figma-surface border-t border-figma-border px-4 py-2 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <button
-          className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
-          onClick={() => {
-            window.open('https://github.com/sarweshshah/color-inspector#readme', '_blank');
-          }}
-        >
-          Help
-        </button>
-      </div>
-      <span className="text-xs text-figma-text-secondary">v1.0.0</span>
+      {view === 'settings' ? (
+        <div className="w-full flex items-center justify-between">
+          <button
+            className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
+            onClick={onBack}
+          >
+            Done
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="flex items-center gap-3">
+            <button
+              className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
+              onClick={onOpenSettings}
+            >
+              Settings
+            </button>
+            <button
+              className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
+              onClick={() => window.open(HELP_URL, '_blank')}
+            >
+              Help
+            </button>
+          </div>
+          <span className="text-xs text-figma-text-secondary">v{VERSION}</span>
+        </>
+      )}
     </footer>
   );
 }
