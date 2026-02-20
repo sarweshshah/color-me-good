@@ -310,17 +310,23 @@ async function initPlugin() {
   includeVectors = settings.includeVectors;
   smoothZoom = settings.smoothZoom;
 
-  if (cachedResults && cachedResults.colors && cachedResults.context) {
+  const hasSelection = figma.currentPage.selection.length > 0;
+
+  if (hasSelection) {
+    lastScanScopeId = getScopeId();
+    await performScan();
+  } else if (cachedResults && cachedResults.colors && cachedResults.context) {
     figma.ui.postMessage({
       type: 'scan-complete',
       colors: cachedResults.colors,
       context: cachedResults.context,
     });
+    lastScanScopeId = null;
   } else {
     await performScan();
+    lastScanScopeId = getScopeId();
   }
 
-  lastScanScopeId = getScopeId();
   setupListeners();
 }
 
