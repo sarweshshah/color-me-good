@@ -47,8 +47,6 @@ const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] =
 interface SearchFilterBarProps {
   searchText: string;
   onSearchChange: (text: string) => void;
-  bindingFilter: BindingFilter;
-  onBindingFilterChange: (filter: BindingFilter) => void;
   propertyFilters: Set<PropertyType>;
   onPropertyFilterToggle: (property: PropertyType) => void;
   nodeTypeFilters: Set<string>;
@@ -62,8 +60,6 @@ interface SearchFilterBarProps {
 export function SearchFilterBar({
   searchText,
   onSearchChange,
-  bindingFilter,
-  onBindingFilterChange,
   propertyFilters,
   onPropertyFilterToggle,
   nodeTypeFilters,
@@ -78,8 +74,7 @@ export function SearchFilterBar({
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
 
-  const activeFilterCount =
-    (bindingFilter !== 'all' ? 1 : 0) + propertyFilters.size + nodeTypeFilters.size;
+  const activeFilterCount = propertyFilters.size + nodeTypeFilters.size;
 
   const nodeTypeOptionsFiltered = includeVectors
     ? NODE_TYPE_OPTIONS
@@ -214,28 +209,7 @@ export function SearchFilterBar({
                       </button>
                     )}
                   </div>
-                  <div className="w-full border-t border-figma-border" />
-
-                  <div className="pt-2">
-                    <SectionLabel label="Binding" />
-                  </div>
-                  <div className="w-full">
-                    <MenuItem
-                      label="All"
-                      active={bindingFilter === 'all'}
-                      onClick={() => onBindingFilterChange('all')}
-                    />
-                    <MenuItem
-                      label="Token-bound"
-                      active={bindingFilter === 'token-bound'}
-                      onClick={() => onBindingFilterChange('token-bound')}
-                    />
-                    <MenuItem
-                      label="Hard-coded"
-                      active={bindingFilter === 'hard-coded'}
-                      onClick={() => onBindingFilterChange('hard-coded')}
-                    />
-                  </div>
+                  <div className="w-full border-t border-figma-border pb-1" />
 
                   <SectionLabel label="Property" />
                   <div className="w-full">
@@ -291,7 +265,7 @@ export function SearchFilterBar({
 
 function SectionLabel({ label }: { label: string }) {
   return (
-    <div className="px-3 pt-1 pb-2">
+    <div className="px-3 pt-2 pb-1">
       <span className="text-[10px] font-medium text-figma-text-secondary/80 uppercase tracking-wider">
         {label}
       </span>

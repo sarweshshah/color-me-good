@@ -45,7 +45,7 @@ let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
 figma.showUI(__html__, {
   width: 440,
-  height: 640,
+  height: 720,
   themeColors: true,
 });
 
@@ -69,7 +69,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     case 'resize':
       figma.ui.resize(
         Math.max(420, Math.min(800, msg.width)),
-        Math.max(560, Math.min(840, msg.height))
+        Math.max(750, Math.min(840, msg.height))
       );
       break;
     case 'set-include-vectors':

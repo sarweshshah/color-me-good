@@ -27,7 +27,7 @@ export function ColorList({
   }
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 min-h-0 overflow-auto">
       {colors.map((color) => (
         <ColorRow
           key={color.dedupKey}

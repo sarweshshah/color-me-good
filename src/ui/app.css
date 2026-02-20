@@ -17,5 +17,6 @@ body {
 
 #app {
   height: 100vh;
+  min-height: 750px;
   overflow: hidden;
 }

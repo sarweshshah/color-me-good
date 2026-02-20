@@ -17,7 +17,7 @@ import type { PluginSettings } from '../shared/messages';
 
 const MIN_WIDTH = 360;
 const MAX_WIDTH = 800;
-const MIN_HEIGHT = 560;
+const MIN_HEIGHT = 750;
 const MAX_HEIGHT = 840;
 
 type ResizeMode = 'corner' | 'right' | 'bottom';
@@ -417,18 +417,22 @@ export function App() {
   }
 
   return (
-    <div className="h-screen bg-figma-bg flex flex-col">
+    <div className="h-screen bg-figma-bg flex flex-col overflow-hidden">
       <ResizeHandles postMessage={postMessage} />
-      <Header context={state.context} onClearScope={handleClearScope} />
-      <SummaryStrip
-        colors={filteredAndSortedColors}
-        totalNodesScanned={state.context.totalNodesScanned}
-      />
-      <SearchFilterBar
-        searchText={searchText}
-        onSearchChange={setSearchText}
+      <div className="shrink-0">
+        <Header context={state.context} onClearScope={handleClearScope} />
+      </div>
+      <div className="shrink-0">
+        <SummaryStrip
+        colors={state.colors}
         bindingFilter={bindingFilter}
         onBindingFilterChange={setBindingFilter}
+      />
+      </div>
+      <div className="shrink-0">
+        <SearchFilterBar
+        searchText={searchText}
+        onSearchChange={setSearchText}
         propertyFilters={propertyFilters}
         onPropertyFilterToggle={handlePropertyFilterToggle}
         onClearFilters={handleClearFilters}
@@ -438,6 +442,7 @@ export function App() {
         nodeTypeFilters={nodeTypeFilters}
         onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
       />
+      </div>
 
       <ColorList
         colors={filteredAndSortedColors}
@@ -447,7 +452,9 @@ export function App() {
         onElementClick={handleElementClick}
       />
 
-      <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      <div className="shrink-0">
+        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      </div>
     </div>
   );
 }
