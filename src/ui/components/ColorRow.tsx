@@ -66,20 +66,20 @@ export function ColorRow({
 
   const badge = color.isTokenBound ? (
     <span
-      className="text-figma-text-secondary hover:text-figma-blue text-[11px] flex items-center transition-colors"
+      className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
       title="Token-bound color"
     >
       <Tags size={12} strokeWidth={2.25} />
     </span>
   ) : (
-    <span className="text-figma-orange text-[11px] flex items-center gap-0.5">
+    <span className="text-figma-orange text-[10px] flex items-center gap-0.5">
       <Circle size={6} fill="currentColor" /> Hard-coded
     </span>
   );
 
   const libraryIcon = color.isLibraryVariable && (
     <span
-      className="text-figma-text-secondary hover:text-figma-blue text-[11px] flex items-center transition-colors"
+      className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
       title="Library variable"
     >
       <LibraryBig size={12} strokeWidth={1.75} />
@@ -100,7 +100,7 @@ export function ColorRow({
       className={`border-b border-figma-border ${isSelected ? 'bg-figma-blue/10' : ''}`}
     >
       <div
-        className="px-4 py-2 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
+        className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
           onRowClick(color, e as unknown as MouseEvent);
           setIsExpanded(!isExpanded);
@@ -117,21 +117,21 @@ export function ColorRow({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-figma-text text-xs font-medium truncate">
+            <span className="text-figma-text text-[11px] font-medium truncate">
               {displayName}
             </span>
             {libraryIcon}
             {badge}
           </div>
           {color.tokenName && color.hex && (
-            <div className="text-figma-text-secondary text-[11px] mt-0 leading-tight">
+            <div className="text-figma-text-secondary text-[10px] mt-0 leading-tight">
               {formatHex(color.hex)}
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-figma-text-secondary text-[11px] flex items-center gap-1.5">
+          <span className="text-figma-text-secondary text-[10px] flex items-center gap-1.5">
             <Layers size={10} className="shrink-0" />
             {color.usageCount}
           </span>
