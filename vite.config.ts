@@ -13,6 +13,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     assetsDir: '',
+    assetsInlineLimit: 65536,
     cssCodeSplit: false,
     rollupOptions: {
       input: {
@@ -53,6 +54,9 @@ export default defineConfig({
         // Escape </script> inside JS so it doesn't break the inline <script> tag
         const safeJs = jsCode.replace(/<\/script>/gi, '<\\/script>');
 
+        const fs = await import('fs');
+        const path = await import('path');
+
         const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -78,8 +82,6 @@ export default defineConfig({
           source: html,
         });
 
-        const fs = await import('fs');
-        const path = await import('path');
         const manifestPath = path.resolve(__dirname, 'manifest.json');
         const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
 
