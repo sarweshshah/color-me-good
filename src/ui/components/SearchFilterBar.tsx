@@ -104,8 +104,8 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen]);
 
   return (
-    <div className="px-4 py-3 border-b border-figma-border/80 bg-figma-surface">
-      <div className="flex items-center gap-3">
+    <div className="px-2 py-2 border-b border-figma-border/80 bg-figma-surface">
+      <div className="flex items-center gap-2">
         <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-bg/80 rounded-md border border-figma-border/60 focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
           <Search size={14} className="ml-3 text-figma-text-secondary/80 shrink-0" />
           <input
@@ -113,7 +113,7 @@ export function SearchFilterBar({
             value={searchText}
             onInput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
             placeholder="Search hex, token…"
-            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-2 pr-2 focus:outline-none placeholder:text-sm placeholder:text-figma-text-secondary/70"
+            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-1.5 pr-2 focus:outline-none placeholder:text-sm placeholder:text-figma-text-secondary/70"
           />
           {searchText.length > 0 && (
             <button
@@ -126,7 +126,7 @@ export function SearchFilterBar({
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <div className="relative" ref={sortRef}>
             <button
               onClick={() => {
