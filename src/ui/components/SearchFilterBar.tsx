@@ -6,6 +6,7 @@ import {
   Search,
   Type,
   Square,
+  Frame,
   Layout,
   Layers,
   Component,
@@ -36,7 +37,7 @@ export const SHAPE_NODE_TYPES: readonly string[] = [
 const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
   { value: 'TEXT', label: 'Text', icon: Type },
   { value: 'Shape', label: 'Shape', icon: Square },
-  { value: 'FRAME', label: 'Frame', icon: Layout },
+  { value: 'FRAME', label: 'Frame', icon: Frame },
   { value: 'SECTION', label: 'Section', icon: Layout },
   { value: 'GROUP', label: 'Group', icon: Layers },
   { value: 'COMPONENT', label: 'Component', icon: Component },
