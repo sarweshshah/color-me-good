@@ -65,23 +65,23 @@ export function ColorRow({
 
   const badge = color.isTokenBound ? (
     <span
-      className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors"
+      className="text-figma-text-secondary hover:text-figma-blue text-[11px] flex items-center transition-colors"
       title="Token-bound color"
     >
-      <Tags size={14} strokeWidth={2.25} />
+      <Tags size={12} strokeWidth={2.25} />
     </span>
   ) : (
-    <span className="text-figma-orange text-xs flex items-center gap-0.5">
-      <Circle size={8} fill="currentColor" /> Hard-coded
+    <span className="text-figma-orange text-[11px] flex items-center gap-0.5">
+      <Circle size={6} fill="currentColor" /> Hard-coded
     </span>
   );
 
   const libraryIcon = color.isLibraryVariable && (
     <span
-      className="text-figma-text-secondary hover:text-figma-blue text-xs flex items-center transition-colors"
+      className="text-figma-text-secondary hover:text-figma-blue text-[11px] flex items-center transition-colors"
       title="Library variable"
     >
-      <LibraryBig size={14} strokeWidth={1.75} />
+      <LibraryBig size={12} strokeWidth={1.75} />
     </span>
   );
 
@@ -99,14 +99,14 @@ export function ColorRow({
       className={`border-b border-figma-border ${isSelected ? 'bg-figma-blue/10' : ''}`}
     >
       <div
-        className="px-4 py-2.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
+        className="px-4 py-2 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
           onRowClick(color, e as unknown as MouseEvent);
           setIsExpanded(!isExpanded);
         }}
       >
         <div className="relative" onClick={handleCopy} title="Click to copy">
-          <Swatch color={color} size={24} />
+          <Swatch color={color} size={20} />
           {showCopied && (
             <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-figma-green text-white text-xs px-2 py-1 rounded whitespace-nowrap">
               Copied!
@@ -116,22 +116,22 @@ export function ColorRow({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-figma-text text-sm font-medium truncate">
+            <span className="text-figma-text text-xs font-medium truncate">
               {displayName}
             </span>
             {libraryIcon}
             {badge}
           </div>
           {color.tokenName && color.hex && (
-            <div className="text-figma-text-secondary text-xs mt-0.5">
+            <div className="text-figma-text-secondary text-[11px] mt-0 leading-tight">
               {formatHex(color.hex)}
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-figma-text-secondary text-xs flex items-center gap-1.5">
-            <Layers size={12} className="shrink-0" />
+          <span className="text-figma-text-secondary text-[11px] flex items-center gap-1.5">
+            <Layers size={10} className="shrink-0" />
             {color.usageCount}
           </span>
           <button
@@ -139,10 +139,10 @@ export function ColorRow({
               e.stopPropagation();
               onSelectAll(color, e as unknown as MouseEvent);
             }}
-            className="p-1 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
+            className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
             title="Select all elements with this color"
           >
-            <Crosshair size={14} />
+            <Crosshair size={12} />
           </button>
         </div>
       </div>
