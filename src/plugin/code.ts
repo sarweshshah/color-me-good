@@ -1,4 +1,4 @@
-import { scanCurrentPage } from './scanner';
+import { scanCurrentPage, SCAN_CANCELLED_MESSAGE } from './scanner';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
 import { UIMessage, PluginSettings } from '../shared/messages';
 
@@ -42,7 +42,7 @@ let cachedResults: {
 
 let selectionDebounce: number | null = null;
 let documentDebounce: number | null = null;
-let isScanning = false;
+let currentScanId = 0;
 let includeVectors = false;
 let smoothZoom = true;
 let ignoreNextSelectionChange = false;
@@ -197,12 +197,12 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
 }
 
 async function performScan(): Promise<void> {
-  if (isScanning) return;
-  isScanning = true;
+  const myScanId = ++currentScanId;
 
   try {
     const result = await scanCurrentPage({
       includeVectors,
+      isCancelled: () => currentScanId !== myScanId,
       onProgress: (scanned, total) => {
         figma.ui.postMessage({
           type: 'scan-progress',
@@ -231,13 +231,17 @@ async function performScan(): Promise<void> {
       context: result.context,
     });
   } catch (error) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    if (err.message === SCAN_CANCELLED_MESSAGE) {
+      return;
+    }
     console.error('Scan failed:', error);
     figma.ui.postMessage({
       type: 'scan-error',
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: err.message,
     });
   } finally {
-    isScanning = false;
+    // When superseded (currentScanId !== myScanId), the newer scan owns the state; nothing to do here.
   }
 }
 
@@ -278,7 +282,7 @@ function setupListeners(): void {
         lastScanScopeId = currentScopeId;
         await performScan();
       }
-    }, 300) as unknown as number;
+    }, 500) as unknown as number;
   });
 
   figma.on('documentchange', (event) => {

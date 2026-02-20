@@ -28,14 +28,12 @@ export function SummaryStrip({
         <Stat
           label="Token-bound"
           value={tokenBound}
-          color="text-figma-green"
           active={bindingFilter === 'token-bound'}
           onClick={() => onBindingFilterChange('token-bound')}
         />
         <Stat
           label="Hard-coded"
           value={hardCoded}
-          color="text-figma-orange"
           active={bindingFilter === 'hard-coded'}
           onClick={() => onBindingFilterChange('hard-coded')}
         />

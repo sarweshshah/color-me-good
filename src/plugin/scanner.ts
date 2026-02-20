@@ -22,7 +22,11 @@ export interface ScanOptions {
   onProgress?: (scanned: number, total: number) => void;
   onError?: (error: Error) => void;
   includeVectors?: boolean;
+  /** When true, the scan should abort (e.g. selection changed). */
+  isCancelled?: () => boolean;
 }
+
+export const SCAN_CANCELLED_MESSAGE = 'SCAN_CANCELLED';
 
 interface ColorMap {
   [dedupKey: string]: ColorEntry;
@@ -78,9 +82,12 @@ export async function scanCurrentPage(
     yield node;
     scannedNodes++;
 
-    if (scannedNodes % 500 === 0 && options.onProgress) {
-      options.onProgress(scannedNodes, totalNodes);
-      await new Promise((resolve) => setTimeout(resolve, 0));
+    if (scannedNodes % 500 === 0) {
+      if (options.isCancelled?.()) return;
+      if (options.onProgress) {
+        options.onProgress(scannedNodes, totalNodes);
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
     }
 
     if ('children' in node) {
@@ -93,8 +100,10 @@ export async function scanCurrentPage(
   try {
     for (const root of rootNodes) {
       if (!root) continue;
+      if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
 
       for await (const node of traverseNodes(root)) {
+        if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
         if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
         await extractColorsFromNode(node, colorMap);
       }
@@ -241,6 +250,7 @@ async function addSolidColor(
       dedupKey,
       tokenName: tokenInfo?.tokenName ?? null,
       tokenCollection: tokenInfo?.tokenCollection ?? null,
+      libraryName: tokenInfo?.libraryName ?? null,
       isLibraryVariable: tokenInfo?.isLibraryVariable ?? false,
       styleName: null,
       styleId: null,
@@ -306,6 +316,7 @@ async function addGradientColor(
       dedupKey,
       tokenName: null,
       tokenCollection: null,
+      libraryName: null,
       isLibraryVariable: false,
       styleName: null,
       styleId: null,

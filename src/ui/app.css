@@ -20,3 +20,45 @@ body {
   min-height: 750px;
   overflow: hidden;
 }
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--figma-color-bg-inverse, #333);
+  color: var(--figma-color-text-oninverse, #fff);
+  font-size: 11px;
+  line-height: 1.4;
+  white-space: pre;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 10000;
+  /* Keep tooltip inside panel horizontally */
+  max-width: min(280px, calc(100vw - 24px));
+  width: max-content;
+  box-sizing: border-box;
+}
+
+[data-tooltip]:hover::after {
+  opacity: 1;
+}
+
+[data-tooltip=""]::after {
+  display: none;
+}
+
+/* Tooltip below: prevents overflow at top and sides (e.g. "Click to copy") */
+[data-tooltip][data-tooltip-position="below"]::after {
+  bottom: auto;
+  top: calc(100% + 4px);
+  left: 0;
+  transform: none;
+}

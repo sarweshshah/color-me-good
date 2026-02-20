@@ -40,6 +40,7 @@ export interface ColorEntry {
   dedupKey: string;
   tokenName: string | null;
   tokenCollection: string | null;
+  libraryName: string | null;
   isLibraryVariable: boolean;
   styleName: string | null;
   styleId: string | null;

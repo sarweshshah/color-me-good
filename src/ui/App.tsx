@@ -12,6 +12,7 @@ import {
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
 import { Settings } from './components/Settings';
+import { ChevronLeft } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings } from '../shared/messages';
 
@@ -199,7 +200,8 @@ export function App() {
           const type = n.nodeType;
           if (!type) return false;
           if (nodeTypeFilters.has(type)) return true;
-          if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.includes(type)) return true;
+          if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.includes(type))
+            return true;
           return false;
         })
       );
@@ -287,13 +289,18 @@ export function App() {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
         <ResizeHandles postMessage={postMessage} />
-        <div className="px-4 py-3 border-b border-figma-border">
+        <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setView('list')}
+            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-border/60 transition-colors"
+            aria-label="Back"
+          >
+            <ChevronLeft size={20} />
+          </button>
           <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
         </div>
-        <Settings
-          settings={state.settings}
-          onSettingChange={handleSettingChange}
-        />
+        <Settings settings={state.settings} onSettingChange={handleSettingChange} />
         <Footer
           view="settings"
           onOpenSettings={handleOpenSettings}
@@ -318,11 +325,7 @@ export function App() {
             </div>
           </div>
         </div>
-        <Footer
-          view="list"
-          onOpenSettings={handleOpenSettings}
-          onBack={() => {}}
-        />
+        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
       </div>
     );
   }
@@ -335,24 +338,24 @@ export function App() {
       </div>
       <div className="shrink-0">
         <SummaryStrip
-        colors={state.colors}
-        bindingFilter={bindingFilter}
-        onBindingFilterChange={setBindingFilter}
-      />
+          colors={state.colors}
+          bindingFilter={bindingFilter}
+          onBindingFilterChange={setBindingFilter}
+        />
       </div>
       <div className="shrink-0">
         <SearchFilterBar
-        searchText={searchText}
-        onSearchChange={setSearchText}
-        propertyFilters={propertyFilters}
-        onPropertyFilterToggle={handlePropertyFilterToggle}
-        onClearFilters={handleClearFilters}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        includeVectors={includeVectors}
-        nodeTypeFilters={nodeTypeFilters}
-        onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
-      />
+          searchText={searchText}
+          onSearchChange={setSearchText}
+          propertyFilters={propertyFilters}
+          onPropertyFilterToggle={handlePropertyFilterToggle}
+          onClearFilters={handleClearFilters}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          includeVectors={includeVectors}
+          nodeTypeFilters={nodeTypeFilters}
+          onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
+        />
       </div>
 
       <div className="flex-1 min-h-0 flex flex-col">

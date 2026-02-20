@@ -4,7 +4,7 @@ import { Swatch } from './Swatch';
 import { formatHex } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
 import {
-  Tags,
+  SwatchBook,
   Circle,
   LibraryBig,
   Crosshair,
@@ -82,20 +82,16 @@ export function ColorRow({
   const badge = color.isTokenBound ? (
     <span
       className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
-      title="Token-bound color"
+      data-tooltip="Token-bound"
     >
-      <Tags size={12} strokeWidth={2.25} />
+      <SwatchBook size={12} strokeWidth={2.25} />
     </span>
-  ) : (
-    <span className="text-figma-orange text-[10px] flex items-center gap-0.5">
-      <Circle size={6} fill="currentColor" /> Hard-coded
-    </span>
-  );
+  ) : null;
 
   const libraryIcon = color.isLibraryVariable && (
     <span
       className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
-      title="Library variable"
+      data-tooltip={color.libraryName ?? color.tokenCollection ?? 'Library'}
     >
       <LibraryBig size={12} strokeWidth={1.75} />
     </span>
@@ -121,10 +117,10 @@ export function ColorRow({
           setIsExpanded(!isExpanded);
         }}
       >
-        <div className="relative" onClick={handleCopy} title="Click to copy">
+        <div className="relative" onClick={handleCopy} data-tooltip="Click to copy" data-tooltip-position="below">
           <Swatch color={color} size={20} />
           {showCopied && (
-            <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-figma-green text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+            <div className="absolute top-full left-0 mt-1 bg-figma-green text-white text-xs px-2 py-1 rounded whitespace-nowrap max-w-[calc(100vw-24px)] z-[10001]">
               Copied!
             </div>
           )}
@@ -148,7 +144,7 @@ export function ColorRow({
         <div className="flex items-center gap-2">
           <span
           className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
-            title={tooltipBreakdown || 'No elements'}
+            data-tooltip={tooltipBreakdown || 'No elements'}
           >
             <Layers size={10} className="shrink-0" />
             {color.usageCount}
@@ -159,7 +155,7 @@ export function ColorRow({
               onSelectAll(color, e as unknown as MouseEvent);
             }}
             className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
-            title="Select all elements with this color"
+            data-tooltip="Select all elements with this color"
           >
             <Crosshair size={12} />
           </button>

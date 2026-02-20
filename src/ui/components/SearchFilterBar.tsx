@@ -138,7 +138,7 @@ export function SearchFilterBar({
                   ? 'bg-figma-text border-figma-text text-white shadow-sm'
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
-              title={`Sort: ${SORT_LABELS[sortBy]}`}
+              data-tooltip={`Sort: ${SORT_LABELS[sortBy]}`}
             >
               <ArrowUpDown size={14} strokeWidth={2} />
             </button>
@@ -181,7 +181,7 @@ export function SearchFilterBar({
                   ? 'bg-figma-text border-figma-text text-white shadow-sm'
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
-              title="Filters"
+              data-tooltip="Filters"
             >
               <Filter size={14} strokeWidth={2} />
               {activeFilterCount > 0 && (

@@ -1,6 +1,7 @@
 export interface TokenInfo {
   tokenName: string;
   tokenCollection: string;
+  libraryName: string | null;
   isLibraryVariable: boolean;
   styleName?: string;
   styleId?: string;
@@ -22,9 +23,19 @@ export async function resolveVariableBinding(
       variable.variableCollectionId
     );
 
+    let libraryName: string | null = null;
+    if (variable.remote && collection) {
+      try {
+        const libCollections = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
+        const match = libCollections.find((lc) => lc.key === collection.key);
+        if (match) libraryName = match.libraryName;
+      } catch {}
+    }
+
     return {
       tokenName: variable.name,
       tokenCollection: collection?.name ?? 'Unknown Collection',
+      libraryName,
       isLibraryVariable: variable.remote,
     };
   } catch (error) {
@@ -45,6 +56,7 @@ export async function resolveStyleBinding(
     return {
       tokenName: style.name,
       tokenCollection: 'Styles',
+      libraryName: null,
       isLibraryVariable: style.remote,
       styleName: style.name,
       styleId: style.id,
