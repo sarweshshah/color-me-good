@@ -2,8 +2,6 @@
 
 A Figma plugin for color detection, auditing, and selection.
 
-**Project:** [color-me-good](https://github.com/sarweshshah/color-me-good)
-
 ## Features
 
 - **Complete Color Visibility**: Scans the current page to detect every unique color (fills, strokes, effects). Text layers contribute via their fill/stroke only; vector node types (e.g. VECTOR, ELLIPSE) are excluded by default with an optional "Include vectors" filter.
@@ -15,7 +13,6 @@ A Figma plugin for color detection, auditing, and selection.
 - **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows.
 - **Copy to Clipboard**: Click any color swatch to copy its value.
 - **Settings**: Persistent settings (Include vectors, Smooth zoom) via the Settings screen; canceling with unsaved changes prompts to discard.
-- **Resizable Panel**: Default ~440×720; resize from the right edge, bottom edge, or bottom-right corner (min 360×750, max 800×840).
 
 ## Development
 
