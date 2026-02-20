@@ -58,7 +58,7 @@ export default defineConfig({
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Color Inspector</title>
+<title>Color Me Good</title>
 <style>${cssCode}</style>
 </head>
 <body>

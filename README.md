@@ -1,6 +1,8 @@
-# Color Inspector
+# Color Me Good
 
 A Figma plugin for color detection, auditing, and selection.
+
+**Project:** [color-me-good](https://github.com/sarweshshah/color-me-good)
 
 ## Features
 
@@ -87,7 +89,7 @@ The plugin will be built to the `dist/` directory with:
 
 ## Usage
 
-1. Open Color Inspector from the Plugins menu.
+1. Open Color Me Good from the Plugins menu.
 2. The plugin automatically scans the current page (or your selection if one or more nodes are selected).
 3. **Optional**: Select one or more nodes (any type) before or after opening to scope the scan. Use the × next to the scope indicator to clear and scan the entire page.
 4. Use the search bar and filter/sort controls to narrow and order the list. Click summary stats (Colors, Token-bound, Hard-coded) to filter by binding; use the filter menu for property and node type. The summary reflects the filtered results.

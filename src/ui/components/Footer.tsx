@@ -1,4 +1,4 @@
-const HELP_URL = 'https://github.com/sarweshshah/color-inspector#readme';
+const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
 const VERSION = '1.0.0';
 
 interface FooterProps {

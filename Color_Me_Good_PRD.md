@@ -1,24 +1,26 @@
 **PRODUCT REQUIREMENTS DOCUMENT**
 
-**Color Inspector**
+**Color Me Good**
 
 A Figma Plugin for Color Detection, Auditing & Selection
 
 |                  |                                 |
 | ---------------- | ------------------------------- |
+| **Product**      | Color Me Good                   |
+| **Project / Repo** | color-me-good                |
 | **Version**      | 1.0                             |
 | **Date**         | February 20, 2026               |
 | **Status**       | Draft – Ready for Review        |
 | **Author**       | Product Management              |
 | **Stakeholders** | Design Systems, Engineering, QA |
 
-_This document defines the product requirements for Color Inspector, a Figma plugin that scans the current page to detect every color in use—both resolved hex values and design token references—and enables designers to search, filter, and select the elements where those colors are applied._
+_This document defines the product requirements for Color Me Good, a Figma plugin that scans the current page to detect every color in use—both resolved hex values and design token references—and enables designers to search, filter, and select the elements where those colors are applied._
 
 # 1. Executive Summary
 
-Color Inspector is a Figma plugin designed to give designers and design-system maintainers complete visibility into every color used on the current page—or within a specific selection. It detects both resolved (hard-coded hex/RGBA) colors and design token references (variables and styles), surfaces them in a searchable, filterable panel, and lets users select every element where a given color is applied—all without leaving Figma. When the user has one or more nodes selected before scanning, the plugin limits its scope to those nodes (and their descendants where applicable), enabling targeted audits of a single element, a frame, or multiple elements at once.
+Color Me Good is a Figma plugin designed to give designers and design-system maintainers complete visibility into every color used on the current page—or within a specific selection. It detects both resolved (hard-coded hex/RGBA) colors and design token references (variables and styles), surfaces them in a searchable, filterable panel, and lets users select every element where a given color is applied—all without leaving Figma. When the user has one or more nodes selected before scanning, the plugin limits its scope to those nodes (and their descendants where applicable), enabling targeted audits of a single element, a frame, or multiple elements at once.
 
-The plugin addresses a critical gap in the current Figma workflow: there is no native way to audit all colors on a page (or a subsection of it), identify off-spec or orphaned values, or batch-select elements by color. Design teams today rely on manual inspection or fragmented community plugins that only partially solve the problem. Color Inspector unifies detection, auditing, and selection into a single, high-performance tool.
+The plugin addresses a critical gap in the current Figma workflow: there is no native way to audit all colors on a page (or a subsection of it), identify off-spec or orphaned values, or batch-select elements by color. Design teams today rely on manual inspection or fragmented community plugins that only partially solve the problem. Color Me Good unifies detection, auditing, and selection into a single, high-performance tool.
 
 # 2. Problem Statement
 
@@ -85,7 +87,7 @@ Design teams working on large-scale products routinely encounter the following p
 
 **Trigger:** A design-system maintainer opens a product Figma file and navigates to a key page containing 12,000+ nodes to prepare for a quarterly token audit.
 
-1.  The maintainer opens Color Inspector from the Figma Plugins menu.
+1.  The maintainer opens Color Me Good from the Figma Plugins menu.
 
 2.  The plugin displays a loading indicator while traversing all nodes on the current page.
 
@@ -189,7 +191,7 @@ The plugin UI is a single resizable panel (default ~440×720; min 360×750, max 
 
 ## 7.1 Panel Structure
 
-1.  **Header Bar:** Plugin title (“Color Inspector”). Below the title, a scope indicator chip: “Scope: Entire Page”, “Scope: [NodeName]”, or “N elements” for multi-selection, with an “×” to clear scope. No manual scan button—results update automatically.
+1.  **Header Bar:** Plugin title (“Color Me Good”). Below the title, a scope indicator chip: “Scope: Entire Page”, “Scope: [NodeName]”, or “N elements” for multi-selection, with an “×” to clear scope. No manual scan button—results update automatically.
 
 2.  **Summary Strip:** Total colors count, token-bound count, hard-coded count, total elements scanned. Displayed as compact stat chips; clicking Colors / Token-bound / Hard-coded applies the corresponding binding filter. Elements count is display-only.
 
@@ -387,4 +389,4 @@ Target: Ongoing. Delivers P2 requirements and community-requested features.
 | Node             | Any element in a Figma file: frame, group, rectangle, text, vector, component, instance, etc.                                                             |
 | Paint            | Figma’s representation of a color fill or stroke. Can be SolidPaint, GradientPaint, or ImagePaint.                                                        |
 
-_**End of Document** — Color Inspector PRD v1.0. For questions, reach out to sarweshshah@yahoo.com_
+_**End of Document** — Color Me Good PRD v1.0. For questions, reach out to sarweshshah@yahoo.com_

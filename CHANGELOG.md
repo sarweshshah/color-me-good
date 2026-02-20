@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Color Inspector will be documented in this file.
+All notable changes to Color Me Good will be documented in this file.
 
 ## [1.0.0] - 2026-02-19
 

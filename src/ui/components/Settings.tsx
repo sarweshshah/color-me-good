@@ -1,9 +1,9 @@
 import { PluginSettings } from '../../shared/messages';
 import { Palette } from 'lucide-preact';
 
-const PLUGIN_NAME = 'Color Inspector';
+const PLUGIN_NAME = 'Color Me Good';
 const VERSION = '1.0.0';
-const HELP_URL = 'https://github.com/sarweshshah/color-inspector#readme';
+const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
 
 interface SettingsProps {
   settings: PluginSettings | null;

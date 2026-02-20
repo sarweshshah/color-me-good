@@ -2,7 +2,7 @@ import { scanCurrentPage } from './scanner';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
 import { UIMessage, PluginSettings } from '../shared/messages';
 
-const SETTINGS_STORAGE_KEY = 'color-inspector-settings';
+const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
 
 const DEFAULT_SETTINGS: PluginSettings = {
   includeVectors: false,
@@ -12,7 +12,12 @@ const DEFAULT_SETTINGS: PluginSettings = {
 async function loadSettings(): Promise<PluginSettings> {
   try {
     const raw = await figma.clientStorage.getAsync(SETTINGS_STORAGE_KEY);
-    if (raw && typeof raw === 'object' && 'includeVectors' in raw && 'smoothZoom' in raw) {
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'includeVectors' in raw &&
+      'smoothZoom' in raw
+    ) {
       return {
         includeVectors: Boolean((raw as PluginSettings).includeVectors),
         smoothZoom: Boolean((raw as PluginSettings).smoothZoom),
@@ -68,7 +73,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'resize':
       figma.ui.resize(
-        Math.max(420, Math.min(800, msg.width)),
+        Math.max(420, Math.min(600, msg.width)),
         Math.max(750, Math.min(840, msg.height))
       );
       break;
@@ -143,7 +148,10 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
       return;
     }
 
-    const bounds = 'absoluteBoundingBox' in sceneNode ? (sceneNode as LayoutMixin).absoluteBoundingBox : null;
+    const bounds =
+      'absoluteBoundingBox' in sceneNode
+        ? (sceneNode as LayoutMixin).absoluteBoundingBox
+        : null;
 
     if (!bounds) {
       figma.viewport.scrollAndZoomIntoView([sceneNode]);
@@ -158,8 +166,8 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
     const pad = ZOOM_PADDING * 2;
     const targetZoom = Math.min(
       startZoom,
-      startZoom * vp.width / (bounds.width + pad),
-      startZoom * vp.height / (bounds.height + pad)
+      (startZoom * vp.width) / (bounds.width + pad),
+      (startZoom * vp.height) / (bounds.height + pad)
     );
     const targetZoomClamped = Math.max(0.01, Math.min(4, targetZoom));
 

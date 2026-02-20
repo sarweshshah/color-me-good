@@ -1,6 +1,6 @@
 {
-  "name": "Color Inspector",
-  "id": "color-inspector-dev",
+  "name": "Color Me Good",
+  "id": "color-me-good-dev",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
