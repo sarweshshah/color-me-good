@@ -157,46 +157,46 @@ async function extractColorsFromNode(
     const layerPath = buildLayerPath(node);
 
     if ('fills' in node && Array.isArray(node.fills)) {
-    for (let i = 0; i < node.fills.length; i++) {
-      const paint = node.fills[i];
-      if (paint.type === 'SOLID' && paint.visible !== false) {
-        await addSolidColor(
-          paint,
-          'fill',
-          i,
-          node,
-          layerPath,
-          colorMap,
-          node.boundVariables?.fills?.[i]
-        );
-      } else if (
-        (paint.type === 'GRADIENT_LINEAR' ||
-          paint.type === 'GRADIENT_RADIAL' ||
-          paint.type === 'GRADIENT_ANGULAR' ||
-          paint.type === 'GRADIENT_DIAMOND') &&
-        paint.visible !== false
-      ) {
-        await addGradientColor(paint, 'fill', i, node, layerPath, colorMap);
+      for (let i = 0; i < node.fills.length; i++) {
+        const paint = node.fills[i];
+        if (paint.type === 'SOLID' && paint.visible !== false) {
+          await addSolidColor(
+            paint,
+            'fill',
+            i,
+            node,
+            layerPath,
+            colorMap,
+            node.boundVariables?.fills?.[i]
+          );
+        } else if (
+          (paint.type === 'GRADIENT_LINEAR' ||
+            paint.type === 'GRADIENT_RADIAL' ||
+            paint.type === 'GRADIENT_ANGULAR' ||
+            paint.type === 'GRADIENT_DIAMOND') &&
+          paint.visible !== false
+        ) {
+          await addGradientColor(paint, 'fill', i, node, layerPath, colorMap);
+        }
       }
     }
-  }
 
-  if ('strokes' in node && Array.isArray(node.strokes)) {
-    for (let i = 0; i < node.strokes.length; i++) {
-      const paint = node.strokes[i];
-      if (paint.type === 'SOLID' && paint.visible !== false) {
-        await addSolidColor(
-          paint,
-          'stroke',
-          i,
-          node,
-          layerPath,
-          colorMap,
-          node.boundVariables?.strokes?.[i]
-        );
+    if ('strokes' in node && Array.isArray(node.strokes)) {
+      for (let i = 0; i < node.strokes.length; i++) {
+        const paint = node.strokes[i];
+        if (paint.type === 'SOLID' && paint.visible !== false) {
+          await addSolidColor(
+            paint,
+            'stroke',
+            i,
+            node,
+            layerPath,
+            colorMap,
+            node.boundVariables?.strokes?.[i]
+          );
+        }
       }
     }
-  }
   } catch (error) {
     console.warn(`Failed to extract colors from node ${node.id}:`, error);
   }
@@ -219,9 +219,9 @@ async function addSolidColor(
   };
 
   const hex = rgbaToHex(rgba);
-  const dedupKey = hex;
-
   const tokenInfo = await resolveVariableBinding(boundVariable);
+  // Same resolved color with different bound tokens = separate rows (fixes wrong token at page scope)
+  const dedupKey = tokenInfo ? `${hex}|${tokenInfo.tokenName}` : hex;
 
   const nodeRef: NodeRef = {
     nodeId: node.id,
