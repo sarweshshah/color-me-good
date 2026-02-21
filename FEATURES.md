@@ -6,12 +6,11 @@
 
 ```mermaid
 flowchart TB
-  Start[Open Plugin] --> AutoScan[Auto-scan Current Page]
-  AutoScan --> CheckScope{Selection?}
-  CheckScope -->|Single Frame/Section/Group| ScopedScan[Scoped Scan]
-  CheckScope -->|None or Multiple| FullScan[Full Page Scan]
-  ScopedScan --> Extract[Extract Colors]
-  FullScan --> Extract
+  Start[Open Plugin] --> CheckScope{Selection?}
+  CheckScope -->|None| NoSelection[No-Selection Screen]
+  CheckScope -->|One or More Nodes| Scan[Scan Selection]
+  NoSelection --> Guidance[Select elements to scan]
+  Scan --> Extract[Extract Colors]
   Extract --> Fills[Fills: Solid + Gradient]
   Extract --> Strokes[Strokes: Solid]
   Extract --> Text[Text: Character-level]
@@ -83,7 +82,12 @@ sequenceDiagram
 | Current page scan | ✓ | FR-01 |
 | Selection scoping | ✓ | FR-01a, FR-01b, FR-01c |
 | Scope indicator | ✓ | FR-01b |
-| Clear scope button | ✓ | FR-01c |
+| Clear scope button (→ no-selection) | ✓ | FR-01c |
+| No-selection screen | ✓ | — |
+| Hidden nodes excluded | ✓ | — |
+| Node type filter | ✓ | — |
+| Settings (Include vectors, Smooth zoom) | ✓ | — |
+| Resizable panel | ✓ | — |
 | Solid fill extraction | ✓ | FR-02 |
 | Gradient fill extraction | ✓ | FR-02 |
 | Stroke extraction | ✓ | FR-03 |
@@ -122,32 +126,32 @@ sequenceDiagram
 
 ### Plugin Panel Layout
 
+- **Resizable**: Drag right edge, bottom edge, or bottom-right corner (default 420×640; range 420–540 × 640–840).
+- When nothing is selected, a **no-selection screen** is shown with guidance to select elements.
+
 ```
 ┌────────────────────────────────────────────┐
 │ 🎨 Color Me Good                         │ ← Header
-│ Scope: [FrameName] ×                       │   (Scope chip)
+│ Scope: [FrameName] ×                       │   (Scope chip; × clears scope)
 ├────────────────────────────────────────────┤
-│ Colors: 47  Token: 32  Hard: 15  Elem: 214│ ← Summary Strip
+│ Colors: 47  Token: 32  Hard: 15  Elem: 214│ ← Summary Strip (click stats to filter)
 ├────────────────────────────────────────────┤
 │ [Search: hex, token name...] [Clear]       │ ← Search Bar
 │ [All] [Token-bound] [Hard-coded]           │   (Binding filter)
 │ [Fill] [Stroke] [Text] [Effect]            │   (Property filters)
+│ [Text] [Shape] [Frame] [Section] …        │   (Node type filters)
 ├────────────────────────────────────────────┤
 │ Sort by: [Usage (High → Low) ▼]            │ ← Sort Controls
 ├────────────────────────────────────────────┤
 │ ■ primary/blue-600  ✓ Token  214 [Select] │ ← Color Row
 │   #2563EB                                  │   (Swatch + info)
-│ ▼ Button Primary           fill            │   (Expandable)
+│ ▼ Button Primary           fill            │   (Expandable, node type icons)
 │   Text "Sign Up"           text            │   (Element sublist)
-│                                            │
-│ ■ #FF5733  ● Hard-coded  47 [Select]      │ ← Another row
-│                                            │
-│ [Gradient] fill (linear)  12 [Select]      │ ← Gradient row
-│                                            │
-│ ... (more colors) ...                      │
-│                                            │ ← Scrollable list
+│ ■ #FF5733  ● Hard-coded  47 [Select]      │
+│ [Gradient] fill (linear)  12 [Select]      │
+│ ... (more colors) ...                      │ ← Scrollable list
 ├────────────────────────────────────────────┤
-│ [Help]                            v1.0.0   │ ← Footer
+│ [Settings] [Help]                 v1.0.0   │ ← Footer (Settings: vectors, zoom)
 └────────────────────────────────────────────┘
 ```
 
@@ -163,7 +167,7 @@ sequenceDiagram
 | Element in sublist | Click | Zoom to that element |
 | Color row | Shift+Click | Select range of rows |
 | Color row | Cmd/Ctrl+Click | Toggle individual row |
-| "×" on scope chip | Click | Clear scope, scan full page |
+| "×" on scope chip | Click | Clear scope → no-selection screen |
 
 ### Visual Indicators
 
@@ -247,8 +251,15 @@ sequenceDiagram
 
 ## What's Different from the PRD
 
+### Current 1.0 Behavior
+- **Selection-required**: Scan runs only when one or more nodes are selected. No full-page scan; clearing scope shows the no-selection screen.
+- **Hidden nodes**: Excluded from scan by default (no UI toggle yet).
+- **Settings**: Include vectors (default off), Smooth zoom (default on), persisted; cancel with unsaved changes prompts.
+- **Resizable panel** and **node type filter** (Text, Shape, Frame, etc.) are implemented.
+
 ### Implemented Ahead of Schedule
 - Multi-select (Shift+Click, Cmd/Ctrl+Click) was planned but fully implemented
+- Click summary strip stats to set binding filter
 
 ### Simplified for MVP
 - Virtual scrolling: Deferred (simple list is fast enough for 100-500 colors)
@@ -301,7 +312,7 @@ sequenceDiagram
 
 ### Phase 3 (P2 Requirements)
 1. Multi-page scanning
-2. Exclude hidden layers toggle
+2. Toggle to include/exclude hidden layers in UI (currently excluded by default)
 3. Color diff over time
 4. Batch replace functionality
 5. Figma Dev Mode integration
