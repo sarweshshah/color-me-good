@@ -7,6 +7,7 @@ interface ColorListProps {
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string) => void;
+  onCopySuccess?: () => void;
 }
 
 export function ColorList({
@@ -15,6 +16,7 @@ export function ColorList({
   onSelectAll,
   onRowClick,
   onElementClick,
+  onCopySuccess,
 }: ColorListProps) {
   if (colors.length === 0) {
     return (
@@ -36,6 +38,7 @@ export function ColorList({
           onSelectAll={onSelectAll}
           onRowClick={onRowClick}
           onElementClick={onElementClick}
+          onCopySuccess={onCopySuccess}
         />
       ))}
     </div>

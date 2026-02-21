@@ -8,15 +8,17 @@ interface HeaderProps {
 
 export function Header({ context, onClearScope }: HeaderProps) {
   const isSelection = context?.mode === 'selection';
-  const isMultiSelect =
-    isSelection && context.scopeNodeIds && context.scopeNodeIds.length > 1;
+  const hasScope = isSelection && context.scopeNodeIds && context.scopeNodeIds.length > 0;
+  const isMultiSelect = hasScope && context.scopeNodeIds!.length > 1;
 
-  const scopeContent = isMultiSelect ? (
+  const scopeContent = !hasScope ? (
+    <span className="text-figma-text-secondary font-medium">None</span>
+  ) : isMultiSelect ? (
     <span className="text-figma-text font-medium inline-flex items-center gap-1">
       <Layers size={12} />
       {context.scopeNodeIds!.length}
     </span>
-  ) : isSelection && context.scopeNodeName ? (
+  ) : context.scopeNodeName ? (
     <span className="text-figma-text font-medium">{context.scopeNodeName}</span>
   ) : (
     <span className="text-figma-text font-medium">Entire Page</span>
@@ -32,11 +34,12 @@ export function Header({ context, onClearScope }: HeaderProps) {
         <div className="flex items-center gap-2 bg-figma-bg px-3 py-1.5 rounded text-xs">
           <span className="text-figma-text-secondary">Scope:</span>
           {scopeContent}
-          {isSelection && (
+          {hasScope && (
             <button
               onClick={onClearScope}
               className="ml-1 text-figma-text-secondary hover:text-figma-text transition-colors"
-              data-tooltip="Clear scope and scan entire page"
+              data-tooltip="Clear selection"
+              data-tooltip-align="start"
             >
               <X size={14} />
             </button>

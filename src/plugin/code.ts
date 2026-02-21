@@ -4,6 +4,13 @@ import { UIMessage, PluginSettings } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
 
+let resizeBounds = {
+  minWidth: 420,
+  maxWidth: 540,
+  minHeight: 640,
+  maxHeight: 840,
+};
+
 const DEFAULT_SETTINGS: PluginSettings = {
   includeVectors: false,
   smoothZoom: true,
@@ -49,8 +56,8 @@ let ignoreNextSelectionChange = false;
 let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
 figma.showUI(__html__, {
-  width: 440,
-  height: 720,
+  width: resizeBounds.minWidth,
+  height: resizeBounds.minHeight,
   themeColors: true,
 });
 
@@ -66,15 +73,15 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       ignoreNextSelectionChange = true;
       figma.currentPage.selection = [];
       lastScanScopeId = null;
-      await performScan();
+      sendNoSelectionState();
       break;
     case 'request-rescan':
       await performScan();
       break;
     case 'resize':
       figma.ui.resize(
-        Math.max(420, Math.min(600, msg.width)),
-        Math.max(750, Math.min(840, msg.height))
+        Math.max(resizeBounds.minWidth, Math.min(resizeBounds.maxWidth, msg.width)),
+        Math.max(resizeBounds.minHeight, Math.min(resizeBounds.maxHeight, msg.height))
       );
       break;
     case 'set-include-vectors':
@@ -254,6 +261,22 @@ function serializeColors(colors: ColorEntry[]): SerializedColorEntry[] {
 
 let lastScanScopeId: string | null = null;
 
+function sendNoSelectionState(): void {
+  figma.ui.postMessage({
+    type: 'scan-complete',
+    colors: [],
+    context: {
+      mode: 'selection',
+      scopeNodeId: null,
+      scopeNodeIds: null,
+      scopeNodeName: null,
+      scopeNodeType: null,
+      totalNodesScanned: 0,
+      timestamp: new Date().toISOString(),
+    },
+  });
+}
+
 function getScopeId(): string | null {
   const sel = figma.currentPage.selection;
   if (sel.length === 0) return null;
@@ -280,7 +303,11 @@ function setupListeners(): void {
       const currentScopeId = getScopeId();
       if (currentScopeId !== lastScanScopeId) {
         lastScanScopeId = currentScopeId;
-        await performScan();
+        if (currentScopeId === null) {
+          sendNoSelectionState();
+        } else {
+          await performScan();
+        }
       }
     }, 500) as unknown as number;
   });
@@ -303,16 +330,24 @@ function setupListeners(): void {
       ) {
         figma.currentPage.selection = [];
         lastScanScopeId = null;
-        await performScan();
+        sendNoSelectionState();
         figma.ui.postMessage({
           type: 'scan-error',
-          message: 'Scoped element was deleted. Showing full-page results.',
+          message: 'Scoped element was deleted. Select something to scan.',
         });
         return;
       }
 
-      lastScanScopeId = getScopeId();
-      await performScan();
+      const scopeId = getScopeId();
+      if (scopeId === null) {
+        if (lastScanScopeId !== null) {
+          lastScanScopeId = null;
+          sendNoSelectionState();
+        }
+      } else {
+        lastScanScopeId = scopeId;
+        await performScan();
+      }
     }, 300) as unknown as number;
   });
 }
@@ -327,16 +362,9 @@ async function initPlugin() {
   if (hasSelection) {
     lastScanScopeId = getScopeId();
     await performScan();
-  } else if (cachedResults && cachedResults.colors && cachedResults.context) {
-    figma.ui.postMessage({
-      type: 'scan-complete',
-      colors: cachedResults.colors,
-      context: cachedResults.context,
-    });
-    lastScanScopeId = null;
   } else {
-    await performScan();
-    lastScanScopeId = getScopeId();
+    lastScanScopeId = null;
+    sendNoSelectionState();
   }
 
   setupListeners();

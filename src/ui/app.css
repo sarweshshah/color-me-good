@@ -17,7 +17,7 @@ body {
 
 #app {
   height: 100vh;
-  min-height: 750px;
+  min-height: 720px;
   overflow: hidden;
 }
 
@@ -25,6 +25,7 @@ body {
   position: relative;
 }
 
+/* Base tooltip: above, centered. Overridden by position/align modifiers. */
 [data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
@@ -37,11 +38,10 @@ body {
   color: var(--figma-color-text-oninverse, #fff);
   font-size: 11px;
   line-height: 1.4;
-  white-space: pre;
+  white-space: pre-line;
   pointer-events: none;
   opacity: 0;
   z-index: 10000;
-  /* Keep tooltip inside panel horizontally */
   max-width: min(280px, calc(100vw - 24px));
   width: max-content;
   box-sizing: border-box;
@@ -55,10 +55,34 @@ body {
   display: none;
 }
 
-/* Tooltip below: prevents overflow at top and sides (e.g. "Click to copy") */
+/* Above + align start: left edge aligned to trigger (no overflow left) */
+[data-tooltip][data-tooltip-align="start"]::after {
+  left: 0;
+  transform: none;
+}
+
+/* Above + align end: right edge aligned to trigger (no overflow right) */
+[data-tooltip][data-tooltip-align="end"]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Below: prevents overflow at top (e.g. "Click to copy") */
 [data-tooltip][data-tooltip-position="below"]::after {
   bottom: auto;
   top: calc(100% + 4px);
   left: 0;
+  transform: none;
+}
+
+[data-tooltip][data-tooltip-position="below"][data-tooltip-align="center"]::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+[data-tooltip][data-tooltip-position="below"][data-tooltip-align="end"]::after {
+  left: auto;
+  right: 0;
   transform: none;
 }

@@ -27,9 +27,12 @@ export async function resolveVariableBinding(
     if (variable.remote && collection) {
       try {
         const libCollections = await figma.teamLibrary.getAvailableLibraryVariableCollectionsAsync();
-        const match = libCollections.find((lc) => lc.key === collection.key);
+        const matchByKey = libCollections.find((lc) => lc.key === collection.key);
+        const match = matchByKey ?? libCollections.find((lc) => lc.name === collection.name);
         if (match) libraryName = match.libraryName;
-      } catch {}
+      } catch (_e) {
+        // Library name only available when library is published and enabled in file
+      }
     }
 
     return {

@@ -50,6 +50,7 @@ interface ColorRowProps {
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string) => void;
+  onCopySuccess?: () => void;
 }
 
 export function ColorRow({
@@ -58,9 +59,9 @@ export function ColorRow({
   onSelectAll,
   onRowClick,
   onElementClick,
+  onCopySuccess,
 }: ColorRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [showCopied, setShowCopied] = useState(false);
 
   const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
@@ -91,7 +92,7 @@ export function ColorRow({
   const libraryIcon = color.isLibraryVariable && (
     <span
       className="text-figma-text-secondary hover:text-figma-blue text-[10px] flex items-center transition-colors"
-      data-tooltip={color.libraryName ?? color.tokenCollection ?? 'Library'}
+      data-tooltip={color.libraryName ?? 'Imported Library'}
     >
       <LibraryBig size={12} strokeWidth={1.75} />
     </span>
@@ -101,8 +102,7 @@ export function ColorRow({
     e.stopPropagation();
     const success = await copyColorToClipboard(color);
     if (success) {
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 1500);
+      onCopySuccess?.();
     }
   };
 
@@ -117,13 +117,13 @@ export function ColorRow({
           setIsExpanded(!isExpanded);
         }}
       >
-        <div className="relative" onClick={handleCopy} data-tooltip="Click to copy" data-tooltip-position="below">
+        <div
+          className="relative"
+          onClick={handleCopy}
+          data-tooltip="Click to copy"
+          data-tooltip-position="below"
+        >
           <Swatch color={color} size={20} />
-          {showCopied && (
-            <div className="absolute top-full left-0 mt-1 bg-figma-green text-white text-xs px-2 py-1 rounded whitespace-nowrap max-w-[calc(100vw-24px)] z-[10001]">
-              Copied!
-            </div>
-          )}
         </div>
 
         <div className="flex-1 min-w-0">
@@ -143,8 +143,9 @@ export function ColorRow({
 
         <div className="flex items-center gap-2">
           <span
-          className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
+            className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
             data-tooltip={tooltipBreakdown || 'No elements'}
+            data-tooltip-align="end"
           >
             <Layers size={10} className="shrink-0" />
             {color.usageCount}
@@ -156,6 +157,7 @@ export function ColorRow({
             }}
             className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
             data-tooltip="Select all elements with this color"
+            data-tooltip-align="end"
           >
             <Crosshair size={12} />
           </button>

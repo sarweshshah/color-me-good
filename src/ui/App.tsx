@@ -12,13 +12,13 @@ import {
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
 import { Settings } from './components/Settings';
-import { ChevronLeft } from 'lucide-preact';
+import { ChevronLeft, MousePointerClick } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings } from '../shared/messages';
 
-const MIN_WIDTH = 360;
-const MAX_WIDTH = 800;
-const MIN_HEIGHT = 750;
+const MIN_WIDTH = 420;
+const MAX_WIDTH = 540;
+const MIN_HEIGHT = 720;
 const MAX_HEIGHT = 840;
 
 type ResizeMode = 'corner' | 'right' | 'bottom';
@@ -32,8 +32,8 @@ function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
     dragging.current = true;
     startPos.current = { x: e.clientX, y: e.clientY };
     startSize.current = {
-      w: document.documentElement.clientWidth,
-      h: document.documentElement.clientHeight,
+      w: window.innerWidth,
+      h: window.innerHeight,
     };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   }, []);
@@ -66,7 +66,7 @@ function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
   const right = useResize(postMessage, 'right');
   const bottom = useResize(postMessage, 'bottom');
 
-  const z = { zIndex: 9999 };
+  const z = { zIndex: 10002 };
   return (
     <>
       <div
@@ -106,7 +106,7 @@ function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
           bottom: 0,
           left: 0,
           right: 20,
-          height: 10,
+          height: 20,
           cursor: 'ns-resize',
           ...z,
         }}
@@ -120,6 +120,7 @@ export function App() {
   const { selectedIds, handleClick } = useMultiSelect();
 
   const [view, setView] = useState<'list' | 'settings'>('list');
+  const [showCopiedToast, setShowCopiedToast] = useState(false);
 
   const [searchText, setSearchText] = useState('');
   const [bindingFilter, setBindingFilter] = useState<BindingFilter>('all');
@@ -246,6 +247,11 @@ export function App() {
     postMessage({ type: 'zoom-to-node', nodeId });
   };
 
+  const handleCopySuccess = useCallback(() => {
+    setShowCopiedToast(true);
+    setTimeout(() => setShowCopiedToast(false), 1500);
+  }, []);
+
   if (state.isScanning) {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
@@ -310,7 +316,42 @@ export function App() {
     );
   }
 
-  if (!state.context || state.colors.length === 0) {
+  const hasNoSelection =
+    (state.context == null ||
+      (state.context.mode === 'selection' &&
+        (state.context.scopeNodeIds == null || state.context.scopeNodeIds.length === 0))) &&
+    state.colors.length === 0 &&
+    !state.isScanning;
+
+  const hasSelectionButNoColors =
+    state.context &&
+    state.colors.length === 0 &&
+    !hasNoSelection;
+
+  if (hasNoSelection) {
+    return (
+      <div className="h-screen bg-figma-bg flex flex-col">
+        <ResizeHandles postMessage={postMessage} />
+        <Header context={state.context} onClearScope={handleClearScope} />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center px-6 max-w-[320px]">
+            <div className="flex justify-center mb-4 text-figma-text-secondary/80">
+              <MousePointerClick size={48} strokeWidth={1.5} className="text-figma-text-secondary/70" />
+            </div>
+            <div className="text-figma-text text-sm font-medium mb-1">
+              Select elements to scan
+            </div>
+            <div className="text-figma-text-secondary text-xs leading-relaxed">
+              Select one or more elements in the canvas. Colors from your selection will appear here.
+            </div>
+          </div>
+        </div>
+        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      </div>
+    );
+  }
+
+  if (hasSelectionButNoColors) {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
         <ResizeHandles postMessage={postMessage} />
@@ -318,10 +359,10 @@ export function App() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6">
             <div className="text-figma-text-secondary text-sm">
-              No colors found on this page.
+              No colors found in selection.
             </div>
             <div className="text-figma-text-secondary text-xs mt-1">
-              Add some elements and they will appear automatically.
+              Try selecting different elements or expanding the selection.
             </div>
           </div>
         </div>
@@ -332,7 +373,6 @@ export function App() {
 
   return (
     <div className="h-screen bg-figma-bg flex flex-col overflow-hidden">
-      <ResizeHandles postMessage={postMessage} />
       <div className="shrink-0">
         <Header context={state.context} onClearScope={handleClearScope} />
       </div>
@@ -365,10 +405,22 @@ export function App() {
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
           onElementClick={handleElementClick}
+          onCopySuccess={handleCopySuccess}
         />
       </div>
 
+      {showCopiedToast && (
+        <div
+          className="fixed left-1/2 -translate-x-1/2 bottom-14 z-[10001] bg-figma-green text-white text-xs font-medium px-4 py-2 rounded shadow-lg"
+          role="status"
+          aria-live="polite"
+        >
+          Copied!
+        </div>
+      )}
+
       <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      <ResizeHandles postMessage={postMessage} />
     </div>
   );
 }

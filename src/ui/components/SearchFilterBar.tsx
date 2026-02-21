@@ -113,7 +113,7 @@ export function SearchFilterBar({
             value={searchText}
             onInput={(e) => onSearchChange((e.target as HTMLInputElement).value)}
             placeholder="Search hex, token…"
-            className="flex-1 min-w-0 bg-transparent text-figma-text text-sm py-1.5 pr-2 focus:outline-none placeholder:text-sm placeholder:text-figma-text-secondary/70"
+            className="flex-1 min-w-0 h-8 bg-transparent text-figma-text text-xs leading-8 pr-2 focus:outline-none placeholder:text-figma-text-secondary/70"
           />
           {searchText.length > 0 && (
             <button
@@ -139,6 +139,7 @@ export function SearchFilterBar({
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               data-tooltip={`Sort: ${SORT_LABELS[sortBy]}`}
+              data-tooltip-align="end"
             >
               <ArrowUpDown size={14} strokeWidth={2} />
             </button>
@@ -182,6 +183,7 @@ export function SearchFilterBar({
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               data-tooltip="Filters"
+              data-tooltip-align="end"
             >
               <Filter size={14} strokeWidth={2} />
               {activeFilterCount > 0 && (
