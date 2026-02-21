@@ -8,12 +8,12 @@
 
 ## Features
 
-- **Complete Color Visibility**: Scans the current page to detect every unique color (fills, strokes, effects). Text layers contribute via their fill/stroke only; vector node types (e.g. VECTOR, ELLIPSE) are excluded by default with an optional "Include vectors" filter.
+- **Selection-based scanning**: The plugin only runs when you have one or more elements selected. Select frames, groups, or layers in the canvas to see every unique color (fills, strokes, effects) in that scope. No full-page scan—selection is required.
 - **Token Detection**: Distinguishes design tokens (bound variables) from hard-coded hex; token and library indicators with icons.
-- **Scoped Scanning**: Select one or more nodes (any type—frame, text, rectangle, etc.) to limit the audit to that scope. Multi-selection is supported.
+- **No-selection screen**: When nothing is selected, a dedicated screen with icon and short guidance tells you to select elements to scan.
 - **Actionable Selection**: Click any color row to select all elements using it; expand a row to see element sub-list with node type icons; click an element to zoom to it. "Select All" (crosshair) does not reset scope.
 - **Search & Filter**: Search by hex or token name. Filter by binding (All / Token-bound / Hard-coded), property (Fill, Stroke, Effect), and node type (Text, Shape, Frame, Section, Group, Component, Instance, Vector). Sort by usage, hex, or token name. Summary strip reflects the filtered list; click summary stats to filter by binding.
-- **Live Updates**: Results update when the document or selection changes; hidden nodes are excluded from the scan.
+- **Live Updates**: Results update when the document or selection changes; hidden nodes are excluded. Vector node types are excluded by default with an optional "Include vectors" setting in Settings.
 - **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows.
 - **Copy to Clipboard**: Click any color swatch to copy its value.
 - **Settings**: Persistent settings (Include vectors, Smooth zoom) via the Settings screen; canceling with unsaved changes prompts to discard.
@@ -91,12 +91,12 @@ The plugin will be built to the `dist/` directory with:
 ## Usage
 
 1. Open Color Me Good from the Plugins menu.
-2. The plugin automatically scans the current page (or your selection if one or more nodes are selected).
-3. **Optional**: Select one or more nodes (any type) before or after opening to scope the scan. Use the × next to the scope indicator to clear and scan the entire page.
+2. Select one or more nodes (frames, groups, or layers) in the canvas. The plugin scans your selection and lists every unique color found there. If nothing is selected, a no-selection screen with guidance is shown.
+3. Use the × next to the scope indicator to clear the selection and return to the no-selection screen.
 4. Use the search bar and filter/sort controls to narrow and order the list. Click summary stats (Colors, Token-bound, Hard-coded) to filter by binding; use the filter menu for property and node type. The summary reflects the filtered results.
 5. Click a color row to select all elements using that color; expand the row to see the element list with node type icons; click an element to zoom to it.
 6. Click a color swatch to copy its value to the clipboard.
-7. Open Settings from the footer to toggle “Include vectors” and “Smooth zoom”; resize the panel by dragging the right edge, bottom edge, or bottom-right corner.
+7. Open Settings from the footer to toggle “Include vectors” and “Smooth zoom”; resize the panel (default 420×720; min 420×720, max 540×840) by dragging the right edge, bottom edge, or bottom-right corner.
 
 ## License
 
