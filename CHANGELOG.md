@@ -4,97 +4,108 @@ All notable changes to Color Me Good will be documented in this file.
 
 ## [1.0.0] - 2026-02-21
 
-### Added – Phase 1 (MVP)
+### Added – Phase 1 (MVP) 🎉
 
-#### Core scanning
-- **Selection-based scanning only**: The plugin runs only when one or more elements are selected. Select frames, groups, or layers to see every unique color (fills, strokes, effects) in that scope. No full-page scan.
-- **No-selection screen**: When nothing is selected, a dedicated screen with icon and short guidance tells you to select elements to scan.
-- Extraction of fill colors (solids and gradients)
-- Extraction of stroke colors
-- Extraction of text colors (character-level)
-- Recursive node traversal with async chunked processing (500-node batches)
-- Progress indicator for large scans (10,000+ nodes)
-- **Hidden nodes excluded** from scan results
+#### Core scanning 🔍
 
-#### Token & style detection
-- Figma Variable (design token) detection with async API
-- Figma Style detection
+- **Selection-based scanning only**: The plugin runs only when one or more elements are selected. Select frames, groups, or layers to see every unique color (fills and strokes) in that scope. No full-page scan.
+- **No-selection screen**: When nothing is selected, a dedicated screen with icon and short guidance tells you to select elements to scan. 👆
+- Extraction of fill colors (solids and gradients) 🎨
+- Extraction of stroke colors ✏️
+- Text layer colors (via fills and strokes; no character-level extraction) 📝
+- Vector node colors optional (off by default in Settings: Include vectors) 📐
+- Recursive node traversal with async processing; progress reported every 500 nodes ⚡
+- Progress indicator during scan (progress bar and node count) 📊
+- **Hidden nodes excluded** from scan results 🙈
+
+#### Token & style detection 🏷️
+
+- Figma Variable (design token) detection via bound variables (async API)
 - Local vs. library variable distinction with visual indicator (📚)
 - Token name and collection display alongside resolved hex values
 
-#### Scope & selection
+#### Scope & selection 🎯
+
 - Scan scope = current selection (single or multiple nodes). Scope indicator chip in header shows current scope.
-- **Clear scope** (× on chip): Clears Figma selection and returns to the no-selection screen (no full-page scan).
-- Automatic scope reset when the scoped node(s) are deleted
+- **Clear scope** (× on chip): Clears Figma selection and returns to the no-selection screen (no full-page scan). ❌
+- Automatic scope reset when the scoped node(s) are deleted 🔄
 
-#### Results panel UI
-- Plugin panel with dark theme; **resizable** via right edge, bottom edge, or bottom-right corner (default 420×640; range 420–540 × 640–840).
-- Summary strip: total colors, token-bound, hard-coded, elements scanned. **Click summary stats** (Colors, Token-bound, Hard-coded) to set binding filter.
-- Color list with swatch rendering (solid colors + gradients)
-- Token-bound badge (green check) vs. hard-coded badge (orange dot)
-- Library variable indicator icon
-- Usage count per color
-- Expandable rows showing individual elements (node name, layer path, property type) with **node type icons**
+#### Results panel UI 🖼️
 
-#### Search & filter
-- Text search matching hex values, token names, style names
+- Plugin panel with Figma-themed UI (follows Figma light/dark); **resizable** via right edge, bottom edge, or bottom-right corner (default 420×640; range 420–540 × 640–840).
+- Summary strip: total colors, token-bound, hard-coded, and total usages (Elements). **Click** Colors, Token-bound, or Hard-coded to set binding filter. 📈
+- Color list with swatch rendering (solid colors + gradients) 🌈
+- Token-bound badge (SwatchBook icon); no badge for hard-coded 📚
+- Library variable indicator (📚) when color is from an imported library
+- Usage count per color 🔢
+- Expandable rows showing individual elements (node name, layer path, property type) with **node type icons** 📂
+
+#### Search & filter 🔎
+
+- Text search matching hex values and token names 🔤
 - Three-state binding filter: All / Token-bound / Hard-coded (also settable via summary strip)
-- Property type filters: Fill, Stroke, Text, Effect (multi-select)
+- Property type filters: Fill, Stroke, Text, Effect (multi-select; MVP data is fill and stroke only) 🎚️
 - **Node type filters**: Text, Shape, Frame, Section, Group, Component, Instance, and (when enabled in Settings) Vector
-- Clear all filters button
+- Clear all filters button 🧹
 
-#### Sort
-- Sort by usage count (default, high → low)
-- Sort by hex value
-- Sort by token name
+#### Sort ↕️
 
-#### Selection & navigation
+- Sort by usage count (default, high → low) 📊
+- Sort by hex value #️⃣
+- Sort by token name 🏷️
+
+#### Selection & navigation 🖱️
+
 - Click color row → select all elements using that color
-- Click **Select All** (crosshair) button → batch select all elements for that color (does not reset scope)
-- Click individual element in expanded row → select and zoom to that node
-- Multi-select support: Shift+Click (range), Cmd/Ctrl+Click (toggle)
+- **Select All** (crosshair icon) → batch select all elements for that color (does not reset scope) 🎯
+- Click individual element in expanded row → select and zoom to that node 🔍
+- Multi-select support: Shift+Click (range), Cmd/Ctrl+Click (toggle) ⌨️
 - Figma native selection highlight + `scrollAndZoomIntoView`
-- **Smooth zoom** option in Settings (persisted)
+- **Smooth zoom** option in Settings (persisted) 🔎
 
-#### Copy to clipboard
+#### Copy to clipboard 📋
+
 - Click any color swatch to copy value
-- Hex format for solid colors
-- CSS gradient string for gradients
-- Visual "Copied!" confirmation tooltip
+- Hex format for solid colors #️⃣
+- CSS gradient string for gradients 🌈
+- Visual "Copied!" confirmation (toast) ✅
 
-#### Settings
-- **Settings screen** (footer): **Include vectors** (default off) and **Smooth zoom** (default on). Persisted via Figma client storage.
-- Canceling Settings with unsaved changes prompts to discard.
+#### Settings ⚙️
 
-#### Live updates
-- Automatic re-scan on document or selection change (debounced)
-- Real-time color list updates as designs change
-- Cached results survive iframe reload
-- Scope change detection triggers fresh scan
+- **Settings screen** (footer): **Include vectors** (default off) and **Smooth zoom** (default on). Persisted via Figma client storage. 💾
 
-#### Edge cases
-- No-selection state with friendly guidance screen
-- Empty scope (no colors found) message
-- Large scope warning (50,000+ nodes)
-- Scoped node deletion → auto-clear scope and error message
-- Graceful error handling for corrupt node data
-- Image fills silently skipped (not color data)
+#### Live updates 🔄
 
-### Technical
-- TypeScript for type safety
-- Preact for lightweight UI (~4KB gzipped)
-- Tailwind CSS for styling
-- Vite build system with custom bundler
-- Single-file UI bundle (inlined CSS/JS)
-- 8-char hex normalization (RRGGBBAA)
-- Gradient hash-based deduplication
-- `@tanstack/virtual-core` dependency (available for future virtual list)
+- Automatic re-scan on selection change (debounced 500ms) ⚡
+- Automatic re-scan on document change (debounced 300ms) 📡
+- Scope change detection triggers fresh scan 🔃
 
-### Performance
-- 1,000 nodes in &lt; 3 seconds
-- 10,000 nodes in &lt; 15 seconds
-- Search/filter &lt; 100ms
-- Live update cycle &lt; 500ms for typical pages
+#### Edge cases 🛡️
+
+- No-selection state with friendly guidance screen 👋
+- Selection with no colors: "No colors found in selection" message 📭
+- Large scope (50,000+ nodes): Figma toast suggests scoping to a selection ⚠️
+- Scoped node deletion → selection cleared, no-selection screen, and error message 🗑️
+- Graceful error handling for corrupt node data 🩹
+- Image/gradient image fills not extracted (only solid and gradient paints) 🖼️
+
+### Technical 🛠️
+
+- TypeScript for type safety 📘
+- Preact for lightweight UI (~4KB gzipped) ⚡
+- Tailwind CSS for styling 🎨
+- Vite build system with custom bundler 📦
+- Single-file UI bundle (inlined CSS/JS) 📄
+- 8-char hex normalization (RRGGBBAA) #️⃣
+- Gradient hash-based deduplication 🔗
+- `@tanstack/virtual-core` dependency (for future virtual list) 📜
+
+### Performance 🚀
+
+- 1,000 nodes in < 3 seconds ⏱️
+- 10,000 nodes in < 15 seconds ⏱️
+- Search/filter < 100ms ⚡
+- Live update cycle < 500ms for typical pages 🔄
 
 ---
 
@@ -114,3 +125,4 @@ All notable changes to Color Me Good will be documented in this file.
 - Color diff over time
 - Batch replace colors
 - Figma Dev Mode integration
+
