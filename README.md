@@ -79,8 +79,6 @@ The plugin will be built to the `dist/` directory with:
 - **Tailwind CSS**: Utility-first styling
 - **Vite**: Fast build tooling with HMR
 - **Figma Plugin API**: Document traversal, variables, styles, selection
-- **@tanstack/virtual-core**: Virtualized list for smooth scrolling with large color lists
-
 ## Performance
 
 - Scans 1,000 nodes in < 3 seconds

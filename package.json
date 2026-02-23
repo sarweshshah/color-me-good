@@ -19,7 +19,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tanstack/virtual-core": "^3.10.8",
     "lucide-preact": "^0.574.0",
     "preact": "^10.19.3"
   },
