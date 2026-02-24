@@ -19,6 +19,19 @@ function execCommandCopy(text: string): boolean {
   }
 }
 
+async function copyText(text: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // Fallback below for environments where Clipboard API is blocked.
+    }
+  }
+
+  return execCommandCopy(text);
+}
+
 export async function copyColorToClipboard(
   color: SerializedColorEntry
 ): Promise<boolean> {
@@ -33,7 +46,7 @@ export async function copyColorToClipboard(
 
     if (!text) return false;
 
-    return execCommandCopy(text);
+    return await copyText(text);
   } catch (error) {
     console.error('Failed to copy to clipboard:', error);
     return false;

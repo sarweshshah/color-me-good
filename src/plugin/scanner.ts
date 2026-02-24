@@ -232,14 +232,7 @@ async function addSolidColor(
   // Same resolved color with different bound tokens = separate rows (fixes wrong token at page scope)
   const dedupKey = tokenInfo ? `${hex}|${tokenInfo.tokenName}` : hex;
 
-  const nodeRef: NodeRef = {
-    nodeId: node.id,
-    nodeName: node.name,
-    nodeType: node.type,
-    layerPath,
-    propertyType,
-    propertyIndex,
-  };
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
 
   if (!colorMap[dedupKey]) {
     colorMap[dedupKey] = {
@@ -298,14 +291,7 @@ async function addGradientColor(
 
   const dedupKey = hashGradient(gradientData);
 
-  const nodeRef: NodeRef = {
-    nodeId: node.id,
-    nodeName: node.name,
-    nodeType: node.type,
-    layerPath,
-    propertyType,
-    propertyIndex,
-  };
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
 
   if (!colorMap[dedupKey]) {
     colorMap[dedupKey] = {
@@ -331,5 +317,21 @@ async function addGradientColor(
     entry.nodes.push(nodeRef);
     entry.usageCount++;
   }
+}
+
+function buildNodeRef(
+  node: SceneNode,
+  layerPath: string,
+  propertyType: PropertyType,
+  propertyIndex: number
+): NodeRef {
+  return {
+    nodeId: node.id,
+    nodeName: node.name,
+    nodeType: node.type,
+    layerPath,
+    propertyType,
+    propertyIndex,
+  };
 }
 

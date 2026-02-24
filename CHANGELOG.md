@@ -32,7 +32,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 #### Results panel UI 🖼️
 
-- Plugin panel with Figma-themed UI (follows Figma light/dark); **resizable** via right edge, bottom edge, or bottom-right corner (default 420×640; range 420–540 × 640–840).
+- Plugin panel with Figma-themed UI (follows Figma light/dark); **resizable** via right edge, bottom edge, or bottom-right corner (default 420×720; range 420–540 × 640–840).
 - Summary strip: total colors, token-bound, hard-coded, and total usages (Elements). **Click** Colors, Token-bound, or Hard-coded to set binding filter. 📈
 - Color list with swatch rendering (solid colors + gradients) 🌈
 - Token-bound badge (SwatchBook icon); no badge for hard-coded 📚
@@ -98,7 +98,6 @@ All notable changes to Color Me Good will be documented in this file.
 - Single-file UI bundle (inlined CSS/JS) 📄
 - 8-char hex normalization (RRGGBBAA) #️⃣
 - Gradient hash-based deduplication 🔗
-- `@tanstack/virtual-core` dependency (for future virtual list) 📜
 
 ### Performance 🚀
 

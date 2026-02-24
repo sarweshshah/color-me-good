@@ -1,27 +1,13 @@
 import { RGBA, GradientData } from '../shared/types';
 
-export function rgbaToHex(rgba: RGBA): string {
-  const toHex = (val: number) => {
-    const hex = Math.round(val * 255)
-      .toString(16)
-      .toUpperCase();
-    return hex.padStart(2, '0');
-  };
-
-  return `#${toHex(rgba.r)}${toHex(rgba.g)}${toHex(rgba.b)}${toHex(rgba.a)}`;
+function toHex(val: number): string {
+  const hex = Math.round(val * 255)
+    .toString(16)
+    .toUpperCase();
+  return hex.padStart(2, '0');
 }
 
-export function rgbaToHex6(rgba: RGBA): string {
-  const toHex = (val: number) => {
-    const hex = Math.round(val * 255)
-      .toString(16)
-      .toUpperCase();
-    return hex.padStart(2, '0');
-  };
-
-  if (rgba.a === 1) {
-    return `#${toHex(rgba.r)}${toHex(rgba.g)}${toHex(rgba.b)}`;
-  }
+export function rgbaToHex(rgba: RGBA): string {
   return `#${toHex(rgba.r)}${toHex(rgba.g)}${toHex(rgba.b)}${toHex(rgba.a)}`;
 }
 
@@ -48,12 +34,4 @@ export function buildLayerPath(node: SceneNode): string {
   }
 
   return parts.join(' > ');
-}
-
-export function isValidScopeNode(
-  node: SceneNode
-): node is FrameNode | SectionNode | GroupNode {
-  return (
-    node.type === 'FRAME' || node.type === 'SECTION' || node.type === 'GROUP'
-  );
 }

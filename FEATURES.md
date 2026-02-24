@@ -126,7 +126,7 @@ sequenceDiagram
 
 ### Plugin Panel Layout
 
-- **Resizable**: Drag right edge, bottom edge, or bottom-right corner (default 420×640; range 420–540 × 640–840).
+- **Resizable**: Drag right edge, bottom edge, or bottom-right corner (default 420×720; range 420–540 × 640–840).
 - When nothing is selected, a **no-selection screen** is shown with guidance to select elements.
 
 ```

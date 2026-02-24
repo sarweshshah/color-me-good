@@ -1,21 +1,10 @@
-import { RGBA, GradientData } from '../../shared/types';
+import { GradientData } from '../../shared/types';
 
 export function formatHex(hex: string): string {
   if (hex.length === 9 && hex.endsWith('FF')) {
     return hex.substring(0, 7);
   }
   return hex;
-}
-
-export function formatRGBA(rgba: RGBA): string {
-  const r = Math.round(rgba.r * 255);
-  const g = Math.round(rgba.g * 255);
-  const b = Math.round(rgba.b * 255);
-  
-  if (rgba.a === 1) {
-    return `rgb(${r}, ${g}, ${b})`;
-  }
-  return `rgba(${r}, ${g}, ${b}, ${rgba.a.toFixed(2)})`;
 }
 
 export function gradientToCSSString(gradient: GradientData): string {

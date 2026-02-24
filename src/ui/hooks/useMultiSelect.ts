@@ -36,14 +36,8 @@ export function useMultiSelect() {
     [lastClickedId]
   );
 
-  const clearSelection = useCallback(() => {
-    setSelectedIds(new Set());
-    setLastClickedId(null);
-  }, []);
-
   return {
     selectedIds,
     handleClick,
-    clearSelection,
   };
 }

@@ -3,8 +3,6 @@ export interface TokenInfo {
   tokenCollection: string;
   libraryName: string | null;
   isLibraryVariable: boolean;
-  styleName?: string;
-  styleId?: string;
 }
 
 export async function resolveVariableBinding(
@@ -43,29 +41,6 @@ export async function resolveVariableBinding(
     };
   } catch (error) {
     console.warn('Failed to resolve variable:', error);
-    return null;
-  }
-}
-
-export async function resolveStyleBinding(
-  styleId: string | undefined
-): Promise<TokenInfo | null> {
-  if (!styleId || typeof styleId !== 'string') return null;
-
-  try {
-    const style = await figma.getStyleByIdAsync(styleId);
-    if (!style) return null;
-
-    return {
-      tokenName: style.name,
-      tokenCollection: 'Styles',
-      libraryName: null,
-      isLibraryVariable: style.remote,
-      styleName: style.name,
-      styleId: style.id,
-    };
-  } catch (error) {
-    console.warn('Failed to resolve style:', error);
     return null;
   }
 }

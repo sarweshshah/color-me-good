@@ -9,7 +9,6 @@ export type PluginMessage =
   | ScanProgressMessage
   | ScanCompleteMessage
   | ScanErrorMessage
-  | ScopeChangedMessage
   | SettingsMessage;
 
 export type UIMessage =
@@ -18,7 +17,6 @@ export type UIMessage =
   | ClearScopeMessage
   | RequestRescanMessage
   | ResizeMessage
-  | SetIncludeVectorsMessage
   | GetSettingsMessage
   | SetSettingMessage;
 
@@ -37,11 +35,6 @@ export interface ScanCompleteMessage {
 export interface ScanErrorMessage {
   type: 'scan-error';
   message: string;
-}
-
-export interface ScopeChangedMessage {
-  type: 'scope-changed';
-  context: ScanContext;
 }
 
 export interface SelectNodesMessage {
@@ -66,11 +59,6 @@ export interface ResizeMessage {
   type: 'resize';
   width: number;
   height: number;
-}
-
-export interface SetIncludeVectorsMessage {
-  type: 'set-include-vectors';
-  includeVectors: boolean;
 }
 
 export interface SettingsMessage {

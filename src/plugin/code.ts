@@ -85,12 +85,6 @@ figma.ui.onmessage = async (msg: UIMessage) => {
         Math.max(resizeBounds.minHeight, Math.min(resizeBounds.maxHeight, msg.height))
       );
       break;
-    case 'set-include-vectors':
-      includeVectors = msg.includeVectors;
-      await saveSettings({ includeVectors, smoothZoom });
-      sendSettingsToUI({ includeVectors, smoothZoom });
-      await performScan();
-      break;
     case 'get-settings':
       sendSettingsToUI({ includeVectors, smoothZoom });
       break;

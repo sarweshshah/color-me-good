@@ -60,13 +60,6 @@ export function usePluginMessages() {
           }));
           break;
 
-        case 'scope-changed':
-          setState((prev) => ({
-            ...prev,
-            context: msg.context,
-          }));
-          break;
-
         case 'settings':
           setState((prev) => ({
             ...prev,
