@@ -1,4 +1,4 @@
-import { scanCurrentPage, SCAN_CANCELLED_MESSAGE } from './scanner';
+import { scanCurrentPage, scanNodesForColors, SCAN_CANCELLED_MESSAGE } from './scanner';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
 import { UIMessage, PluginSettings } from '../shared/messages';
 
@@ -46,6 +46,10 @@ let cachedResults: {
   colors: SerializedColorEntry[];
   context: ScanContext;
 } | null = null;
+let latestViewState: {
+  colors: SerializedColorEntry[];
+  context: ScanContext;
+} | null = null;
 
 let selectionDebounce: number | null = null;
 let documentDebounce: number | null = null;
@@ -87,6 +91,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'get-settings':
       sendSettingsToUI({ includeVectors, smoothZoom });
+      if (latestViewState) {
+        figma.ui.postMessage({
+          type: 'scan-complete',
+          colors: latestViewState.colors,
+          context: latestViewState.context,
+        });
+      }
       break;
     case 'set-setting':
       if (msg.key === 'includeVectors') {
@@ -226,6 +237,7 @@ async function performScan(): Promise<void> {
       colors: serializedColors,
       context: result.context,
     };
+    latestViewState = cachedResults;
 
     figma.ui.postMessage({
       type: 'scan-complete',
@@ -254,11 +266,89 @@ function serializeColors(colors: ColorEntry[]): SerializedColorEntry[] {
   }));
 }
 
+function removeNodesFromCachedResults(nodeIds: Set<string>): void {
+  if (!cachedResults) return;
+
+  const nextColors: SerializedColorEntry[] = [];
+  for (const color of cachedResults.colors) {
+    const nextNodes = color.nodes.filter((node) => !nodeIds.has(node.nodeId));
+    if (nextNodes.length === 0) continue;
+
+    nextColors.push({
+      ...color,
+      nodes: nextNodes,
+      usageCount: nextNodes.length,
+      propertyTypes: Array.from(new Set(nextNodes.map((n) => n.propertyType))),
+    });
+  }
+
+  cachedResults.colors = nextColors;
+}
+
+function mergeColorsIntoCachedResults(colors: SerializedColorEntry[]): void {
+  if (!cachedResults) return;
+
+  const byDedupKey: Record<string, SerializedColorEntry> = {};
+  for (const color of cachedResults.colors) {
+    byDedupKey[color.dedupKey] = color;
+  }
+
+  for (const incoming of colors) {
+    const existing = byDedupKey[incoming.dedupKey];
+    if (!existing) {
+      byDedupKey[incoming.dedupKey] = incoming;
+      continue;
+    }
+
+    const mergedNodes = [...existing.nodes, ...incoming.nodes];
+    byDedupKey[incoming.dedupKey] = {
+      ...existing,
+      nodes: mergedNodes,
+      usageCount: mergedNodes.length,
+      propertyTypes: Array.from(
+        new Set([...existing.propertyTypes, ...incoming.propertyTypes])
+      ),
+    };
+  }
+
+  cachedResults.colors = Object.values(byDedupKey);
+}
+
+async function performIncrementalUpdate(nodeIds: Set<string>): Promise<void> {
+  if (!cachedResults || nodeIds.size === 0) return;
+
+  removeNodesFromCachedResults(nodeIds);
+
+  const resolved = await Promise.all(
+    Array.from(nodeIds).map((id) => figma.getNodeByIdAsync(id))
+  );
+  const nodes = resolved.filter(
+    (node): node is SceneNode => node !== null && 'id' in node
+  );
+
+  if (nodes.length > 0) {
+    const scanned = await scanNodesForColors(nodes, { includeVectors });
+    const serialized = serializeColors(scanned);
+    mergeColorsIntoCachedResults(serialized);
+  }
+
+  cachedResults.context = {
+    ...cachedResults.context,
+    timestamp: new Date().toISOString(),
+  };
+  latestViewState = cachedResults;
+
+  figma.ui.postMessage({
+    type: 'scan-complete',
+    colors: cachedResults.colors,
+    context: cachedResults.context,
+  });
+}
+
 let lastScanScopeId: string | null = null;
 
 function sendNoSelectionState(): void {
-  figma.ui.postMessage({
-    type: 'scan-complete',
+  latestViewState = {
     colors: [],
     context: {
       mode: 'selection',
@@ -269,6 +359,11 @@ function sendNoSelectionState(): void {
       totalNodesScanned: 0,
       timestamp: new Date().toISOString(),
     },
+  };
+  figma.ui.postMessage({
+    type: 'scan-complete',
+    colors: latestViewState.colors,
+    context: latestViewState.context,
   });
 }
 
@@ -383,31 +478,60 @@ function setupListeners(): void {
       }
 
       const scannedIds = getScannedNodeIds();
-      let shouldRescan = false;
+      let shouldFullRescan = false;
+      const incrementalNodeIds = new Set<string>();
 
       for (const change of changes) {
         if (change.type === 'DELETE') {
           if (scannedIds.has(change.id)) {
-            shouldRescan = true;
+            shouldFullRescan = true;
             break;
           }
           continue;
         }
 
+        if (change.type === 'CREATE') {
+          if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+            shouldFullRescan = true;
+            break;
+          }
+          continue;
+        }
+
+        if (change.type === 'PROPERTY_CHANGE' && scannedIds.has(change.id)) {
+          incrementalNodeIds.add(change.id);
+          continue;
+        }
+
+        if (change.type === 'PROPERTY_CHANGE') {
+          if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+            incrementalNodeIds.add(change.id);
+          }
+          continue;
+        }
+
         if (scannedIds.has(change.id)) {
-          shouldRescan = true;
+          shouldFullRescan = true;
           break;
         }
 
         if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
-          shouldRescan = true;
+          shouldFullRescan = true;
           break;
         }
       }
 
-      if (shouldRescan) {
+      if (shouldFullRescan) {
         lastScanScopeId = scopeId;
         await performScan();
+      } else if (incrementalNodeIds.size > 0) {
+        try {
+          await performIncrementalUpdate(incrementalNodeIds);
+        } catch (error) {
+          console.warn('Incremental update failed, falling back to full scan:', error);
+          lastScanScopeId = scopeId;
+          await performScan();
+        }
       }
     }, 300) as unknown as number;
   });

@@ -127,6 +127,21 @@ export async function scanCurrentPage(
   }
 }
 
+export async function scanNodesForColors(
+  nodes: SceneNode[],
+  options: { includeVectors?: boolean } = {}
+): Promise<ColorEntry[]> {
+  const colorMap: ColorMap = {};
+
+  for (const node of nodes) {
+    if (!node) continue;
+    if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
+    await extractColorsFromNode(node, colorMap);
+  }
+
+  return Object.values(colorMap);
+}
+
 function resolveScanContext(): ScanContext {
   const selection = figma.currentPage.selection;
 

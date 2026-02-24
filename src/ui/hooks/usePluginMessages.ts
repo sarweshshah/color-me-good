@@ -22,10 +22,6 @@ export function usePluginMessages() {
   });
 
   useEffect(() => {
-    parent.postMessage({ pluginMessage: { type: 'get-settings' } }, '*');
-  }, []);
-
-  useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       const msg = event.data.pluginMessage as PluginMessage;
       if (!msg) return;
@@ -70,6 +66,9 @@ export function usePluginMessages() {
     };
 
     window.addEventListener('message', handleMessage);
+    // Request initial settings/state only after listener is attached,
+    // so startup messages from plugin are not missed.
+    parent.postMessage({ pluginMessage: { type: 'get-settings' } }, '*');
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
