@@ -7,7 +7,7 @@ const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
 let resizeBounds = {
   minWidth: 420,
   maxWidth: 540,
-  minHeight: 640,
+  minHeight: 720,
   maxHeight: 840,
 };
 
