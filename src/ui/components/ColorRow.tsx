@@ -35,6 +35,9 @@ const NODE_TYPE_ICONS: Record<string, typeof Box> = {
   BOOLEAN_OPERATION: PenTool,
 };
 
+const INITIAL_VISIBLE_ELEMENTS = 20;
+const VISIBLE_ELEMENTS_STEP = 20;
+
 function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
   const Icon = (nodeType && NODE_TYPE_ICONS[nodeType]) || Box;
   return (
@@ -62,6 +65,7 @@ export function ColorRow({
   onCopySuccess,
 }: ColorRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
 
   const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
@@ -114,7 +118,12 @@ export function ColorRow({
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
           onRowClick(color, e as unknown as MouseEvent);
-          setIsExpanded(!isExpanded);
+          if (isExpanded) {
+            setIsExpanded(false);
+          } else {
+            setVisibleCount(INITIAL_VISIBLE_ELEMENTS);
+            setIsExpanded(true);
+          }
         }}
       >
         <div
@@ -168,10 +177,11 @@ export function ColorRow({
         (() => {
           const nodesToShow = color.nodes.filter((n) => n.propertyType !== 'text');
           if (nodesToShow.length === 0) return null;
-          const slice = nodesToShow.slice(0, 20);
+          const visibleNodes = nodesToShow.slice(0, visibleCount);
+          const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
           return (
             <div className="bg-figma-bg/50 pt-0 pb-2 w-full">
-              {slice.map((nodeRef, idx) => (
+              {visibleNodes.map((nodeRef, idx) => (
                 <div
                   key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
                   className="w-full py-2 px-4 hover:bg-figma-surface cursor-pointer flex items-center justify-between gap-3 text-xs"
@@ -191,9 +201,22 @@ export function ColorRow({
                   </span>
                 </div>
               ))}
-              {nodesToShow.length > 20 && (
-                <div className="text-figma-text-secondary text-xs text-center py-2 px-4">
-                  +{nodesToShow.length - 20} more elements
+              {remainingCount > 0 && (
+                <div className="py-2 px-4 text-center">
+                  <button
+                    type="button"
+                    className="text-figma-blue text-xs hover:underline"
+                    onClick={() =>
+                      setVisibleCount((prev) =>
+                        Math.min(nodesToShow.length, prev + VISIBLE_ELEMENTS_STEP)
+                      )
+                    }
+                  >
+                    Show {Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} more
+                    {remainingCount > VISIBLE_ELEMENTS_STEP
+                      ? ` (${remainingCount - Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} left)`
+                      : ''}
+                  </button>
                 </div>
               )}
             </div>
