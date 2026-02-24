@@ -424,6 +424,7 @@ export function App() {
         <ColorList
           colors={filteredAndSortedColors}
           selectedIds={selectedIds}
+          nodeTypeFilters={nodeTypeFilters}
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
           onElementClick={handleElementClick}

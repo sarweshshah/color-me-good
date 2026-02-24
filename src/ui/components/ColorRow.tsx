@@ -34,6 +34,14 @@ const NODE_TYPE_ICONS: Record<string, typeof Box> = {
   POLYGON: Square,
   BOOLEAN_OPERATION: PenTool,
 };
+const SHAPE_NODE_TYPES = new Set([
+  'RECTANGLE',
+  'ELLIPSE',
+  'LINE',
+  'STAR',
+  'POLYGON',
+  'BOOLEAN_OPERATION',
+]);
 
 const INITIAL_VISIBLE_ELEMENTS = 20;
 const VISIBLE_ELEMENTS_STEP = 20;
@@ -50,6 +58,7 @@ function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
 interface ColorRowProps {
   color: SerializedColorEntry;
   isSelected: boolean;
+  nodeTypeFilters: Set<string>;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string) => void;
@@ -59,6 +68,7 @@ interface ColorRowProps {
 export function ColorRow({
   color,
   isSelected,
+  nodeTypeFilters,
   onSelectAll,
   onRowClick,
   onElementClick,
@@ -175,7 +185,16 @@ export function ColorRow({
 
       {isExpanded &&
         (() => {
-          const nodesToShow = color.nodes.filter((n) => n.propertyType !== 'text');
+          const nodesToShow = color.nodes.filter((n) => {
+            if (n.propertyType === 'text') return false;
+            if (nodeTypeFilters.size === 0) return true;
+
+            const type = n.nodeType;
+            if (!type) return false;
+            if (nodeTypeFilters.has(type)) return true;
+            if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
+            return false;
+          });
           if (nodesToShow.length === 0) return null;
           const visibleNodes = nodesToShow.slice(0, visibleCount);
           const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
