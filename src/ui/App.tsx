@@ -7,6 +7,7 @@ import {
   SearchFilterBar,
   BindingFilter,
   SortOption,
+  SortDirection,
   SHAPE_NODE_TYPES,
 } from './components/SearchFilterBar';
 import { ColorList } from './components/ColorList';
@@ -127,6 +128,7 @@ export function App() {
   const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(new Set());
   const [nodeTypeFilters, setNodeTypeFilters] = useState<Set<string>>(new Set());
   const [sortBy, setSortBy] = useState<SortOption>('usage');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const includeVectors = state.settings?.includeVectors ?? false;
 
@@ -170,6 +172,16 @@ export function App() {
     setNodeTypeFilters(new Set());
   };
 
+  const handleSortChange = (nextSortBy: SortOption) => {
+    if (nextSortBy === sortBy) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+      return;
+    }
+
+    setSortBy(nextSortBy);
+    setSortDirection(nextSortBy === 'usage' ? 'desc' : 'asc');
+  };
+
   const filteredAndSortedColors = useMemo(() => {
     let filtered = state.colors;
 
@@ -209,28 +221,37 @@ export function App() {
     }
 
     const sorted = [...filtered];
+    const direction = sortDirection === 'asc' ? 1 : -1;
     switch (sortBy) {
       case 'usage':
-        sorted.sort((a, b) => b.usageCount - a.usageCount);
+        sorted.sort((a, b) => {
+          const usageDiff = a.usageCount - b.usageCount;
+          if (usageDiff !== 0) return usageDiff * direction;
+          return a.dedupKey.localeCompare(b.dedupKey) * direction;
+        });
         break;
       case 'hex':
         sorted.sort((a, b) => {
           const aHex = a.hex || '';
           const bHex = b.hex || '';
-          return aHex.localeCompare(bHex);
+          const hexDiff = aHex.localeCompare(bHex);
+          if (hexDiff !== 0) return hexDiff * direction;
+          return a.dedupKey.localeCompare(b.dedupKey) * direction;
         });
         break;
       case 'token':
         sorted.sort((a, b) => {
           const aName = a.tokenName || a.hex || '';
           const bName = b.tokenName || b.hex || '';
-          return aName.localeCompare(bName);
+          const tokenDiff = aName.localeCompare(bName);
+          if (tokenDiff !== 0) return tokenDiff * direction;
+          return a.dedupKey.localeCompare(b.dedupKey) * direction;
         });
         break;
     }
 
     return sorted;
-  }, [state.colors, searchText, bindingFilter, propertyFilters, nodeTypeFilters, sortBy]);
+  }, [state.colors, searchText, bindingFilter, propertyFilters, nodeTypeFilters, sortBy, sortDirection]);
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
@@ -391,7 +412,8 @@ export function App() {
           onPropertyFilterToggle={handlePropertyFilterToggle}
           onClearFilters={handleClearFilters}
           sortBy={sortBy}
-          onSortChange={setSortBy}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
           includeVectors={includeVectors}
           nodeTypeFilters={nodeTypeFilters}
           onNodeTypeFilterToggle={handleNodeTypeFilterToggle}

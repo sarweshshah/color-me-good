@@ -17,9 +17,10 @@ import { PropertyType } from '../../shared/types';
 
 export type BindingFilter = 'all' | 'token-bound' | 'hard-coded';
 export type SortOption = 'usage' | 'hex' | 'token';
+export type SortDirection = 'asc' | 'desc';
 
 const SORT_LABELS: Record<SortOption, string> = {
-  usage: 'Usage (High → Low)',
+  usage: 'Usage Count',
   hex: 'Hex Value',
   token: 'Token Name',
 };
@@ -54,6 +55,7 @@ interface SearchFilterBarProps {
   onNodeTypeFilterToggle: (nodeType: string) => void;
   onClearFilters: () => void;
   sortBy: SortOption;
+  sortDirection: SortDirection;
   onSortChange: (sort: SortOption) => void;
   includeVectors: boolean;
 }
@@ -67,6 +69,7 @@ export function SearchFilterBar({
   onNodeTypeFilterToggle,
   onClearFilters,
   sortBy,
+  sortDirection,
   onSortChange,
   includeVectors,
 }: SearchFilterBarProps) {
@@ -138,7 +141,7 @@ export function SearchFilterBar({
                   ? 'bg-figma-text border-figma-text text-white shadow-sm'
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
-              data-tooltip={`Sort: ${SORT_LABELS[sortBy]}`}
+              data-tooltip={`Sort: ${SORT_LABELS[sortBy]} (${sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
               data-tooltip-align="end"
             >
               <ArrowUpDown size={14} strokeWidth={2} />
@@ -157,11 +160,17 @@ export function SearchFilterBar({
                     {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
                       <MenuItem
                         key={key}
-                        label={SORT_LABELS[key]}
+                        label={
+                          sortBy === key
+                            ? `${SORT_LABELS[key]} ${sortDirection === 'asc' ? '↑' : '↓'}`
+                            : SORT_LABELS[key]
+                        }
                         active={sortBy === key}
                         onClick={() => {
                           onSortChange(key);
-                          setSortOpen(false);
+                          if (key !== sortBy) {
+                            setSortOpen(false);
+                          }
                         }}
                       />
                     ))}
