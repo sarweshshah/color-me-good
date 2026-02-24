@@ -59,7 +59,7 @@ function Stat({
   onClick,
 }: StatProps) {
   const content = (
-    <div className="flex items-center gap-1.5">
+    <div className="flex items-center gap-1">
       <span className="text-figma-text-secondary">{label}:</span>
       <span className={`font-semibold ${color}`}>{value}</span>
     </div>

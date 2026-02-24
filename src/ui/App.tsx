@@ -92,8 +92,8 @@ function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
           position: 'fixed',
           right: 0,
           top: 0,
-          bottom: 20,
-          width: 10,
+          bottom: 12,
+          width: 4,
           cursor: 'ew-resize',
           ...z,
         }}
@@ -106,8 +106,8 @@ function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
           position: 'fixed',
           bottom: 0,
           left: 0,
-          right: 20,
-          height: 20,
+          right: 12,
+          height: 4,
           cursor: 'ns-resize',
           ...z,
         }}
