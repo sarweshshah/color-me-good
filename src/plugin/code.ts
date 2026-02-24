@@ -49,6 +49,7 @@ let cachedResults: {
 
 let selectionDebounce: number | null = null;
 let documentDebounce: number | null = null;
+let pendingChanges: Array<{ type: string; id: string }> = [];
 let currentScanId = 0;
 let includeVectors = false;
 let smoothZoom = true;
@@ -287,6 +288,32 @@ function getScopeId(): string | null {
     .join(',');
 }
 
+async function isNodeWithinScope(nodeId: string, scopeIds: Set<string>): Promise<boolean> {
+  try {
+    let node: BaseNode | null = await figma.getNodeByIdAsync(nodeId);
+    while (node) {
+      if (scopeIds.has(node.id)) return true;
+      node = node.parent;
+    }
+  } catch {}
+  return false;
+}
+
+function getScannedNodeIds(): Set<string> {
+  const ids = new Set<string>();
+  if (cachedResults) {
+    for (const id of cachedResults.context.scopeNodeIds ?? []) {
+      ids.add(id);
+    }
+    for (const color of cachedResults.colors) {
+      for (const nodeRef of color.nodes) {
+        ids.add(nodeRef.nodeId);
+      }
+    }
+  }
+  return ids;
+}
+
 function setupListeners(): void {
   figma.on('selectionchange', () => {
     if (ignoreNextSelectionChange) {
@@ -313,20 +340,37 @@ function setupListeners(): void {
   });
 
   figma.on('documentchange', (event) => {
+    for (const change of event.documentChanges) {
+      if (change.type === 'CREATE' || change.type === 'DELETE' || change.type === 'PROPERTY_CHANGE') {
+        pendingChanges.push({ type: change.type, id: change.id });
+      }
+    }
+
     if (documentDebounce !== null) {
       clearTimeout(documentDebounce);
     }
 
     documentDebounce = setTimeout(async () => {
       documentDebounce = null;
-      const scopeNodeIds = cachedResults?.context.scopeNodeIds;
+      const changes = pendingChanges;
+      pendingChanges = [];
+
+      const scopeId = getScopeId();
+
+      if (scopeId === null) {
+        if (lastScanScopeId !== null) {
+          lastScanScopeId = null;
+          sendNoSelectionState();
+        }
+        return;
+      }
+
+      const scopeNodeIds = cachedResults?.context.scopeNodeIds ?? [];
+      const scopeSet = new Set(scopeNodeIds);
 
       if (
-        cachedResults &&
-        scopeNodeIds &&
-        event.documentChanges.some(
-          (change) => change.type === 'DELETE' && scopeNodeIds.includes(change.id)
-        )
+        scopeSet.size > 0 &&
+        changes.some((c) => c.type === 'DELETE' && scopeSet.has(c.id))
       ) {
         figma.currentPage.selection = [];
         lastScanScopeId = null;
@@ -338,13 +382,36 @@ function setupListeners(): void {
         return;
       }
 
-      const scopeId = getScopeId();
-      if (scopeId === null) {
-        if (lastScanScopeId !== null) {
-          lastScanScopeId = null;
-          sendNoSelectionState();
+      if (!cachedResults) {
+        lastScanScopeId = scopeId;
+        await performScan();
+        return;
+      }
+
+      const scannedIds = getScannedNodeIds();
+      let shouldRescan = false;
+
+      for (const change of changes) {
+        if (change.type === 'DELETE') {
+          if (scannedIds.has(change.id)) {
+            shouldRescan = true;
+            break;
+          }
+          continue;
         }
-      } else {
+
+        if (scannedIds.has(change.id)) {
+          shouldRescan = true;
+          break;
+        }
+
+        if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+          shouldRescan = true;
+          break;
+        }
+      }
+
+      if (shouldRescan) {
         lastScanScopeId = scopeId;
         await performScan();
       }
