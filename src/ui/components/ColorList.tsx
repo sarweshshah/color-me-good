@@ -1,9 +1,10 @@
-import { SerializedColorEntry } from '../../shared/types';
+import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { ColorRow } from './ColorRow';
 
 interface ColorListProps {
   colors: SerializedColorEntry[];
   selectedIds: Set<string>;
+  propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
@@ -14,6 +15,7 @@ interface ColorListProps {
 export function ColorList({
   colors,
   selectedIds,
+  propertyFilters,
   nodeTypeFilters,
   onSelectAll,
   onRowClick,
@@ -37,6 +39,7 @@ export function ColorList({
           key={color.dedupKey}
           color={color}
           isSelected={selectedIds.has(color.dedupKey)}
+          propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
           onSelectAll={onSelectAll}
           onRowClick={onRowClick}

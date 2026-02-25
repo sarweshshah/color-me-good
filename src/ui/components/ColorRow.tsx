@@ -1,5 +1,5 @@
-import { useState } from 'preact/hooks';
-import { SerializedColorEntry } from '../../shared/types';
+import { useMemo, useState } from 'preact/hooks';
+import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { Swatch } from './Swatch';
 import { formatHex } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
@@ -58,6 +58,7 @@ function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
 interface ColorRowProps {
   color: SerializedColorEntry;
   isSelected: boolean;
+  propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
@@ -68,6 +69,7 @@ interface ColorRowProps {
 export function ColorRow({
   color,
   isSelected,
+  propertyFilters,
   nodeTypeFilters,
   onSelectAll,
   onRowClick,
@@ -79,20 +81,49 @@ export function ColorRow({
 
   const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
 
-  const nodesByType = color.nodes
-    .filter((n) => n.propertyType !== 'text')
-    .reduce(
-      (acc, n) => {
-        const t = n.nodeType || 'Unknown';
-        acc[t] = (acc[t] || 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>,
-    );
+  const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
+    const filtered = color.nodes.filter((n) => {
+      if (propertyFilters.size > 0 && !propertyFilters.has(n.propertyType)) return false;
+      if (nodeTypeFilters.size > 0) {
+        const type = n.nodeType;
+        if (!type) return false;
+        if (nodeTypeFilters.has(type)) return true;
+        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
+        return false;
+      }
+      return true;
+    });
+    const hasFilters = propertyFilters.size > 0 || nodeTypeFilters.size > 0;
+    return {
+      filteredNodes: filtered,
+      displayCount: hasFilters ? filtered.length : color.usageCount,
+      hasActiveFilters: hasFilters,
+    };
+  }, [color.nodes, color.usageCount, propertyFilters, nodeTypeFilters]);
+
+  const nodesByType = useMemo(
+    () =>
+      filteredNodes.reduce(
+        (acc, n) => {
+          const t = n.nodeType || 'Unknown';
+          acc[t] = (acc[t] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      ),
+    [filteredNodes],
+  );
   const tooltipBreakdown = Object.entries(nodesByType)
     .sort(([, a], [, b]) => b - a)
     .map(([type, count]) => `${type.charAt(0)}${type.slice(1).toLowerCase()}: ${count}`)
     .join('\n');
+
+  const selectAllTooltip =
+    hasActiveFilters
+      ? filteredNodes.length > 0
+        ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
+        : 'No matching elements'
+      : 'Select all elements with this color';
 
   const badge = color.isTokenBound ? (
     <span
@@ -163,11 +194,11 @@ export function ColorRow({
         <div className="flex items-center gap-2">
           <span
             className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
-            data-tooltip={tooltipBreakdown || 'No elements'}
+            data-tooltip={tooltipBreakdown || (hasActiveFilters ? 'No matching elements' : 'No elements')}
             data-tooltip-align="end"
           >
             <Layers size={10} className="shrink-0" />
-            {color.usageCount}
+            {displayCount}
           </span>
           <button
             onClick={(e) => {
@@ -175,7 +206,7 @@ export function ColorRow({
               onSelectAll(color, e as unknown as MouseEvent);
             }}
             className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
-            data-tooltip="Select all elements with this color"
+            data-tooltip={selectAllTooltip}
             data-tooltip-align="end"
           >
             <Crosshair size={12} />

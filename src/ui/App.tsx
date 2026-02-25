@@ -256,7 +256,18 @@ export function App() {
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
-    const nodeIds = color.nodes.map((n) => n.nodeId);
+    const nodes = color.nodes.filter((n) => {
+      if (propertyFilters.size > 0 && !propertyFilters.has(n.propertyType)) return false;
+      if (nodeTypeFilters.size > 0) {
+        const type = n.nodeType;
+        if (!type) return false;
+        if (nodeTypeFilters.has(type)) return true;
+        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.includes(type)) return true;
+        return false;
+      }
+      return true;
+    });
+    const nodeIds = nodes.map((n) => n.nodeId);
     postMessage({ type: 'select-nodes', nodeIds });
   };
 
@@ -430,6 +441,7 @@ export function App() {
         <ColorList
           colors={filteredAndSortedColors}
           selectedIds={selectedIds}
+          propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
