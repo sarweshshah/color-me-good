@@ -86,3 +86,8 @@ body {
   right: 0;
   transform: none;
 }
+
+/* When TooltipPortal is active, hide CSS ::after to avoid double tooltips */
+#app.use-tooltip-portal [data-tooltip]::after {
+  display: none;
+}

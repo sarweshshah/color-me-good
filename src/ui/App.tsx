@@ -12,6 +12,7 @@ import {
 } from './components/SearchFilterBar';
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
+import { TooltipPortal } from './components/TooltipPortal';
 import { Settings } from './components/Settings';
 import { ChevronLeft, MousePointerClick } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
@@ -277,6 +278,7 @@ export function App() {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
         <ResizeHandles postMessage={postMessage} />
+        <TooltipPortal />
         <div className="text-center">
           <div className="text-figma-text text-sm mb-2">Scanning...</div>
           {state.scanProgress && (
@@ -304,6 +306,7 @@ export function App() {
     return (
       <div className="h-screen bg-figma-bg flex items-center justify-center">
         <ResizeHandles postMessage={postMessage} />
+        <TooltipPortal />
         <div className="text-center px-6">
           <div className="text-figma-orange text-sm mb-2">Error</div>
           <div className="text-figma-text-secondary text-xs">{state.error}</div>
@@ -333,6 +336,7 @@ export function App() {
           onOpenSettings={handleOpenSettings}
           onBack={() => setView('list')}
         />
+        <TooltipPortal />
       </div>
     );
   }
@@ -368,6 +372,7 @@ export function App() {
           </div>
         </div>
         <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+        <TooltipPortal />
       </div>
     );
   }
@@ -388,6 +393,7 @@ export function App() {
           </div>
         </div>
         <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+        <TooltipPortal />
       </div>
     );
   }
@@ -420,7 +426,7 @@ export function App() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col">
+      <div className="flex-1 min-h-0 flex flex-col relative z-10">
         <ColorList
           colors={filteredAndSortedColors}
           selectedIds={selectedIds}
@@ -444,6 +450,7 @@ export function App() {
 
       <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
       <ResizeHandles postMessage={postMessage} />
+      <TooltipPortal />
     </div>
   );
 }
