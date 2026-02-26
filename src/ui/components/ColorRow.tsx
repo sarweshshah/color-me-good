@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'preact/hooks';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { Swatch } from './Swatch';
-import { formatHex } from '../utils/format';
+import { formatResolvedColor } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
+import type { ColorDisplayFormat } from '../../shared/messages';
 import {
   SwatchBook,
   Circle,
@@ -60,6 +61,7 @@ interface ColorRowProps {
   isSelected: boolean;
   propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
+  colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string) => void;
@@ -71,6 +73,7 @@ export function ColorRow({
   isSelected,
   propertyFilters,
   nodeTypeFilters,
+  colorDisplayFormat,
   onSelectAll,
   onRowClick,
   onElementClick,
@@ -79,7 +82,8 @@ export function ColorRow({
   const [isExpanded, setIsExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
 
-  const displayName = color.tokenName || (color.hex ? formatHex(color.hex) : 'Gradient');
+  const displayName =
+    color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
   const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
     const filtered = color.nodes.filter((n) => {
@@ -144,7 +148,7 @@ export function ColorRow({
 
   const handleCopy = async (e: Event) => {
     e.stopPropagation();
-    const success = await copyColorToClipboard(color);
+    const success = await copyColorToClipboard(color, colorDisplayFormat);
     if (success) {
       onCopySuccess?.();
     }
@@ -183,9 +187,9 @@ export function ColorRow({
             {libraryIcon}
             {badge}
           </div>
-          {color.tokenName && color.hex && (
+          {color.tokenName && (color.hex || color.rgba) && (
             <div className="text-figma-text-secondary text-[10px] mt-0 leading-tight">
-              {formatHex(color.hex)}
+              {formatResolvedColor(color, colorDisplayFormat)}
             </div>
           )}
         </div>

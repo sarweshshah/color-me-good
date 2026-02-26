@@ -17,7 +17,7 @@ export function SummaryStrip({
   const totalElements = colors.reduce((sum, c) => sum + c.usageCount, 0);
 
   return (
-    <div className="bg-figma-bg px-4 py-3 border-b border-figma-border">
+    <div className="bg-figma-bg px-4 py-3 border-b border-figma-border-strong">
       <div className="flex items-center gap-4 text-xs">
         <Stat
           label="Colors"

@@ -1,4 +1,5 @@
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
+import type { ColorDisplayFormat } from '../../shared/messages';
 import { ColorRow } from './ColorRow';
 
 interface ColorListProps {
@@ -6,6 +7,7 @@ interface ColorListProps {
   selectedIds: Set<string>;
   propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
+  colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string) => void;
@@ -17,6 +19,7 @@ export function ColorList({
   selectedIds,
   propertyFilters,
   nodeTypeFilters,
+  colorDisplayFormat,
   onSelectAll,
   onRowClick,
   onElementClick,
@@ -41,6 +44,7 @@ export function ColorList({
           isSelected={selectedIds.has(color.dedupKey)}
           propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
+          colorDisplayFormat={colorDisplayFormat}
           onSelectAll={onSelectAll}
           onRowClick={onRowClick}
           onElementClick={onElementClick}

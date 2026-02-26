@@ -1,4 +1,4 @@
-import { PluginSettings } from '../../shared/messages';
+import { PluginSettings, ColorDisplayFormat } from '../../shared/messages';
 import logoSrc from '../../../assets/logo.png';
 
 const PLUGIN_NAME = 'Color Me Good';
@@ -9,7 +9,10 @@ const CHANGELOG_URL =
 
 interface SettingsProps {
   settings: PluginSettings | null;
-  onSettingChange: (key: keyof PluginSettings, value: boolean) => void;
+  onSettingChange: <K extends keyof PluginSettings>(
+    key: K,
+    value: PluginSettings[K]
+  ) => void;
 }
 
 function SettingRow({
@@ -92,6 +95,32 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           checked={settings.smoothZoom}
           onChange={(v) => onSettingChange('smoothZoom', v)}
         />
+      </Section>
+
+      <Section title="Display">
+        <div className="py-2">
+          <div className="text-sm text-figma-text font-medium mb-1.5">
+            Color value format
+          </div>
+          <div className="text-xs text-figma-text-secondary mb-2">
+            Format for displaying resolved and hard-coded colors.
+          </div>
+          <select
+            value={settings.colorDisplayFormat}
+            onChange={(e) =>
+              onSettingChange(
+                'colorDisplayFormat',
+                (e.target as HTMLSelectElement).value as ColorDisplayFormat
+              )
+            }
+            className="w-full h-8 px-3 rounded-md border border-figma-border bg-figma-surface text-figma-text text-xs focus:outline-none focus:border-figma-blue/50"
+          >
+            <option value="hex">Hex</option>
+            <option value="rgba">RGBA</option>
+            <option value="hsla">HSLA</option>
+            <option value="hsba">HSBA</option>
+          </select>
+        </div>
       </Section>
 
       <Section title="About">

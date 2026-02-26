@@ -1,10 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    './index.html',
-    './src/**/*.{js,ts,jsx,tsx}',
-    '!./src/node_modules/**',
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '!./src/node_modules/**'],
   theme: {
     extend: {
       colors: {
@@ -12,7 +8,7 @@ export default {
         'figma-bg-hover': 'var(--figma-color-bg-hover, #ebebeb)',
         'figma-surface': 'var(--figma-color-bg, #ffffff)',
         'figma-border': 'var(--figma-color-border, #e0e0e0)',
-        'figma-border-strong': 'var(--figma-color-border-strong, #2c2c2c)',
+        'figma-border-strong': 'var(--figma-color-border-strong, #e2e2e2)',
         'figma-bg-selected': 'var(--figma-color-bg-selected, #e5f4ff)',
         'figma-icon': 'var(--figma-color-icon, #1e1e1e)',
         'figma-text': 'var(--figma-color-text, #1e1e1e)',

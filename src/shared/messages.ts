@@ -1,8 +1,11 @@
 import { SerializedColorEntry, ScanContext } from './types';
 
+export type ColorDisplayFormat = 'hex' | 'rgba' | 'hsla' | 'hsba';
+
 export interface PluginSettings {
   includeVectors: boolean;
   smoothZoom: boolean;
+  colorDisplayFormat: ColorDisplayFormat;
 }
 
 export type PluginMessage =
@@ -73,5 +76,5 @@ export interface GetSettingsMessage {
 export interface SetSettingMessage {
   type: 'set-setting';
   key: keyof PluginSettings;
-  value: boolean;
+  value: PluginSettings[keyof PluginSettings];
 }

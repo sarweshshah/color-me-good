@@ -11,9 +11,12 @@ let resizeBounds = {
   maxHeight: 840,
 };
 
+const VALID_FORMATS = ['hex', 'rgba', 'hsla', 'hsba'] as const;
+
 const DEFAULT_SETTINGS: PluginSettings = {
   includeVectors: false,
   smoothZoom: true,
+  colorDisplayFormat: 'hex',
 };
 
 async function loadSettings(): Promise<PluginSettings> {
@@ -25,9 +28,15 @@ async function loadSettings(): Promise<PluginSettings> {
       'includeVectors' in raw &&
       'smoothZoom' in raw
     ) {
+      const loaded = raw as PluginSettings;
+      const format =
+        'colorDisplayFormat' in loaded && VALID_FORMATS.includes(loaded.colorDisplayFormat as typeof VALID_FORMATS[number])
+          ? loaded.colorDisplayFormat
+          : 'hex';
       return {
-        includeVectors: Boolean((raw as PluginSettings).includeVectors),
-        smoothZoom: Boolean((raw as PluginSettings).smoothZoom),
+        includeVectors: Boolean(loaded.includeVectors),
+        smoothZoom: Boolean(loaded.smoothZoom),
+        colorDisplayFormat: format,
       };
     }
   } catch (_) {}
@@ -57,6 +66,7 @@ let pendingChanges: Array<{ type: string; id: string }> = [];
 let currentScanId = 0;
 let includeVectors = false;
 let smoothZoom = true;
+let colorDisplayFormat: PluginSettings['colorDisplayFormat'] = 'hex';
 let ignoreNextSelectionChange = false;
 let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -90,7 +100,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       );
       break;
     case 'get-settings':
-      sendSettingsToUI({ includeVectors, smoothZoom });
+      sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
       if (latestViewState) {
         figma.ui.postMessage({
           type: 'scan-complete',
@@ -101,14 +111,18 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'set-setting':
       if (msg.key === 'includeVectors') {
-        includeVectors = msg.value;
-        await saveSettings({ includeVectors, smoothZoom });
-        sendSettingsToUI({ includeVectors, smoothZoom });
+        includeVectors = msg.value as boolean;
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
         await performScan();
       } else if (msg.key === 'smoothZoom') {
-        smoothZoom = msg.value;
-        await saveSettings({ includeVectors, smoothZoom });
-        sendSettingsToUI({ includeVectors, smoothZoom });
+        smoothZoom = msg.value as boolean;
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
+      } else if (msg.key === 'colorDisplayFormat') {
+        colorDisplayFormat = msg.value as PluginSettings['colorDisplayFormat'];
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
       }
       break;
   }
@@ -541,6 +555,7 @@ async function initPlugin() {
   const settings = await loadSettings();
   includeVectors = settings.includeVectors;
   smoothZoom = settings.smoothZoom;
+  colorDisplayFormat = settings.colorDisplayFormat;
 
   const hasSelection = figma.currentPage.selection.length > 0;
 

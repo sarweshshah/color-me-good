@@ -1,5 +1,6 @@
 import { SerializedColorEntry } from '../../shared/types';
-import { formatHex, gradientToCSSString } from './format';
+import type { ColorDisplayFormat } from '../../shared/messages';
+import { formatResolvedColor, gradientToCSSString } from './format';
 
 function execCommandCopy(text: string): boolean {
   const textarea = document.createElement('textarea');
@@ -33,13 +34,14 @@ async function copyText(text: string): Promise<boolean> {
 }
 
 export async function copyColorToClipboard(
-  color: SerializedColorEntry
+  color: SerializedColorEntry,
+  format: ColorDisplayFormat
 ): Promise<boolean> {
   try {
     let text = '';
 
-    if (color.type === 'solid' && color.hex) {
-      text = formatHex(color.hex);
+    if (color.type === 'solid') {
+      text = formatResolvedColor(color, format);
     } else if (color.type === 'gradient' && color.gradient) {
       text = gradientToCSSString(color.gradient);
     }

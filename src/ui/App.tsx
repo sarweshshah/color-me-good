@@ -17,6 +17,7 @@ import { Settings } from './components/Settings';
 import { ChevronLeft, MousePointerClick } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings } from '../shared/messages';
+import { formatResolvedColor } from './utils/format';
 
 const MIN_WIDTH = 420;
 const MAX_WIDTH = 540;
@@ -132,12 +133,16 @@ export function App() {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const includeVectors = state.settings?.includeVectors ?? false;
+  const colorDisplayFormat = state.settings?.colorDisplayFormat ?? 'hex';
 
   const handleOpenSettings = () => {
     setView('settings');
   };
 
-  const handleSettingChange = (key: keyof PluginSettings, value: boolean) => {
+  const handleSettingChange = <K extends keyof PluginSettings>(
+    key: K,
+    value: PluginSettings[K]
+  ) => {
     postMessage({ type: 'set-setting', key, value });
   };
 
@@ -188,12 +193,14 @@ export function App() {
 
     if (searchText) {
       const search = searchText.toLowerCase();
-      filtered = filtered.filter(
-        (c) =>
-          c.hex?.toLowerCase().includes(search) ||
+      filtered = filtered.filter((c) => {
+        const formatted = formatResolvedColor(c, colorDisplayFormat);
+        return (
           c.tokenName?.toLowerCase().includes(search) ||
-          c.styleName?.toLowerCase().includes(search)
-      );
+          c.styleName?.toLowerCase().includes(search) ||
+          formatted.toLowerCase().includes(search)
+        );
+      });
     }
 
     if (bindingFilter === 'token-bound') {
@@ -260,6 +267,7 @@ export function App() {
     nodeTypeFilters,
     sortBy,
     sortDirection,
+    colorDisplayFormat,
   ]);
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
@@ -455,6 +463,7 @@ export function App() {
           selectedIds={selectedIds}
           propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
+          colorDisplayFormat={colorDisplayFormat}
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
           onElementClick={handleElementClick}
