@@ -153,7 +153,7 @@ export function ColorRow({
 
   return (
     <div
-      className={`border-b border-figma-border ${isSelected ? 'bg-figma-blue/10' : ''}`}
+      className={`color-row border-b border-figma-border ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}
     >
       <div
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
@@ -230,23 +230,23 @@ export function ColorRow({
           const visibleNodes = nodesToShow.slice(0, visibleCount);
           const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
           return (
-            <div className="bg-figma-bg/50 pt-0 pb-2 w-full">
+            <div className="bg-figma-surface border-t border-figma-border pt-1 pb-1 w-full">
               {visibleNodes.map((nodeRef, idx) => (
                 <div
                   key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
-                  className="w-full py-2 px-4 hover:bg-figma-surface cursor-pointer flex items-center justify-between gap-3 text-xs"
+                  className="w-full py-2 pl-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center justify-between gap-3"
                   onClick={() => onElementClick(nodeRef.nodeId)}
                 >
-                  <div className="flex-1 min-w-0 flex items-center gap-3">
+                  <div className="flex-1 min-w-0 flex items-center gap-1">
                     <NodeTypeIcon nodeType={nodeRef.nodeType} />
                     <div className="min-w-0">
-                      <div className="text-figma-text truncate">{nodeRef.nodeName}</div>
-                      <div className="text-figma-text-secondary text-xs truncate">
+                      <div className="text-figma-text text-[11px] font-medium truncate">{nodeRef.nodeName}</div>
+                      <div className="text-figma-text-secondary text-[10px] truncate">
                         {nodeRef.layerPath}
                       </div>
                     </div>
                   </div>
-                  <span className="text-figma-text-secondary shrink-0">
+                  <span className="text-figma-text-secondary text-[10px] shrink-0">
                     {nodeRef.propertyType}
                   </span>
                 </div>

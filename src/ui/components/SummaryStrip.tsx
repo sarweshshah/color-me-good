@@ -60,7 +60,7 @@ function Stat({
 }: StatProps) {
   const content = (
     <div className="flex items-center gap-1">
-      <span className="text-figma-text-secondary">{label}:</span>
+      <span className={active ? 'text-figma-text' : 'text-figma-text-secondary'}>{label}:</span>
       <span className={`font-semibold ${color}`}>{value}</span>
     </div>
   );
@@ -71,7 +71,7 @@ function Stat({
         type="button"
         onClick={onClick}
         className={`rounded px-1.5 py-0.5 -mx-1.5 -my-0.5 transition-colors ${
-          active ? 'bg-figma-blue/10' : 'hover:bg-figma-border/40 cursor-pointer'
+          active ? 'summary-strip-stat-active bg-figma-bg-selected text-figma-text' : 'hover:bg-figma-border/40 cursor-pointer'
         }`}
       >
         {content}

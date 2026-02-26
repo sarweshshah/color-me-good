@@ -371,8 +371,8 @@ export function App() {
         <Header context={state.context} onClearScope={handleClearScope} />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6 max-w-[320px]">
-            <div className="flex justify-center mb-4 text-figma-text-secondary/80">
-              <MousePointerClick size={48} strokeWidth={1.5} className="text-figma-text-secondary/70" />
+            <div className="flex justify-center mb-2 text-figma-text-tertiary non-scanned-state-icon">
+              <MousePointerClick size={48} strokeWidth={1.5} className="text-figma-text-tertiary" />
             </div>
             <div className="text-figma-text text-sm font-medium mb-1">
               Select elements to scan
@@ -452,7 +452,7 @@ export function App() {
 
       {showCopiedToast && (
         <div
-          className="fixed left-1/2 -translate-x-1/2 bottom-14 z-[10001] bg-figma-green text-white text-xs font-medium px-4 py-2 rounded shadow-lg"
+          className="fixed left-1/2 -translate-x-1/2 bottom-14 z-[10001] bg-figma-green text-figma-onsuccess text-xs font-medium px-4 py-2 rounded shadow-lg"
           role="status"
           aria-live="polite"
         >

@@ -107,10 +107,10 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen]);
 
   return (
-    <div className="px-2 py-2 border-b border-figma-border/80 bg-figma-surface">
+    <div className="px-2 py-2 border-b border-figma-border bg-figma-surface">
       <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-bg/80 rounded-md border border-figma-border/60 focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
-          <Search size={14} className="ml-3 text-figma-text-secondary/80 shrink-0" />
+        <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-bg/80 rounded-md border border-figma-border focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
+          <Search size={14} className="ml-3 text-figma-icon shrink-0" />
           <input
             type="text"
             value={searchText}
@@ -138,7 +138,7 @@ export function SearchFilterBar({
               }}
               className={`flex items-center justify-center w-8 h-8 rounded-md border transition-colors ${
                 sortOpen || isSortCustom
-                  ? 'bg-figma-text border-figma-text text-white shadow-sm'
+                  ? 'bg-figma-brand border-figma-brand text-figma-onbrand shadow-sm'
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               data-tooltip={`Sort: ${SORT_LABELS[sortBy]} (${sortDirection === 'asc' ? 'Ascending' : 'Descending'})`}
@@ -148,7 +148,7 @@ export function SearchFilterBar({
             </button>
 
             {sortOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1.5 w-44 bg-figma-surface rounded-lg border border-figma-border shadow-md z-50 overflow-hidden">
                 <div className="py-1.5">
                   <div className="px-3 py-1.5">
                     <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
@@ -188,7 +188,7 @@ export function SearchFilterBar({
               }}
               className={`relative flex items-center justify-center w-8 h-8 rounded-md border transition-colors ${
                 filterOpen || activeFilterCount > 0
-                  ? 'bg-figma-text border-figma-text text-white shadow-sm'
+                  ? 'bg-figma-brand border-figma-brand text-figma-onbrand shadow-sm'
                   : 'bg-figma-surface border-figma-border text-figma-text-secondary hover:text-figma-text hover:border-figma-text-secondary/60 hover:bg-figma-bg active:bg-figma-border/30'
               }`}
               data-tooltip="Filters"
@@ -196,14 +196,14 @@ export function SearchFilterBar({
             >
               <Filter size={14} strokeWidth={2} />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-white text-[10px] font-medium rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-figma-onwarning text-[10px] font-medium rounded-full flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
             </button>
 
             {filterOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-52 bg-figma-surface rounded-lg border border-figma-border/80 shadow-md z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-1.5 w-52 bg-figma-surface rounded-lg border border-figma-border shadow-md z-50 overflow-hidden">
                 <div className="py-1.5">
                   <div className="px-3 py-2 flex items-center justify-between">
                     <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
@@ -278,7 +278,7 @@ export function SearchFilterBar({
 function SectionLabel({ label }: { label: string }) {
   return (
     <div className="px-3 pt-2 pb-1">
-      <span className="text-[10px] font-medium text-figma-text-secondary/80 uppercase tracking-wider">
+      <span className="text-[10px] font-medium text-figma-text-secondary uppercase tracking-wider">
         {label}
       </span>
     </div>

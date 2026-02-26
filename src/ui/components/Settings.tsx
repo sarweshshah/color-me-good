@@ -39,7 +39,7 @@ function SettingRow({
         }`}
       >
         <span
-          className="block w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+          className="block w-4 h-4 rounded-full bg-figma-onbrand shadow-sm transition-transform"
           style={{ transform: checked ? 'translateX(18px)' : 'translateX(2px)' }}
         />
       </button>
@@ -56,7 +56,7 @@ function Section({
 }) {
   return (
     <section className="border-b border-figma-border last:border-b-0">
-      <h2 className="text-[10px] font-medium text-figma-text-secondary/80 uppercase tracking-wider px-4 pt-4 pb-2">
+      <h2 className="text-[10px] font-medium text-figma-text-secondary uppercase tracking-wider px-4 pt-4 pb-2">
         {title}
       </h2>
       <div className="px-4 pb-4">{children}</div>
