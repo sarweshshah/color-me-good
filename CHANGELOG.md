@@ -108,6 +108,15 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
+## [1.1.0] – 2026-02-21
+
+### Release
+
+- Minor release for Figma Community publish and GitHub release.
+- No functional changes from 1.0.0.
+
+---
+
 ## [Unreleased] – Phase 2 (Planned)
 
 - Effect color extraction (shadows, glows)

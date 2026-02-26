@@ -4,4 +4,5 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+color-me-good-v*.zip
 .claude/
