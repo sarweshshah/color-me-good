@@ -108,12 +108,24 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [1.1.0] – 2026-02-21
+## [1.1.0] – 2026-02-26
 
-### Release
+### Added ✨
 
-- Minor release for Figma Community publish and GitHub release.
-- No functional changes from 1.0.0.
+- **Sort direction toggle**: Ascending/descending for all sort options (usage, hex, token name). Direction control in the filter bar with visual indicator (↑/↓). ↕️
+- **Node type filters**: Filter colors by node type (Text, Shape, Frame, Section, Group, Component, Instance, and Vector when “Include vectors” is on). Multi-select; filtered list and expanded rows respect node type filters. 🎚️
+- **Color value format setting**: Display format for resolved and hard-coded colors — Hex, RGBA, or HSLA — in Settings → Display. Persisted with other settings. 🎨
+- **Settings screen updates**: Logo, Help link (README), and Change Log link in the footer for quick access to docs and changelog. ⚙️
+- **Document change handling**: Listens to Figma `documentchange`; re-scans when the document changes and detects when the scoped node(s) are deleted, then clears scope and shows “Scoped element was deleted. Select something to scan.” 📡
+
+### Changed 🔧
+
+- **Panel dimensions**: Minimum height increased from 640px to 720px; default remains 420×720, range 420–540 × 720–840. 📐
+- **ResizeHandles & SummaryStrip**: Refactored for consistent styling and layout with the rest of the UI. 🖼️
+- **Button styling**: Improved hover and active states for main actions (e.g. back from settings, Select All). ✨
+- **Badge readability**: Token-bound (and similar) badges use white text for better contrast. 🏷️
+- **Light theme**: Tailwind and UI components adjusted so the plugin looks correct in Figma light theme as well as dark. 🌓
+- **Color list filtering**: ColorList and ColorRow support `nodeTypeFilters`; expanded rows and visibility respect property and node type filters together. 🔎
 
 ---
 
