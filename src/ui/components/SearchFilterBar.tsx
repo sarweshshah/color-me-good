@@ -196,7 +196,7 @@ export function SearchFilterBar({
             >
               <Filter size={14} strokeWidth={2} />
               {activeFilterCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-figma-onwarning text-[10px] font-medium rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 px-1 bg-figma-orange text-white text-[10px] font-medium rounded-full flex items-center justify-center">
                   {activeFilterCount}
                 </span>
               )}
