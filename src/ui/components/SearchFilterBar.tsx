@@ -107,9 +107,9 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen]);
 
   return (
-    <div className="px-2 py-2 border-b border-figma-border bg-figma-surface">
+    <div className="px-2 py-2 border-b border-figma-border bg-figma-bg">
       <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-bg/80 rounded-md border border-figma-border focus-within:border-figma-blue/50 focus-within:bg-figma-surface transition-colors">
+        <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-surface rounded-md border border-figma-border focus-within:border-figma-blue/50 transition-colors">
           <Search size={14} className="ml-3 text-figma-icon shrink-0" />
           <input
             type="text"

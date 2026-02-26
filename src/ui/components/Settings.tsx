@@ -4,7 +4,8 @@ import logoSrc from '../../../assets/logo.png';
 const PLUGIN_NAME = 'Color Me Good';
 const VERSION = '1.0.0';
 const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
-const CHANGELOG_URL = 'https://github.com/sarweshshah/color-me-good/blob/master/CHANGELOG.md';
+const CHANGELOG_URL =
+  'https://github.com/sarweshshah/color-me-good/blob/master/CHANGELOG.md';
 
 interface SettingsProps {
   settings: PluginSettings | null;
@@ -67,14 +68,14 @@ function Section({
 export function Settings({ settings, onSettingChange }: SettingsProps) {
   if (!settings) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 bg-figma-surface">
         <span className="text-figma-text-secondary text-sm">Loading settings…</span>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto bg-figma-surface">
       <Section title="Scan">
         <SettingRow
           label="Include vectors"

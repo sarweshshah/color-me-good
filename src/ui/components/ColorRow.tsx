@@ -109,21 +109,20 @@ export function ColorRow({
           acc[t] = (acc[t] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>,
+        {} as Record<string, number>
       ),
-    [filteredNodes],
+    [filteredNodes]
   );
   const tooltipBreakdown = Object.entries(nodesByType)
     .sort(([, a], [, b]) => b - a)
     .map(([type, count]) => `${type.charAt(0)}${type.slice(1).toLowerCase()}: ${count}`)
     .join('\n');
 
-  const selectAllTooltip =
-    hasActiveFilters
-      ? filteredNodes.length > 0
-        ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
-        : 'No matching elements'
-      : 'Select all elements with this color';
+  const selectAllTooltip = hasActiveFilters
+    ? filteredNodes.length > 0
+      ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
+      : 'No matching elements'
+    : 'Select all elements with this color';
 
   const badge = color.isTokenBound ? (
     <span
@@ -194,7 +193,10 @@ export function ColorRow({
         <div className="flex items-center gap-2">
           <span
             className="text-figma-text-secondary text-[10px] flex items-center gap-1 px-1.5 py-0.5 rounded bg-figma-bg/60 transition-colors hover:bg-figma-bg hover:text-figma-blue cursor-default"
-            data-tooltip={tooltipBreakdown || (hasActiveFilters ? 'No matching elements' : 'No elements')}
+            data-tooltip={
+              tooltipBreakdown ||
+              (hasActiveFilters ? 'No matching elements' : 'No elements')
+            }
             data-tooltip-align="end"
           >
             <Layers size={10} className="shrink-0" />
@@ -240,7 +242,9 @@ export function ColorRow({
                   <div className="flex-1 min-w-0 flex items-center gap-1">
                     <NodeTypeIcon nodeType={nodeRef.nodeType} />
                     <div className="min-w-0">
-                      <div className="text-figma-text text-[11px] font-medium truncate">{nodeRef.nodeName}</div>
+                      <div className="text-figma-text text-[11px] font-medium truncate">
+                        {nodeRef.nodeName}
+                      </div>
                       <div className="text-figma-text-secondary text-[10px] truncate">
                         {nodeRef.layerPath}
                       </div>

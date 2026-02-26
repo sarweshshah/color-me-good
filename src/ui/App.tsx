@@ -252,7 +252,15 @@ export function App() {
     }
 
     return sorted;
-  }, [state.colors, searchText, bindingFilter, propertyFilters, nodeTypeFilters, sortBy, sortDirection]);
+  }, [
+    state.colors,
+    searchText,
+    bindingFilter,
+    propertyFilters,
+    nodeTypeFilters,
+    sortBy,
+    sortDirection,
+  ]);
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
@@ -328,7 +336,7 @@ export function App() {
 
   if (view === 'settings') {
     return (
-      <div className="h-screen bg-figma-bg flex flex-col">
+      <div className="h-screen bg-figma-surface flex flex-col">
         <ResizeHandles postMessage={postMessage} />
         <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
           <button
@@ -355,14 +363,13 @@ export function App() {
   const hasNoSelection =
     (state.context == null ||
       (state.context.mode === 'selection' &&
-        (state.context.scopeNodeIds == null || state.context.scopeNodeIds.length === 0))) &&
+        (state.context.scopeNodeIds == null ||
+          state.context.scopeNodeIds.length === 0))) &&
     state.colors.length === 0 &&
     !state.isScanning;
 
   const hasSelectionButNoColors =
-    state.context &&
-    state.colors.length === 0 &&
-    !hasNoSelection;
+    state.context && state.colors.length === 0 && !hasNoSelection;
 
   if (hasNoSelection) {
     return (
@@ -372,13 +379,18 @@ export function App() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center px-6 max-w-[320px]">
             <div className="flex justify-center mb-2 text-figma-text-tertiary non-scanned-state-icon">
-              <MousePointerClick size={48} strokeWidth={1.5} className="text-figma-text-tertiary" />
+              <MousePointerClick
+                size={48}
+                strokeWidth={1.5}
+                className="text-figma-text-tertiary"
+              />
             </div>
             <div className="text-figma-text text-sm font-medium mb-1">
               Select elements to scan
             </div>
             <div className="text-figma-text-secondary text-xs leading-relaxed">
-              Select one or more elements in the canvas. Colors from your selection will appear here.
+              Select one or more elements in the canvas. Colors from your selection will
+              appear here.
             </div>
           </div>
         </div>
