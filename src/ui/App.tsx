@@ -342,7 +342,7 @@ export function App() {
           <button
             type="button"
             onClick={() => setView('list')}
-            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-border/60 transition-colors"
+            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
             aria-label="Back"
           >
             <ChevronLeft size={20} />
