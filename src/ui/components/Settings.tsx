@@ -100,6 +100,30 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
       <Section title="Display">
         <div className="py-2">
           <div className="text-sm text-figma-text font-medium mb-1.5">
+            UI theme
+          </div>
+          <div className="text-xs text-figma-text-secondary mb-2">
+            Choose light, dark, or follow system preference.
+          </div>
+          <div className="flex gap-2 mb-4">
+            {(['light', 'dark', 'system'] as const).map((theme) => (
+              <button
+                key={theme}
+                type="button"
+                onClick={() => onSettingChange('uiTheme', theme)}
+                className={`flex-1 px-3 py-2 rounded-md border text-xs font-medium capitalize transition-colors ${
+                  (settings.uiTheme ?? 'system') === theme
+                    ? 'bg-figma-blue border-figma-blue text-figma-onbrand'
+                    : 'bg-figma-surface border-figma-border text-figma-text hover:bg-figma-bg-hover'
+                }`}
+              >
+                {theme}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="py-2">
+          <div className="text-sm text-figma-text font-medium mb-1.5">
             Color value format
           </div>
           <div className="text-xs text-figma-text-secondary mb-2">

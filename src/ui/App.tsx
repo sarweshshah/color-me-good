@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'preact/hooks';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'preact/hooks';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
@@ -16,7 +16,7 @@ import { TooltipPortal } from './components/TooltipPortal';
 import { Settings } from './components/Settings';
 import { ChevronLeft, MousePointerClick } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
-import type { PluginSettings } from '../shared/messages';
+import type { PluginSettings, UITheme } from '../shared/messages';
 import { formatResolvedColor } from './utils/format';
 
 const MIN_WIDTH = 420;
@@ -134,6 +134,30 @@ export function App() {
 
   const includeVectors = state.settings?.includeVectors ?? false;
   const colorDisplayFormat = state.settings?.colorDisplayFormat ?? 'hex';
+  const uiTheme = state.settings?.uiTheme ?? 'system';
+
+  useEffect(() => {
+    const applyTheme = (theme: UITheme) => {
+      const resolved =
+        theme === 'system'
+          ? window.matchMedia('(prefers-color-scheme: dark)').matches
+            ? 'figma-dark'
+            : 'figma-light'
+          : theme === 'dark'
+            ? 'figma-dark'
+            : 'figma-light';
+      document.documentElement.className = resolved;
+    };
+
+    applyTheme(uiTheme);
+
+    if (uiTheme === 'system') {
+      const mq = window.matchMedia('(prefers-color-scheme: dark)');
+      const handler = () => applyTheme('system');
+      mq.addEventListener('change', handler);
+      return () => mq.removeEventListener('change', handler);
+    }
+  }, [uiTheme]);
 
   const handleOpenSettings = () => {
     setView('settings');

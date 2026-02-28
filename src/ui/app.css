@@ -55,6 +55,31 @@ body {
   background: var(--figma-color-bg-selected, #a7a7a7);
 }
 
+/* Dark theme: explicit variable overrides (Figma injects vars based on its theme, so we override when user selects dark) */
+.figma-dark {
+  --figma-color-bg-secondary: #363636;
+  --figma-color-bg: #2c2c2c;
+  --figma-color-bg-hover: #404040;
+  --figma-color-border: #404040;
+  --figma-color-border-strong: #4a4a4a;
+  --figma-color-border-selected: #0d99ff;
+  --figma-color-bg-selected: #1a1a1a;
+  --figma-color-icon: #ffffff;
+  --figma-color-icon-secondary: #b3b3b3;
+  --figma-color-text: #ffffff;
+  --figma-color-text-secondary: #b3b3b3;
+  --figma-color-text-tertiary: rgba(255, 255, 255, 0.4);
+  --figma-color-text-brand: #0d99ff;
+  --figma-color-bg-brand: #0d99ff;
+  --figma-color-text-onbrand: #ffffff;
+  --figma-color-bg-success: #14a361;
+  --figma-color-text-onsuccess: #ffffff;
+  --figma-color-bg-warning: #e67700;
+  --figma-color-text-onwarning: #1e1e1e;
+  --figma-color-bg-inverse: #ffffff;
+  --figma-color-text-oninverse: #2c2c2c;
+}
+
 /* Dark theme only: slightly more visible non-scanned state icon */
 .figma-dark .non-scanned-state-icon,
 .figma-dark .non-scanned-state-icon svg {
