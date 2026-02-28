@@ -12,11 +12,13 @@ let resizeBounds = {
 };
 
 const VALID_FORMATS = ['hex', 'rgba', 'hsla', 'hsba'] as const;
+const VALID_UI_THEMES = ['light', 'dark', 'system'] as const;
 
 const DEFAULT_SETTINGS: PluginSettings = {
   includeVectors: false,
   smoothZoom: true,
   colorDisplayFormat: 'hex',
+  uiTheme: 'system',
 };
 
 async function loadSettings(): Promise<PluginSettings> {
@@ -33,10 +35,15 @@ async function loadSettings(): Promise<PluginSettings> {
         'colorDisplayFormat' in loaded && VALID_FORMATS.includes(loaded.colorDisplayFormat as typeof VALID_FORMATS[number])
           ? loaded.colorDisplayFormat
           : 'hex';
+      const theme =
+        'uiTheme' in loaded && VALID_UI_THEMES.includes(loaded.uiTheme as typeof VALID_UI_THEMES[number])
+          ? loaded.uiTheme
+          : 'system';
       return {
         includeVectors: Boolean(loaded.includeVectors),
         smoothZoom: Boolean(loaded.smoothZoom),
         colorDisplayFormat: format,
+        uiTheme: theme,
       };
     }
   } catch (_) {}
@@ -67,6 +74,7 @@ let currentScanId = 0;
 let includeVectors = false;
 let smoothZoom = true;
 let colorDisplayFormat: PluginSettings['colorDisplayFormat'] = 'hex';
+let uiTheme: PluginSettings['uiTheme'] = 'system';
 let ignoreNextSelectionChange = false;
 let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -100,7 +108,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       );
       break;
     case 'get-settings':
-      sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
+      sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
       if (latestViewState) {
         figma.ui.postMessage({
           type: 'scan-complete',
@@ -112,17 +120,21 @@ figma.ui.onmessage = async (msg: UIMessage) => {
     case 'set-setting':
       if (msg.key === 'includeVectors') {
         includeVectors = msg.value as boolean;
-        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
-        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
         await performScan();
       } else if (msg.key === 'smoothZoom') {
         smoothZoom = msg.value as boolean;
-        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
-        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
       } else if (msg.key === 'colorDisplayFormat') {
         colorDisplayFormat = msg.value as PluginSettings['colorDisplayFormat'];
-        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat });
-        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat });
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+      } else if (msg.key === 'uiTheme') {
+        uiTheme = msg.value as PluginSettings['uiTheme'];
+        await saveSettings({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+        sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
       }
       break;
   }
@@ -556,6 +568,7 @@ async function initPlugin() {
   includeVectors = settings.includeVectors;
   smoothZoom = settings.smoothZoom;
   colorDisplayFormat = settings.colorDisplayFormat;
+  uiTheme = settings.uiTheme;
 
   const hasSelection = figma.currentPage.selection.length > 0;
 

@@ -1,11 +1,13 @@
 import { SerializedColorEntry, ScanContext } from './types';
 
 export type ColorDisplayFormat = 'hex' | 'rgba' | 'hsla' | 'hsba';
+export type UITheme = 'light' | 'dark' | 'system';
 
 export interface PluginSettings {
   includeVectors: boolean;
   smoothZoom: boolean;
   colorDisplayFormat: ColorDisplayFormat;
+  uiTheme: UITheme;
 }
 
 export type PluginMessage =

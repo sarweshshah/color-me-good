@@ -269,7 +269,7 @@ _Implementation note: NodeRef includes nodeType for UI icon display. ScanContext
 | UI framework | Preact or Svelte                | Lightweight (< 5KB gzipped); fast list rendering for 100+ color rows |
 | UI styling   | CSS Modules or Tailwind (JIT)   | Scoped styles; no conflicts with Figma’s own CSS                     |
 | Build tool   | Vite + Figma plugin template    | Fast dev server; handles dual-entry (code.ts + ui.html)              |
-| Virtual list | @tanstack/virtual-core          | Implemented for smooth scrolling with large color lists              |
+| Virtual list | (Phase 2)                       | Planned for smooth scrolling with 500+ color rows                     |
 | Testing      | Vitest + Figma Plugin API mocks | Unit test scanning logic without a live Figma instance               |
 
 # 9. Edge Cases & Error Handling
