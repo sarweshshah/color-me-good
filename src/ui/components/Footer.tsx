@@ -1,16 +1,16 @@
-const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
-const VERSION = '1.0.0';
+import { VERSION, HELP_URL } from '../../shared/constants';
 
 interface FooterProps {
-  view: 'list' | 'settings';
+  view: 'list' | 'settings' | 'about';
   onOpenSettings: () => void;
+  onOpenAbout: () => void;
   onBack: () => void;
 }
 
-export function Footer({ view, onOpenSettings, onBack }: FooterProps) {
+export function Footer({ view, onOpenSettings, onOpenAbout, onBack }: FooterProps) {
   return (
     <footer className="shrink-0 flex-none z-0 bg-figma-surface-secondary border-t border-figma-border px-4 py-2 flex items-center justify-between">
-      {view === 'settings' ? (
+      {view === 'settings' || view === 'about' ? (
         <button
           className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
           onClick={onBack}
@@ -31,6 +31,12 @@ export function Footer({ view, onOpenSettings, onBack }: FooterProps) {
               onClick={() => window.open(HELP_URL, '_blank')}
             >
               Help
+            </button>
+            <button
+              className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"
+              onClick={onOpenAbout}
+            >
+              About
             </button>
           </div>
           <span className="text-xs text-figma-text-secondary">v{VERSION}</span>

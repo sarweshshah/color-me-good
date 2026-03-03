@@ -31,17 +31,17 @@ body {
   --figma-color-border-strong: #e2e2e2;
   --figma-color-border-selected: #f6f6f6;
   --figma-color-bg-selected: #ffffff;
-  --figma-color-icon: #1e1e1e;
-  --figma-color-text: #1e1e1e;
-  --figma-color-text-secondary: #6b6b6b;
-  --figma-color-text-tertiary: #0000004d;
-  --figma-color-text-brand: #353535;
-  --figma-color-bg-brand: #353535;
+  --figma-color-icon: #555555;
+  --figma-color-text: #383838;
+  --figma-color-text-secondary: #7a7a7a;
+  --figma-color-text-tertiary: rgba(0, 0, 0, 0.22);
+  --figma-color-text-brand: #444444;
+  --figma-color-bg-brand: #444444;
   --figma-color-text-onbrand: #ffffff;
   --figma-color-bg-success: #14a361;
   --figma-color-text-onsuccess: #ffffff;
   --figma-color-bg-warning: #e67700;
-  --figma-color-text-onwarning: #1e1e1e;
+  --figma-color-text-onwarning: #383838;
 }
 
 /* Light theme only: default background for color rows (not when selected) */

@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'preact/hooks';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
+import { SHAPE_NODE_TYPES } from '../../shared/constants';
+import { matchesNodeFilters } from '../../shared/filters';
 import { Swatch } from './Swatch';
 import { formatResolvedColor } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
@@ -35,14 +37,6 @@ const NODE_TYPE_ICONS: Record<string, typeof Box> = {
   POLYGON: Square,
   BOOLEAN_OPERATION: PenTool,
 };
-const SHAPE_NODE_TYPES = new Set([
-  'RECTANGLE',
-  'ELLIPSE',
-  'LINE',
-  'STAR',
-  'POLYGON',
-  'BOOLEAN_OPERATION',
-]);
 
 const INITIAL_VISIBLE_ELEMENTS = 20;
 const VISIBLE_ELEMENTS_STEP = 20;
@@ -86,17 +80,9 @@ export function ColorRow({
     color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
   const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
-    const filtered = color.nodes.filter((n) => {
-      if (propertyFilters.size > 0 && !propertyFilters.has(n.propertyType)) return false;
-      if (nodeTypeFilters.size > 0) {
-        const type = n.nodeType;
-        if (!type) return false;
-        if (nodeTypeFilters.has(type)) return true;
-        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
-        return false;
-      }
-      return true;
-    });
+    const filtered = color.nodes.filter((n) =>
+      matchesNodeFilters(n, propertyFilters, nodeTypeFilters)
+    );
     const hasFilters = propertyFilters.size > 0 || nodeTypeFilters.size > 0;
     return {
       filteredNodes: filtered,
@@ -220,66 +206,93 @@ export function ColorRow({
         </div>
       </div>
 
-      {isExpanded &&
-        (() => {
-          const nodesToShow = color.nodes.filter((n) => {
-            if (n.propertyType === 'text') return false;
-            if (nodeTypeFilters.size === 0) return true;
+      {isExpanded && (
+        <ExpandedNodeList
+          color={color}
+          nodeTypeFilters={nodeTypeFilters}
+          visibleCount={visibleCount}
+          onShowMore={(total) =>
+            setVisibleCount((prev) => Math.min(total, prev + VISIBLE_ELEMENTS_STEP))
+          }
+          onElementClick={onElementClick}
+        />
+      )}
+    </div>
+  );
+}
 
-            const type = n.nodeType;
-            if (!type) return false;
-            if (nodeTypeFilters.has(type)) return true;
-            if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
-            return false;
-          });
-          if (nodesToShow.length === 0) return null;
-          const visibleNodes = nodesToShow.slice(0, visibleCount);
-          const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
-          return (
-            <div className="bg-figma-surface border-t border-figma-border pt-1 pb-1 w-full">
-              {visibleNodes.map((nodeRef, idx) => (
-                <div
-                  key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
-                  className="w-full py-2 pl-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center justify-between gap-3"
-                  onClick={() => onElementClick(nodeRef.nodeId)}
-                >
-                  <div className="flex-1 min-w-0 flex items-center gap-1">
-                    <NodeTypeIcon nodeType={nodeRef.nodeType} />
-                    <div className="min-w-0">
-                      <div className="text-figma-text text-[11px] font-medium truncate">
-                        {nodeRef.nodeName}
-                      </div>
-                      <div className="text-figma-text-secondary text-[10px] truncate">
-                        {nodeRef.layerPath}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-figma-text-secondary text-[10px] shrink-0">
-                    {nodeRef.propertyType}
-                  </span>
-                </div>
-              ))}
-              {remainingCount > 0 && (
-                <div className="py-2 px-4 text-center">
-                  <button
-                    type="button"
-                    className="text-figma-blue text-xs hover:underline"
-                    onClick={() =>
-                      setVisibleCount((prev) =>
-                        Math.min(nodesToShow.length, prev + VISIBLE_ELEMENTS_STEP)
-                      )
-                    }
-                  >
-                    Show {Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} more
-                    {remainingCount > VISIBLE_ELEMENTS_STEP
-                      ? ` (${remainingCount - Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} left)`
-                      : ''}
-                  </button>
-                </div>
-              )}
+interface ExpandedNodeListProps {
+  color: SerializedColorEntry;
+  nodeTypeFilters: Set<string>;
+  visibleCount: number;
+  onShowMore: (totalCount: number) => void;
+  onElementClick: (nodeId: string) => void;
+}
+
+function ExpandedNodeList({
+  color,
+  nodeTypeFilters,
+  visibleCount,
+  onShowMore,
+  onElementClick,
+}: ExpandedNodeListProps) {
+  const nodesToShow = useMemo(
+    () =>
+      color.nodes.filter((n) => {
+        if (n.propertyType === 'text') return false;
+        if (nodeTypeFilters.size === 0) return true;
+        const type = n.nodeType;
+        if (!type) return false;
+        if (nodeTypeFilters.has(type)) return true;
+        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
+        return false;
+      }),
+    [color.nodes, nodeTypeFilters]
+  );
+
+  if (nodesToShow.length === 0) return null;
+
+  const visibleNodes = nodesToShow.slice(0, visibleCount);
+  const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
+
+  return (
+    <div className="bg-figma-surface border-t border-figma-border pt-1 pb-1 w-full">
+      {visibleNodes.map((nodeRef, idx) => (
+        <div
+          key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
+          className="w-full py-2 pl-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center justify-between gap-3"
+          onClick={() => onElementClick(nodeRef.nodeId)}
+        >
+          <div className="flex-1 min-w-0 flex items-center gap-1">
+            <NodeTypeIcon nodeType={nodeRef.nodeType} />
+            <div className="min-w-0">
+              <div className="text-figma-text text-[11px] font-medium truncate">
+                {nodeRef.nodeName}
+              </div>
+              <div className="text-figma-text-secondary text-[10px] truncate">
+                {nodeRef.layerPath}
+              </div>
             </div>
-          );
-        })()}
+          </div>
+          <span className="text-figma-text-secondary text-[10px] shrink-0">
+            {nodeRef.propertyType}
+          </span>
+        </div>
+      ))}
+      {remainingCount > 0 && (
+        <div className="py-2 px-4 text-center">
+          <button
+            type="button"
+            className="text-figma-blue text-xs hover:underline"
+            onClick={() => onShowMore(nodesToShow.length)}
+          >
+            Show {Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} more
+            {remainingCount > VISIBLE_ELEMENTS_STEP
+              ? ` (${remainingCount - Math.min(VISIBLE_ELEMENTS_STEP, remainingCount)} left)`
+              : ''}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

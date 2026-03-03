@@ -221,6 +221,32 @@ async function extractColorsFromNode(
         }
       }
     }
+
+    if ('effects' in node && Array.isArray(node.effects)) {
+      for (let i = 0; i < node.effects.length; i++) {
+        const effect = node.effects[i];
+        if (
+          (effect.type === 'DROP_SHADOW' || effect.type === 'INNER_SHADOW') &&
+          effect.visible !== false
+        ) {
+          const syntheticPaint: SolidPaint = {
+            type: 'SOLID',
+            color: { r: effect.color.r, g: effect.color.g, b: effect.color.b },
+            opacity: effect.color.a,
+            visible: true,
+          };
+          await addSolidColor(
+            syntheticPaint,
+            'effect',
+            i,
+            node,
+            layerPath,
+            colorMap,
+            node.boundVariables?.effects?.[i]
+          );
+        }
+      }
+    }
   } catch (error) {
     console.warn(`Failed to extract colors from node ${node.id}:`, error);
   }

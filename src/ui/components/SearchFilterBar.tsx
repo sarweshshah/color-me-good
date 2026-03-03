@@ -25,16 +25,6 @@ const SORT_LABELS: Record<SortOption, string> = {
   token: 'Token Name',
 };
 
-/** Node types shown as a single "Shape" filter option (rectangle, ellipse, line, star, polygon, etc.) */
-export const SHAPE_NODE_TYPES: readonly string[] = [
-  'RECTANGLE',
-  'ELLIPSE',
-  'LINE',
-  'STAR',
-  'POLYGON',
-  'BOOLEAN_OPERATION',
-];
-
 const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
   { value: 'TEXT', label: 'Text', icon: Type },
   { value: 'Shape', label: 'Shape', icon: Square },

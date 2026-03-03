@@ -8,25 +8,22 @@ import {
   BindingFilter,
   SortOption,
   SortDirection,
-  SHAPE_NODE_TYPES,
 } from './components/SearchFilterBar';
 import { ColorList } from './components/ColorList';
 import { Footer } from './components/Footer';
 import { TooltipPortal } from './components/TooltipPortal';
 import { Settings } from './components/Settings';
+import { About } from './components/About';
 import { ChevronLeft, MousePointerClick } from 'lucide-preact';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
-import type { PluginSettings, UITheme } from '../shared/messages';
+import type { PluginSettings, UITheme, UIMessage } from '../shared/messages';
+import { RESIZE_BOUNDS, SHAPE_NODE_TYPES } from '../shared/constants';
+import { matchesNodeFilters } from '../shared/filters';
 import { formatResolvedColor } from './utils/format';
-
-const MIN_WIDTH = 420;
-const MAX_WIDTH = 540;
-const MIN_HEIGHT = 720;
-const MAX_HEIGHT = 840;
 
 type ResizeMode = 'corner' | 'right' | 'bottom';
 
-function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
+function useResize(postMessage: (msg: UIMessage) => void, mode: ResizeMode) {
   const dragging = useRef(false);
   const startPos = useRef({ x: 0, y: 0 });
   const startSize = useRef({ w: 0, h: 0 });
@@ -49,9 +46,9 @@ function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
       let newW = startSize.current.w;
       let newH = startSize.current.h;
       if (mode === 'corner' || mode === 'right')
-        newW = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, startSize.current.w + dx));
+        newW = Math.max(RESIZE_BOUNDS.minWidth, Math.min(RESIZE_BOUNDS.maxWidth, startSize.current.w + dx));
       if (mode === 'corner' || mode === 'bottom')
-        newH = Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, startSize.current.h + dy));
+        newH = Math.max(RESIZE_BOUNDS.minHeight, Math.min(RESIZE_BOUNDS.maxHeight, startSize.current.h + dy));
       postMessage({ type: 'resize', width: Math.round(newW), height: Math.round(newH) });
     },
     [postMessage, mode]
@@ -64,7 +61,7 @@ function useResize(postMessage: (msg: any) => void, mode: ResizeMode) {
   return { onPointerDown, onPointerMove, onPointerUp };
 }
 
-function ResizeHandles({ postMessage }: { postMessage: (msg: any) => void }) {
+function ResizeHandles({ postMessage }: { postMessage: (msg: UIMessage) => void }) {
   const corner = useResize(postMessage, 'corner');
   const right = useResize(postMessage, 'right');
   const bottom = useResize(postMessage, 'bottom');
@@ -122,7 +119,7 @@ export function App() {
   const { state, postMessage } = usePluginMessages();
   const { selectedIds, handleClick } = useMultiSelect();
 
-  const [view, setView] = useState<'list' | 'settings'>('list');
+  const [view, setView] = useState<'list' | 'settings' | 'about'>('list');
   const [showCopiedToast, setShowCopiedToast] = useState(false);
 
   const [searchText, setSearchText] = useState('');
@@ -161,6 +158,10 @@ export function App() {
 
   const handleOpenSettings = () => {
     setView('settings');
+  };
+
+  const handleOpenAbout = () => {
+    setView('about');
   };
 
   const handleSettingChange = <K extends keyof PluginSettings>(
@@ -245,8 +246,7 @@ export function App() {
           const type = n.nodeType;
           if (!type) return false;
           if (nodeTypeFilters.has(type)) return true;
-          if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.includes(type))
-            return true;
+          if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
           return false;
         })
       );
@@ -296,18 +296,9 @@ export function App() {
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
-    const nodes = color.nodes.filter((n) => {
-      if (propertyFilters.size > 0 && !propertyFilters.has(n.propertyType)) return false;
-      if (nodeTypeFilters.size > 0) {
-        const type = n.nodeType;
-        if (!type) return false;
-        if (nodeTypeFilters.has(type)) return true;
-        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.includes(type)) return true;
-        return false;
-      }
-      return true;
-    });
-    const nodeIds = nodes.map((n) => n.nodeId);
+    const nodeIds = color.nodes
+      .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters))
+      .map((n) => n.nodeId);
     postMessage({ type: 'select-nodes', nodeIds });
   };
 
@@ -385,6 +376,34 @@ export function App() {
         <Footer
           view="settings"
           onOpenSettings={handleOpenSettings}
+          onOpenAbout={handleOpenAbout}
+          onBack={() => setView('list')}
+        />
+        <TooltipPortal />
+      </div>
+    );
+  }
+
+  if (view === 'about') {
+    return (
+      <div className="h-screen bg-figma-surface flex flex-col">
+        <ResizeHandles postMessage={postMessage} />
+        <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setView('list')}
+            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
+            aria-label="Back"
+          >
+            <ChevronLeft size={20} />
+          </button>
+          <h1 className="text-sm font-semibold text-figma-text">About</h1>
+        </div>
+        <About />
+        <Footer
+          view="about"
+          onOpenSettings={handleOpenSettings}
+          onOpenAbout={handleOpenAbout}
           onBack={() => setView('list')}
         />
         <TooltipPortal />
@@ -420,13 +439,13 @@ export function App() {
             <div className="text-figma-text text-sm font-medium mb-1">
               Select elements to scan
             </div>
-            <div className="text-figma-text-secondary text-xs leading-relaxed">
+            <div className="text-figma-text-secondary text-xs leading-snug">
               Select one or more elements in the canvas. Colors from your selection will
               appear here.
             </div>
           </div>
         </div>
-        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
         <TooltipPortal />
       </div>
     );
@@ -447,7 +466,7 @@ export function App() {
             </div>
           </div>
         </div>
-        <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
         <TooltipPortal />
       </div>
     );
@@ -463,6 +482,7 @@ export function App() {
           colors={state.colors}
           bindingFilter={bindingFilter}
           onBindingFilterChange={setBindingFilter}
+          onResize={(width, height) => postMessage({ type: 'resize', width, height })}
         />
       </div>
       <div className="shrink-0">
@@ -505,7 +525,7 @@ export function App() {
         </div>
       )}
 
-      <Footer view="list" onOpenSettings={handleOpenSettings} onBack={() => {}} />
+      <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
       <ResizeHandles postMessage={postMessage} />
       <TooltipPortal />
     </div>

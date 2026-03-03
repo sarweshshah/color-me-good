@@ -1,24 +1,37 @@
+import { useRef, useEffect } from 'preact/hooks';
 import { SerializedColorEntry } from '../../shared/types';
+import { RESIZE_BOUNDS } from '../../shared/constants';
 import type { BindingFilter } from './SearchFilterBar';
 
 interface SummaryStripProps {
   colors: SerializedColorEntry[];
   bindingFilter: BindingFilter;
   onBindingFilterChange: (filter: BindingFilter) => void;
+  onResize?: (width: number, height: number) => void;
 }
 
 export function SummaryStrip({
   colors,
   bindingFilter,
   onBindingFilterChange,
+  onResize,
 }: SummaryStripProps) {
   const tokenBound = colors.filter((c) => c.isTokenBound).length;
   const hardCoded = colors.filter((c) => !c.isTokenBound).length;
   const totalElements = colors.reduce((sum, c) => sum + c.usageCount, 0);
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = rowRef.current;
+    if (!el || !onResize) return;
+    if (el.scrollWidth > el.clientWidth) {
+      onResize(RESIZE_BOUNDS.maxWidth, window.innerHeight);
+    }
+  }, [colors.length, tokenBound, hardCoded, totalElements, onResize]);
 
   return (
     <div className="bg-figma-bg px-4 py-3 border-b border-figma-border-strong">
-      <div className="flex items-center gap-4 text-xs">
+      <div ref={rowRef} className="flex items-center gap-4 text-xs">
         <Stat
           label="Colors"
           value={colors.length}
@@ -46,7 +59,6 @@ export function SummaryStrip({
 interface StatProps {
   label: string;
   value: number;
-  color?: string;
   active?: boolean;
   onClick?: () => void;
 }
@@ -54,7 +66,6 @@ interface StatProps {
 function Stat({
   label,
   value,
-  color = 'text-figma-text',
   active = false,
   onClick,
 }: StatProps) {
@@ -63,7 +74,7 @@ function Stat({
       <span className={active ? 'text-figma-text' : 'text-figma-text-secondary'}>
         {label}:
       </span>
-      <span className={`font-semibold ${color}`}>{value}</span>
+      <span className="font-semibold text-figma-text">{value}</span>
     </div>
   );
 
