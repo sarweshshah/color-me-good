@@ -148,7 +148,7 @@ export function SearchFilterBar({
             </button>
 
             {sortOpen && (
-              <div className="absolute right-0 top-full mt-1.5 w-44 bg-figma-surface rounded-lg border border-figma-border shadow-md z-50 overflow-hidden">
+              <div className="absolute right-0 top-full mt-0.5 w-36 bg-figma-surface rounded-lg border border-figma-border shadow-md z-50 overflow-hidden">
                 <div className="py-1.5">
                   <div className="px-3 py-1.5">
                     <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
