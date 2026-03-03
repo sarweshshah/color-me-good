@@ -129,9 +129,26 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
+## [1.2.0] – 2026-03-03
+
+### Added ✨
+
+- **UI theme selection**: Choose between Light, Dark, or System (auto-match OS) theme directly from Settings → Display. Preference is persisted across sessions. 🌓
+- **Effect color extraction**: Drop shadows and inner shadows are now scanned and reported as color usages, so shadow colors appear alongside fills and strokes in results. 🎨
+- **Dedicated About page**: About information (author, credits, links) is now on its own page accessible from the footer, keeping Settings focused on preferences. ℹ️
+- **"Show more" pagination for elements**: Expanded color rows progressively reveal elements in batches instead of rendering the full list at once, improving performance for high-usage colors. 📄
+
+### Changed 🔧
+
+- **Faster selection response**: Selection-change debounce reduced from 500 ms to 150 ms for a snappier scanning experience. ⚡
+- **Auto-resize summary strip**: The summary bar automatically widens the panel when stat labels overflow, preventing clipped text. 📐
+- **Tighter sort dropdown**: The sort menu is more compact and better aligned with the filter bar. ↕️
+- **Internal refactoring**: Shared constants, resize bounds, and node-filter logic consolidated into reusable modules for cleaner maintenance. 🛠️
+
+---
+
 ## [Unreleased] – Phase 2 (Planned)
 
-- Effect color extraction (shadows, glows)
 - Opacity/alpha as distinct metadata
 - Group by property type, token collection, or page
 - JSON and CSV export
