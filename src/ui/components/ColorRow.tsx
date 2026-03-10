@@ -55,6 +55,7 @@ interface ColorRowProps {
   isSelected: boolean;
   propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
+  hiddenOnlyFilter: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
@@ -67,6 +68,7 @@ export function ColorRow({
   isSelected,
   propertyFilters,
   nodeTypeFilters,
+  hiddenOnlyFilter,
   colorDisplayFormat,
   onSelectAll,
   onRowClick,
@@ -81,15 +83,16 @@ export function ColorRow({
 
   const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
     const filtered = color.nodes.filter((n) =>
-      matchesNodeFilters(n, propertyFilters, nodeTypeFilters)
+      matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter)
     );
-    const hasFilters = propertyFilters.size > 0 || nodeTypeFilters.size > 0;
+    const hasFilters =
+      propertyFilters.size > 0 || nodeTypeFilters.size > 0 || hiddenOnlyFilter;
     return {
       filteredNodes: filtered,
       displayCount: hasFilters ? filtered.length : color.usageCount,
       hasActiveFilters: hasFilters,
     };
-  }, [color.nodes, color.usageCount, propertyFilters, nodeTypeFilters]);
+  }, [color.nodes, color.usageCount, propertyFilters, nodeTypeFilters, hiddenOnlyFilter]);
 
   const nodesByType = useMemo(
     () =>
@@ -210,6 +213,7 @@ export function ColorRow({
         <ExpandedNodeList
           color={color}
           nodeTypeFilters={nodeTypeFilters}
+          hiddenOnlyFilter={hiddenOnlyFilter}
           visibleCount={visibleCount}
           onShowMore={(total) =>
             setVisibleCount((prev) => Math.min(total, prev + VISIBLE_ELEMENTS_STEP))
@@ -224,6 +228,7 @@ export function ColorRow({
 interface ExpandedNodeListProps {
   color: SerializedColorEntry;
   nodeTypeFilters: Set<string>;
+  hiddenOnlyFilter: boolean;
   visibleCount: number;
   onShowMore: (totalCount: number) => void;
   onElementClick: (nodeId: string) => void;
@@ -232,6 +237,7 @@ interface ExpandedNodeListProps {
 function ExpandedNodeList({
   color,
   nodeTypeFilters,
+  hiddenOnlyFilter,
   visibleCount,
   onShowMore,
   onElementClick,
@@ -239,6 +245,7 @@ function ExpandedNodeList({
   const nodesToShow = useMemo(
     () =>
       color.nodes.filter((n) => {
+        if (hiddenOnlyFilter && n.visible !== false) return false;
         if (n.propertyType === 'text') return false;
         if (nodeTypeFilters.size === 0) return true;
         const type = n.nodeType;
@@ -247,7 +254,7 @@ function ExpandedNodeList({
         if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
         return false;
       }),
-    [color.nodes, nodeTypeFilters]
+    [color.nodes, nodeTypeFilters, hiddenOnlyFilter]
   );
 
   if (nodesToShow.length === 0) return null;

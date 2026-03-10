@@ -12,6 +12,7 @@ import {
   Component,
   Box,
   PenTool,
+  EyeOff,
 } from 'lucide-preact';
 import { PropertyType } from '../../shared/types';
 
@@ -43,6 +44,8 @@ interface SearchFilterBarProps {
   onPropertyFilterToggle: (property: PropertyType) => void;
   nodeTypeFilters: Set<string>;
   onNodeTypeFilterToggle: (nodeType: string) => void;
+  hiddenOnlyFilter: boolean;
+  onHiddenOnlyFilterToggle: () => void;
   onClearFilters: () => void;
   sortBy: SortOption;
   sortDirection: SortDirection;
@@ -57,6 +60,8 @@ export function SearchFilterBar({
   onPropertyFilterToggle,
   nodeTypeFilters,
   onNodeTypeFilterToggle,
+  hiddenOnlyFilter,
+  onHiddenOnlyFilterToggle,
   onClearFilters,
   sortBy,
   sortDirection,
@@ -68,7 +73,8 @@ export function SearchFilterBar({
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
 
-  const activeFilterCount = propertyFilters.size + nodeTypeFilters.size;
+  const activeFilterCount =
+    propertyFilters.size + nodeTypeFilters.size + (hiddenOnlyFilter ? 1 : 0);
 
   const nodeTypeOptionsFiltered = includeVectors
     ? NODE_TYPE_OPTIONS
@@ -212,6 +218,24 @@ export function SearchFilterBar({
                     )}
                   </div>
                   <div className="w-full border-t border-figma-border pb-1" />
+
+                  <SectionLabel label="Visibility" />
+                  <div className="w-full">
+                    <MenuItem
+                      label="Hidden only"
+                      icon={
+                        <EyeOff
+                          size={14}
+                          className="shrink-0 text-figma-text-secondary/60"
+                        />
+                      }
+                      active={hiddenOnlyFilter}
+                      onClick={() => {
+                        onHiddenOnlyFilterToggle();
+                      }}
+                      checkbox
+                    />
+                  </div>
 
                   <SectionLabel label="Property" />
                   <div className="w-full">

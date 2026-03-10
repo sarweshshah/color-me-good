@@ -7,6 +7,7 @@ interface ColorListProps {
   selectedIds: Set<string>;
   propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
+  hiddenOnlyFilter: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
@@ -19,6 +20,7 @@ export function ColorList({
   selectedIds,
   propertyFilters,
   nodeTypeFilters,
+  hiddenOnlyFilter,
   colorDisplayFormat,
   onSelectAll,
   onRowClick,
@@ -44,6 +46,7 @@ export function ColorList({
           isSelected={selectedIds.has(color.dedupKey)}
           propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
+          hiddenOnlyFilter={hiddenOnlyFilter}
           colorDisplayFormat={colorDisplayFormat}
           onSelectAll={onSelectAll}
           onRowClick={onRowClick}

@@ -30,6 +30,8 @@ export interface NodeRef {
   layerPath: string;
   propertyType: PropertyType;
   propertyIndex: number;
+  /** When false, the node is hidden (invisible) in Figma. */
+  visible?: boolean;
 }
 
 export interface ColorEntry {

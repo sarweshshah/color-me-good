@@ -126,6 +126,7 @@ export function App() {
   const [bindingFilter, setBindingFilter] = useState<BindingFilter>('all');
   const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(new Set());
   const [nodeTypeFilters, setNodeTypeFilters] = useState<Set<string>>(new Set());
+  const [hiddenOnlyFilter, setHiddenOnlyFilter] = useState(false);
   const [sortBy, setSortBy] = useState<SortOption>('usage');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
@@ -201,6 +202,7 @@ export function App() {
     setBindingFilter('all');
     setPropertyFilters(new Set());
     setNodeTypeFilters(new Set());
+    setHiddenOnlyFilter(false);
   };
 
   const handleSortChange = (nextSortBy: SortOption) => {
@@ -252,6 +254,12 @@ export function App() {
       );
     }
 
+    if (hiddenOnlyFilter) {
+      filtered = filtered.filter((c) =>
+        c.nodes.some((n) => n.visible === false)
+      );
+    }
+
     const sorted = [...filtered];
     const direction = sortDirection === 'asc' ? 1 : -1;
     switch (sortBy) {
@@ -289,6 +297,7 @@ export function App() {
     bindingFilter,
     propertyFilters,
     nodeTypeFilters,
+    hiddenOnlyFilter,
     sortBy,
     sortDirection,
     colorDisplayFormat,
@@ -297,7 +306,7 @@ export function App() {
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
     const nodeIds = color.nodes
-      .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters))
+      .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
       .map((n) => n.nodeId);
     postMessage({ type: 'select-nodes', nodeIds });
   };
@@ -491,13 +500,15 @@ export function App() {
           onSearchChange={setSearchText}
           propertyFilters={propertyFilters}
           onPropertyFilterToggle={handlePropertyFilterToggle}
+          nodeTypeFilters={nodeTypeFilters}
+          onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
+          hiddenOnlyFilter={hiddenOnlyFilter}
+          onHiddenOnlyFilterToggle={() => setHiddenOnlyFilter((v) => !v)}
           onClearFilters={handleClearFilters}
           sortBy={sortBy}
           sortDirection={sortDirection}
           onSortChange={handleSortChange}
           includeVectors={includeVectors}
-          nodeTypeFilters={nodeTypeFilters}
-          onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
         />
       </div>
 
@@ -507,6 +518,7 @@ export function App() {
           selectedIds={selectedIds}
           propertyFilters={propertyFilters}
           nodeTypeFilters={nodeTypeFilters}
+          hiddenOnlyFilter={hiddenOnlyFilter}
           colorDisplayFormat={colorDisplayFormat}
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}

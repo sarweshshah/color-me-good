@@ -365,6 +365,7 @@ function buildNodeRef(
     layerPath,
     propertyType,
     propertyIndex,
+    visible: 'visible' in node ? node.visible : true,
   };
 }
 
