@@ -3,6 +3,7 @@ import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
 import { UIMessage, PluginSettings } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
+const SESSION_STORAGE_KEY = 'color-me-good-session';
 
 // Duplicated from shared/constants.ts — plugin code.js must be a single self-contained
 // file with no cross-entry imports, so we can't share runtime values with the UI bundle.
@@ -60,6 +61,45 @@ async function saveSettings(settings: PluginSettings): Promise<void> {
 
 function sendSettingsToUI(settings: PluginSettings): void {
   figma.ui.postMessage({ type: 'settings', settings });
+}
+
+interface SessionCache {
+  scopeId: string;
+  scopeNodeIds: string[];
+  colors: SerializedColorEntry[];
+  context: ScanContext;
+}
+
+async function saveSessionCache(scopeId: string, colors: SerializedColorEntry[], context: ScanContext): Promise<void> {
+  const scopeNodeIds = context.scopeNodeIds ?? [];
+  if (scopeNodeIds.length === 0) return;
+  try {
+    await figma.clientStorage.setAsync(SESSION_STORAGE_KEY, {
+      scopeId,
+      scopeNodeIds,
+      colors,
+      context,
+    });
+  } catch (_) {}
+}
+
+async function clearSessionCache(): Promise<void> {
+  try {
+    await figma.clientStorage.deleteAsync(SESSION_STORAGE_KEY);
+  } catch (_) {}
+}
+
+async function loadSessionCache(): Promise<SessionCache | null> {
+  try {
+    const raw = await figma.clientStorage.getAsync(SESSION_STORAGE_KEY);
+    if (raw && typeof raw === 'object' && 'scopeId' in raw && 'colors' in raw && 'context' in raw) {
+      const data = raw as SessionCache;
+      if (Array.isArray(data.colors) && data.context && Array.isArray(data.scopeNodeIds)) {
+        return data;
+      }
+    }
+  } catch (_) {}
+  return null;
 }
 
 let cachedResults: {
@@ -266,6 +306,11 @@ async function performScan(): Promise<void> {
     };
     latestViewState = cachedResults;
 
+    const scopeId = getScopeId();
+    if (scopeId) {
+      saveSessionCache(scopeId, serializedColors, result.context);
+    }
+
     figma.ui.postMessage({
       type: 'scan-complete',
       colors: serializedColors,
@@ -365,6 +410,11 @@ async function performIncrementalUpdate(nodeIds: Set<string>): Promise<void> {
   };
   latestViewState = cachedResults;
 
+  const scopeId = getScopeId();
+  if (scopeId) {
+    saveSessionCache(scopeId, cachedResults.colors, cachedResults.context);
+  }
+
   figma.ui.postMessage({
     type: 'scan-complete',
     colors: cachedResults.colors,
@@ -387,6 +437,7 @@ function sendNoSelectionState(): void {
       timestamp: new Date().toISOString(),
     },
   };
+  clearSessionCache();
   figma.ui.postMessage({
     type: 'scan-complete',
     colors: latestViewState.colors,
@@ -577,10 +628,23 @@ async function initPlugin() {
   colorDisplayFormat = settings.colorDisplayFormat;
   uiTheme = settings.uiTheme;
 
-  const hasSelection = figma.currentPage.selection.length > 0;
+  const scopeId = getScopeId();
 
-  if (hasSelection) {
-    lastScanScopeId = getScopeId();
+  if (scopeId !== null) {
+    const session = await loadSessionCache();
+    if (session && session.scopeId === scopeId) {
+      cachedResults = { colors: session.colors, context: session.context };
+      latestViewState = cachedResults;
+      lastScanScopeId = scopeId;
+      figma.ui.postMessage({
+        type: 'scan-complete',
+        colors: session.colors,
+        context: session.context,
+      });
+      setupListeners();
+      return;
+    }
+    lastScanScopeId = scopeId;
     await performScan();
   } else {
     lastScanScopeId = null;
