@@ -232,6 +232,8 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
 async function performScan(): Promise<void> {
   const myScanId = ++currentScanId;
 
+  figma.ui.postMessage({ type: 'scan-started' });
+
   try {
     const result = await scanCurrentPage({
       includeVectors,
@@ -430,16 +432,21 @@ function setupListeners(): void {
       return;
     }
 
+    const currentScopeId = getScopeId();
+    if (currentScopeId !== null && currentScopeId !== lastScanScopeId) {
+      figma.ui.postMessage({ type: 'scan-started' });
+    }
+
     if (selectionDebounce !== null) {
       clearTimeout(selectionDebounce);
     }
 
     selectionDebounce = setTimeout(async () => {
       selectionDebounce = null;
-      const currentScopeId = getScopeId();
-      if (currentScopeId !== lastScanScopeId) {
-        lastScanScopeId = currentScopeId;
-        if (currentScopeId === null) {
+      const scopeId = getScopeId();
+      if (scopeId !== lastScanScopeId) {
+        lastScanScopeId = scopeId;
+        if (scopeId === null) {
           sendNoSelectionState();
         } else {
           await performScan();

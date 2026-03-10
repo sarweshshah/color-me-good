@@ -129,7 +129,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [1.2.0] – 2026-03-03
+## [1.1.1] – 2026-03-03
 
 ### Added ✨
 
@@ -140,6 +140,8 @@ All notable changes to Color Me Good will be documented in this file.
 
 ### Changed 🔧
 
+- **Selection-only scanning**: Removed page-level scanning entirely. The plugin now exclusively scans the current selection — no fallback to scanning all page children. 🎯
+- **Instant scan feedback**: The "Scanning…" screen appears immediately on selection change. Node progress (e.g. "1,200 / 5,000 nodes") appears only once actual traversal is underway — no more blank delay or "0 / 0" flash. ⚡
 - **Faster selection response**: Selection-change debounce reduced from 500 ms to 150 ms for a snappier scanning experience. ⚡
 - **Auto-resize summary strip**: The summary bar automatically widens the panel when stat labels overflow, preventing clipped text. 📐
 - **Tighter sort dropdown**: The sort menu is more compact and better aligned with the filter bar. ↕️
@@ -162,4 +164,3 @@ All notable changes to Color Me Good will be documented in this file.
 - Color diff over time
 - Batch replace colors
 - Figma Dev Mode integration
-

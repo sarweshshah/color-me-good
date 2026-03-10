@@ -50,7 +50,7 @@ export interface ColorEntry {
   isTokenBound: boolean;
 }
 
-export type ScanMode = 'page' | 'selection';
+export type ScanMode = 'selection';
 
 export type ScopeNodeType = string;
 

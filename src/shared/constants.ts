@@ -1,4 +1,4 @@
-export const VERSION = '1.0.0';
+export const VERSION = '1.1.1';
 export const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
 export const CHANGELOG_URL =
   'https://github.com/sarweshshah/color-me-good/blob/master/CHANGELOG.md';

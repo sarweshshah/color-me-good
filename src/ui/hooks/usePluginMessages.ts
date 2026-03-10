@@ -27,6 +27,15 @@ export function usePluginMessages() {
       if (!msg) return;
 
       switch (msg.type) {
+        case 'scan-started':
+          setState((prev) => ({
+            ...prev,
+            isScanning: true,
+            scanProgress: null,
+            error: null,
+          }));
+          break;
+
         case 'scan-progress':
           setState((prev) => ({
             ...prev,

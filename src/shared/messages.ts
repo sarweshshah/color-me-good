@@ -11,6 +11,7 @@ export interface PluginSettings {
 }
 
 export type PluginMessage =
+  | ScanStartedMessage
   | ScanProgressMessage
   | ScanCompleteMessage
   | ScanErrorMessage
@@ -24,6 +25,10 @@ export type UIMessage =
   | ResizeMessage
   | GetSettingsMessage
   | SetSettingMessage;
+
+export interface ScanStartedMessage {
+  type: 'scan-started';
+}
 
 export interface ScanProgressMessage {
   type: 'scan-progress';

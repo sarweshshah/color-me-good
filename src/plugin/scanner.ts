@@ -39,15 +39,14 @@ export async function scanCurrentPage(
 
   const context = resolveScanContext();
 
-  let rootNodes: SceneNode[];
-  if (context.mode === 'selection' && context.scopeNodeIds) {
-    const resolved = await Promise.all(
-      context.scopeNodeIds.map((id) => figma.getNodeByIdAsync(id))
-    );
-    rootNodes = resolved.filter((n): n is SceneNode => n !== null);
-  } else {
-    rootNodes = figma.currentPage.children as SceneNode[];
+  if (!context.scopeNodeIds || context.scopeNodeIds.length === 0) {
+    return { colors: [], context };
   }
+
+  const resolved = await Promise.all(
+    context.scopeNodeIds.map((id) => figma.getNodeByIdAsync(id))
+  );
+  const rootNodes = resolved.filter((n): n is SceneNode => n !== null);
 
   let totalNodes = 0;
   let scannedNodes = 0;
@@ -144,30 +143,19 @@ export async function scanNodesForColors(
 
 function resolveScanContext(): ScanContext {
   const selection = figma.currentPage.selection;
-
-  if (selection.length >= 1) {
-    const ids = selection.map((n) => n.id);
-    const name =
-      selection.length === 1
-        ? selection[0].name
-        : `${selection.length} elements`;
-    return {
-      mode: 'selection',
-      scopeNodeId: ids[0],
-      scopeNodeIds: ids,
-      scopeNodeName: name,
-      scopeNodeType: selection.length === 1 ? selection[0].type : null,
-      totalNodesScanned: 0,
-      timestamp: '',
-    };
-  }
-
+  const ids = selection.map((n) => n.id);
+  const name =
+    selection.length === 1
+      ? selection[0].name
+      : selection.length > 1
+        ? `${selection.length} elements`
+        : null;
   return {
-    mode: 'page',
-    scopeNodeId: null,
-    scopeNodeIds: null,
-    scopeNodeName: null,
-    scopeNodeType: null,
+    mode: 'selection',
+    scopeNodeId: ids[0] ?? null,
+    scopeNodeIds: ids.length > 0 ? ids : null,
+    scopeNodeName: name,
+    scopeNodeType: selection.length === 1 ? selection[0].type : null,
     totalNodesScanned: 0,
     timestamp: '',
   };
