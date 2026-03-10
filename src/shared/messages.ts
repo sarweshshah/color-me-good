@@ -5,6 +5,7 @@ export type UITheme = 'light' | 'dark' | 'system';
 
 export interface PluginSettings {
   includeVectors: boolean;
+  includeHiddenLayers: boolean;
   smoothZoom: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   uiTheme: UITheme;

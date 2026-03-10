@@ -79,6 +79,12 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           checked={settings.includeVectors}
           onChange={(v) => onSettingChange('includeVectors', v)}
         />
+        <SettingRow
+          label="Include hidden layers"
+          description="Include hidden (invisible) layers in the scan results."
+          checked={settings.includeHiddenLayers}
+          onChange={(v) => onSettingChange('includeHiddenLayers', v)}
+        />
       </Section>
 
       <Section title="Behavior">

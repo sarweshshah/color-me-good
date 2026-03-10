@@ -18,6 +18,7 @@ const VALID_UI_THEMES = ['light', 'dark', 'system'] as const;
 
 const DEFAULT_SETTINGS: PluginSettings = {
   includeVectors: false,
+  includeHiddenLayers: false,
   smoothZoom: true,
   colorDisplayFormat: 'hex',
   uiTheme: 'system',
@@ -43,6 +44,7 @@ async function loadSettings(): Promise<PluginSettings> {
           : 'system';
       return {
         includeVectors: Boolean(loaded.includeVectors),
+        includeHiddenLayers: Boolean('includeHiddenLayers' in loaded && loaded.includeHiddenLayers),
         smoothZoom: Boolean(loaded.smoothZoom),
         colorDisplayFormat: format,
         uiTheme: theme,
@@ -74,6 +76,7 @@ let documentDebounce: number | null = null;
 let pendingChanges: Array<{ type: string; id: string }> = [];
 let currentScanId = 0;
 let includeVectors = false;
+let includeHiddenLayers = false;
 let smoothZoom = true;
 let colorDisplayFormat: PluginSettings['colorDisplayFormat'] = 'hex';
 let uiTheme: PluginSettings['uiTheme'] = 'system';
@@ -110,7 +113,7 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       );
       break;
     case 'get-settings':
-      sendSettingsToUI({ includeVectors, smoothZoom, colorDisplayFormat, uiTheme });
+      sendSettingsToUI({ includeVectors, includeHiddenLayers, smoothZoom, colorDisplayFormat, uiTheme });
       if (latestViewState) {
         figma.ui.postMessage({
           type: 'scan-complete',
@@ -120,12 +123,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       }
       break;
     case 'set-setting': {
-      const needsRescan = msg.key === 'includeVectors';
+      const needsRescan = msg.key === 'includeVectors' || msg.key === 'includeHiddenLayers';
       if (msg.key === 'includeVectors') includeVectors = msg.value as boolean;
+      else if (msg.key === 'includeHiddenLayers') includeHiddenLayers = msg.value as boolean;
       else if (msg.key === 'smoothZoom') smoothZoom = msg.value as boolean;
       else if (msg.key === 'colorDisplayFormat') colorDisplayFormat = msg.value as PluginSettings['colorDisplayFormat'];
       else if (msg.key === 'uiTheme') uiTheme = msg.value as PluginSettings['uiTheme'];
-      const settings = { includeVectors, smoothZoom, colorDisplayFormat, uiTheme };
+      const settings = { includeVectors, includeHiddenLayers, smoothZoom, colorDisplayFormat, uiTheme };
       await saveSettings(settings);
       sendSettingsToUI(settings);
       if (needsRescan) await performScan();
@@ -237,6 +241,7 @@ async function performScan(): Promise<void> {
   try {
     const result = await scanCurrentPage({
       includeVectors,
+      includeHiddenLayers,
       isCancelled: () => currentScanId !== myScanId,
       onProgress: (scanned, total) => {
         figma.ui.postMessage({
@@ -349,7 +354,7 @@ async function performIncrementalUpdate(nodeIds: Set<string>): Promise<void> {
   );
 
   if (nodes.length > 0) {
-    const scanned = await scanNodesForColors(nodes, { includeVectors });
+    const scanned = await scanNodesForColors(nodes, { includeVectors, includeHiddenLayers });
     const serialized = serializeColors(scanned);
     mergeColorsIntoCachedResults(serialized);
   }
@@ -567,6 +572,7 @@ function setupListeners(): void {
 async function initPlugin() {
   const settings = await loadSettings();
   includeVectors = settings.includeVectors;
+  includeHiddenLayers = settings.includeHiddenLayers;
   smoothZoom = settings.smoothZoom;
   colorDisplayFormat = settings.colorDisplayFormat;
   uiTheme = settings.uiTheme;

@@ -22,6 +22,7 @@ export interface ScanOptions {
   onProgress?: (scanned: number, total: number) => void;
   onError?: (error: Error) => void;
   includeVectors?: boolean;
+  includeHiddenLayers?: boolean;
   /** When true, the scan should abort (e.g. selection changed). */
   isCancelled?: () => boolean;
 }
@@ -50,9 +51,10 @@ export async function scanCurrentPage(
 
   let totalNodes = 0;
   let scannedNodes = 0;
+  const includeHidden = options.includeHiddenLayers ?? false;
 
   function countNodes(node: SceneNode): number {
-    if ('visible' in node && !node.visible) return 0;
+    if (!includeHidden && 'visible' in node && !node.visible) return 0;
     let count = 1;
     if ('children' in node) {
       for (const child of node.children) {
@@ -76,7 +78,7 @@ export async function scanCurrentPage(
   }
 
   async function* traverseNodes(node: SceneNode): AsyncGenerator<SceneNode> {
-    if ('visible' in node && !node.visible) return;
+    if (!includeHidden && 'visible' in node && !node.visible) return;
 
     yield node;
     scannedNodes++;
@@ -128,12 +130,14 @@ export async function scanCurrentPage(
 
 export async function scanNodesForColors(
   nodes: SceneNode[],
-  options: { includeVectors?: boolean } = {}
+  options: { includeVectors?: boolean; includeHiddenLayers?: boolean } = {}
 ): Promise<ColorEntry[]> {
   const colorMap: ColorMap = {};
+  const includeHidden = options.includeHiddenLayers ?? false;
 
   for (const node of nodes) {
     if (!node) continue;
+    if (!includeHidden && 'visible' in node && !node.visible) continue;
     if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
     await extractColorsFromNode(node, colorMap);
   }
