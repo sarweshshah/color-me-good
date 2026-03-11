@@ -13,12 +13,17 @@ function formatAlpha(a: number): string {
   return a.toFixed(2);
 }
 
-function formatRgba(rgba: RGBA): string {
+/** Opacity as percentage (0–100) for display. */
+function formatOpacityPercent(a: number): string {
+  return `${Math.round(a * 100)}%`;
+}
+
+/** RGB without alpha, for use with distinct opacity. */
+function formatRgb(rgba: RGBA): string {
   const r = Math.round(rgba.r * 255);
   const g = Math.round(rgba.g * 255);
   const b = Math.round(rgba.b * 255);
-  const a = formatAlpha(rgba.a);
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function rgbaToHsla(rgba: RGBA): { h: number; s: number; l: number; a: number } {
@@ -49,17 +54,6 @@ function rgbaToHsla(rgba: RGBA): { h: number; s: number; l: number; a: number } 
   return { h: h * 360, s: s * 100, l: l * 100, a };
 }
 
-function formatHsla(rgba: RGBA): string {
-  const { h, s, l, a } = rgbaToHsla(rgba);
-  const hRound = Math.round(h);
-  const sRound = Math.round(s);
-  const lRound = Math.round(l);
-  if (a >= 1) {
-    return `hsl(${hRound}, ${sRound}%, ${lRound}%)`;
-  }
-  return `hsla(${hRound}, ${sRound}%, ${lRound}%, ${formatAlpha(a)})`;
-}
-
 function rgbaToHsba(rgba: RGBA): { h: number; s: number; b: number; a: number } {
   const r = rgba.r;
   const g = rgba.g;
@@ -87,17 +81,6 @@ function rgbaToHsba(rgba: RGBA): { h: number; s: number; b: number; a: number } 
   return { h: h * 360, s: s * 100, b: v * 100, a };
 }
 
-function formatHsba(rgba: RGBA): string {
-  const { h, s, b, a } = rgbaToHsba(rgba);
-  const hRound = Math.round(h);
-  const sRound = Math.round(s);
-  const bRound = Math.round(b);
-  if (a >= 1) {
-    return `hsb(${hRound}, ${sRound}%, ${bRound}%)`;
-  }
-  return `hsba(${hRound}, ${sRound}%, ${bRound}%, ${formatAlpha(a)})`;
-}
-
 function hexToRgba(hex: string): RGBA {
   const clean = hex.replace(/^#/, '');
   const r = parseInt(clean.slice(0, 2), 16) / 255;
@@ -107,6 +90,7 @@ function hexToRgba(hex: string): RGBA {
   return { r, g, b, a };
 }
 
+/** Format color with opacity as distinct metadata: "color • opacity%" when alpha < 1. */
 export function formatResolvedColor(
   color: SerializedColorEntry,
   format: ColorDisplayFormat
@@ -116,18 +100,47 @@ export function formatResolvedColor(
   }
   const rgba = color.rgba ?? (color.hex ? hexToRgba(color.hex) : null);
   if (!rgba) return 'Gradient';
+
+  const opacityPart =
+    rgba.a < 1 ? ` • ${formatOpacityPercent(rgba.a)}` : '';
+
   switch (format) {
-    case 'hex':
-      return color.hex ? formatHex(color.hex) : formatRgba(rgba);
+    case 'hex': {
+      const hexBase = color.hex
+        ? (color.hex.length >= 8 ? color.hex.substring(0, 7) : color.hex)
+        : null;
+      const hexStr = hexBase ?? `#${toHex(rgba.r)}${toHex(rgba.g)}${toHex(rgba.b)}`;
+      return hexStr + opacityPart;
+    }
     case 'rgba':
-      return formatRgba(rgba);
+      return formatRgb(rgba) + opacityPart;
     case 'hsla':
-      return formatHsla(rgba);
+      return formatHslaColorOnly(rgba) + opacityPart;
     case 'hsba':
-      return formatHsba(rgba);
+      return formatHsbaColorOnly(rgba) + opacityPart;
     default:
-      return color.hex ? formatHex(color.hex) : formatRgba(rgba);
+      const hexBase = color.hex
+        ? (color.hex.length >= 8 ? color.hex.substring(0, 7) : color.hex)
+        : null;
+      const hexStr = hexBase ?? `#${toHex(rgba.r)}${toHex(rgba.g)}${toHex(rgba.b)}`;
+      return hexStr + opacityPart;
   }
+}
+
+function toHex(val: number): string {
+  return Math.round(val * 255)
+    .toString(16)
+    .padStart(2, '0');
+}
+
+function formatHslaColorOnly(rgba: RGBA): string {
+  const { h, s, l } = rgbaToHsla(rgba);
+  return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`;
+}
+
+function formatHsbaColorOnly(rgba: RGBA): string {
+  const { h, s, b } = rgbaToHsba(rgba);
+  return `hsb(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(b)}%)`;
 }
 
 export function gradientToCSSString(gradient: GradientData): string {
