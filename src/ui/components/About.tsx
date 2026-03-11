@@ -1,7 +1,7 @@
 import logoSrc from '../../../assets/logo.png';
+import { VERSION } from '../../shared/constants';
 
 const PLUGIN_NAME = 'Color Me Good';
-const VERSION = '1.0.0';
 const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
 const CHANGELOG_URL =
   'https://github.com/sarweshshah/color-me-good/blob/master/CHANGELOG.md';

@@ -2,7 +2,7 @@
 
 All notable changes to Color Me Good will be documented in this file.
 
-## [1.0.0] - 2026-02-21
+## [1.0] - 2026-02-21
 
 ### Added – Phase 1 (MVP) 🎉
 
@@ -108,7 +108,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [1.1.0] – 2026-02-26
+## [1.1] – 2026-02-26
 
 ### Added ✨
 
@@ -129,7 +129,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [1.1.1] – 2026-03-03
+## [1.2] – 2026-03-03
 
 ### Added ✨
 
@@ -149,18 +149,25 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [Unreleased] – Phase 2 (Planned)
+## [2.0] – 2026-03-11 – Phase 2
 
-- Opacity/alpha as distinct metadata
-- Group by property type, token collection, or page
-- JSON and CSV export
-- Session persistence
-- Virtual scrolling for 500+ colors
+### Added ✨
+
+- **Session persistence**: Scan results are stored in Figma client storage. When you reopen the plugin, cached results are restored instantly—without re-scanning—only when the current selection matches the cached scope. 💾
+- **Include hidden layers**: New setting in Settings → Scan to optionally include hidden (invisible) nodes in scan results. When enabled, colors from hidden layers are detected and listed. 👁️
+- **Hidden-only filter**: New filter in the filter dropdown (Visibility section) to show only colors used on hidden elements. Helps audit colors that may be invisible in the design. 🔍
+- **Opacity/alpha as distinct metadata**: Colors with alpha &lt; 100% now display as `color • opacity%` (e.g. `#FF0000 • 80%`, `rgb(255,0,0) • 50%`). Applies to all display formats (Hex, RGBA, HSLA, HSBA) and clipboard copy. 🎨
+
+### Changed 🔧
+
+- **NodeRef metadata**: Added `visible` property to node references so the UI can filter by visibility. 🏷️
+
+---
 
 ## [Unreleased] – Phase 3 (Planned)
 
-- Multi-page scanning
-- Toggle to include/exclude hidden layers in UI
+- Group by property type, token collection, or page
+- JSON and CSV export
 - Color diff over time
 - Batch replace colors
-- Figma Dev Mode integration
+- Virtual scrolling for 500+ colors

@@ -151,7 +151,7 @@ sequenceDiagram
 │ [Gradient] fill (linear)  12 [Select]      │
 │ ... (more colors) ...                      │ ← Scrollable list
 ├────────────────────────────────────────────┤
-│ [Settings] [Help]                 v1.0.0   │ ← Footer (Settings: vectors, zoom)
+│ [Settings] [Help]                 v1.0   │ ← Footer (Settings: vectors, zoom)
 └────────────────────────────────────────────┘
 ```
 
@@ -262,7 +262,7 @@ sequenceDiagram
 - Click summary strip stats to set binding filter
 
 ### Simplified for MVP
-- Virtual scrolling: Deferred (simple list is fast enough for 100-500 colors)
+- Virtual scrolling: Deferred to Phase 3 (simple list is fast enough for 100-500 colors)
 - Text variable binding: Simplified (Figma API limitation on text segments)
 - Effect colors: Deferred to Phase 2 as planned
 
@@ -303,19 +303,17 @@ sequenceDiagram
 2. Fix any bugs discovered
 3. Polish UI spacing and colors
 
-### Phase 2 (P1 Requirements)
-1. Add effect color extraction (shadows, glows)
-2. Add opacity as distinct metadata
-3. Implement grouping (by property, collection, page)
-4. Add JSON/CSV export
-5. Implement virtual scrolling for 500+ colors
+### Phase 2 (v2.0) – Released
+1. ✓ Session persistence, include hidden layers, hidden-only filter, opacity/alpha
+2. ✓ Effect color extraction (shadows, glows)
 
 ### Phase 3 (P2 Requirements)
-1. Multi-page scanning
-2. Toggle to include/exclude hidden layers in UI (currently excluded by default)
-3. Color diff over time
-4. Batch replace functionality
-5. Figma Dev Mode integration
+1. Toggle to include/exclude hidden layers in UI (currently excluded by default)
+2. Grouping (by property, collection, page)
+3. JSON and CSV export
+4. Color diff over time
+5. Batch replace functionality
+6. Virtual scrolling for 500+ colors
 
 ## Success Criteria (from PRD)
 
@@ -329,6 +327,6 @@ sequenceDiagram
 
 ## Conclusion
 
-The Color Me Good plugin **Phase 1 MVP is complete and ready for testing**. All P0 requirements from the PRD have been implemented with high code quality, full type safety, and comprehensive error handling.
+The Color Me Good plugin **Phase 2 (v2.0) is released**. All Phase 2 features are implemented with high code quality, full type safety, and comprehensive error handling.
 
-The plugin is ready to load in Figma for manual testing and refinement before community release.
+The plugin is ready for Figma Community release (manual testing, cover image, submit for review).

@@ -6,3 +6,6 @@ dist/
 .idea/
 color-me-good-v*.zip
 .claude/
+PROJECT_STATUS.txt
+PROJECT_OVERVIEW.md
+IMPLEMENTATION_SUMMARY.md
