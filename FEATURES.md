@@ -85,7 +85,7 @@ sequenceDiagram
 | Clear scope button (→ no-selection) | ✓ | FR-01c |
 | No-selection screen | ✓ | — |
 | Hidden nodes excluded | ✓ | — |
-| Node type filter | ✓ | — |
+| Node type filter | ✓ | FR-19a |
 | Settings (Include vectors, Smooth zoom) | ✓ | — |
 | Resizable panel | ✓ | — |
 | Solid fill extraction | ✓ | FR-02 |
@@ -100,26 +100,25 @@ sequenceDiagram
 | Deduplication | ✓ | FR-10 |
 | Swatch rendering | ✓ | FR-11 |
 | Sort controls | ✓ | FR-12 |
-| Group by | Phase 2 | FR-13 |
 | Token badge | ✓ | FR-14 |
 | Library icon | ✓ | FR-14a |
 | Summary stats | ✓ | FR-15, FR-16 |
 | Text search | ✓ | FR-17 |
 | Binding filter | ✓ | FR-18 |
 | Property filter | ✓ | FR-19 |
-| Clear filters | ✓ | FR-21 |
-| Click to select all | ✓ | FR-22 |
-| Expand element list | ✓ | FR-23 |
-| Zoom to element | ✓ | FR-24 |
-| Multi-select | ✓ | FR-25 |
-| Native selection highlight | ✓ | FR-26 |
-| Export JSON | Phase 2 | FR-27 |
-| Export CSV | Phase 2 | FR-28 |
-| Copy to clipboard | ✓ | FR-29 |
-| Live updates | ✓ | FR-30 |
-| Cache resilience | ✓ | FR-31 |
+| Clear filters | ✓ | FR-20 |
+| Click to select all | ✓ | FR-21 |
+| Expand element list | ✓ | FR-22 |
+| Zoom to element | ✓ | FR-23 |
+| Multi-select | ✓ | FR-24 |
+| Native selection highlight | ✓ | FR-25 |
+| Export JSON | Phase 2 | FR-26 |
+| Export CSV | Phase 2 | FR-27 |
+| Copy to clipboard | ✓ | FR-28 |
+| Live updates | ✓ | FR-29 |
+| Cache resilience | ✓ | FR-30 |
 
-**Phase 1 Completion**: 29/32 features (91%)  
+**Phase 1 Completion**: 29/30 features (97%; FR-13 scraped)  
 **Deferred to Phase 2**: 3 features (effects, opacity, exports)
 
 ## UI Components
@@ -309,11 +308,9 @@ sequenceDiagram
 
 ### Phase 3 (P2 Requirements)
 1. Toggle to include/exclude hidden layers in UI (currently excluded by default)
-2. Grouping (by property, collection, page)
-3. JSON and CSV export
-4. Color diff over time
-5. Batch replace functionality
-6. Virtual scrolling for 500+ colors
+2. JSON and CSV export
+3. Color diff over time
+4. Virtual scrolling for 500+ colors
 
 ## Success Criteria (from PRD)
 

@@ -166,8 +166,6 @@ All notable changes to Color Me Good will be documented in this file.
 
 ## [Unreleased] – Phase 3 (Planned)
 
-- Group by property type, token collection, or page
 - JSON and CSV export
 - Color diff over time
-- Batch replace colors
 - Virtual scrolling for 500+ colors

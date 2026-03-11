@@ -199,8 +199,8 @@ async function handleSelectNodes(nodeIds: string[]): Promise<void> {
   }
 }
 
-function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 }
 
 function lerp(a: number, b: number, t: number): number {
@@ -253,7 +253,7 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
     const tick = () => {
       const elapsed = Date.now() - startTime;
       const t = Math.min(1, elapsed / ZOOM_DURATION_MS);
-      const eased = easeOutCubic(t);
+      const eased = easeInOutCubic(t);
 
       figma.viewport.center = {
         x: lerp(startCenter.x, nodeCenterX, eased),
