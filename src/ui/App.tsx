@@ -308,7 +308,8 @@ export function App() {
     const nodeIds = color.nodes
       .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
       .map((n) => n.nodeId);
-    postMessage({ type: 'select-nodes', nodeIds });
+    const append = event.metaKey || event.ctrlKey;
+    postMessage({ type: 'select-nodes', nodeIds, append });
   };
 
   const handleRowClick = (color: SerializedColorEntry, event: MouseEvent) => {
@@ -316,7 +317,12 @@ export function App() {
     handleClick(color.dedupKey, allColorIds, event);
   };
 
-  const handleElementClick = (nodeId: string) => {
+  const handleElementClick = (nodeId: string, event: MouseEvent) => {
+    if (event.metaKey || event.ctrlKey) {
+      event.stopPropagation();
+      postMessage({ type: 'select-nodes', nodeIds: [nodeId], append: true });
+      return;
+    }
     postMessage({ type: 'zoom-to-node', nodeId });
   };
 

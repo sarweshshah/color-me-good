@@ -11,7 +11,7 @@ interface ColorListProps {
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
-  onElementClick: (nodeId: string) => void;
+  onElementClick: (nodeId: string, event: MouseEvent) => void;
   onCopySuccess?: () => void;
 }
 

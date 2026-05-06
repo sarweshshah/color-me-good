@@ -51,6 +51,7 @@ export interface ScanErrorMessage {
 export interface SelectNodesMessage {
   type: 'select-nodes';
   nodeIds: string[];
+  append?: boolean;
 }
 
 export interface ZoomToNodeMessage {

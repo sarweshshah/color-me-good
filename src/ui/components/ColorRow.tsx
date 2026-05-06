@@ -59,7 +59,7 @@ interface ColorRowProps {
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
-  onElementClick: (nodeId: string) => void;
+  onElementClick: (nodeId: string, event: MouseEvent) => void;
   onCopySuccess?: () => void;
 }
 
@@ -78,8 +78,7 @@ export function ColorRow({
   const [isExpanded, setIsExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
 
-  const displayName =
-    color.tokenName || formatResolvedColor(color, colorDisplayFormat);
+  const displayName = color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
   const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
     const filtered = color.nodes.filter((n) =>
@@ -111,11 +110,14 @@ export function ColorRow({
     .map(([type, count]) => `${type.charAt(0)}${type.slice(1).toLowerCase()}: ${count}`)
     .join('\n');
 
-  const selectAllTooltip = hasActiveFilters
-    ? filteredNodes.length > 0
-      ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
-      : 'No matching elements'
-    : 'Select all elements with this color';
+  const selectAllTooltip =
+    hasActiveFilters && filteredNodes.length === 0
+      ? 'No matching elements'
+      : `${
+          hasActiveFilters && filteredNodes.length > 0
+            ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
+            : 'Select all elements with this color'
+        }. ⌘/Ctrl+Click: add to canvas selection`;
 
   const badge = color.isTokenBound ? (
     <span
@@ -231,7 +233,7 @@ interface ExpandedNodeListProps {
   hiddenOnlyFilter: boolean;
   visibleCount: number;
   onShowMore: (totalCount: number) => void;
-  onElementClick: (nodeId: string) => void;
+  onElementClick: (nodeId: string, event: MouseEvent) => void;
 }
 
 function ExpandedNodeList({
@@ -268,7 +270,7 @@ function ExpandedNodeList({
         <div
           key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
           className="w-full py-2 pl-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center justify-between gap-3"
-          onClick={() => onElementClick(nodeRef.nodeId)}
+          onClick={(e) => onElementClick(nodeRef.nodeId, e as unknown as MouseEvent)}
         >
           <div className="flex-1 min-w-0 flex items-center gap-1">
             <NodeTypeIcon nodeType={nodeRef.nodeType} />

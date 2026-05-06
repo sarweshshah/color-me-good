@@ -36,16 +36,22 @@ async function loadSettings(): Promise<PluginSettings> {
     ) {
       const loaded = raw as PluginSettings;
       const format =
-        'colorDisplayFormat' in loaded && VALID_FORMATS.includes(loaded.colorDisplayFormat as typeof VALID_FORMATS[number])
+        'colorDisplayFormat' in loaded &&
+        VALID_FORMATS.includes(
+          loaded.colorDisplayFormat as (typeof VALID_FORMATS)[number]
+        )
           ? loaded.colorDisplayFormat
           : 'hex';
       const theme =
-        'uiTheme' in loaded && VALID_UI_THEMES.includes(loaded.uiTheme as typeof VALID_UI_THEMES[number])
+        'uiTheme' in loaded &&
+        VALID_UI_THEMES.includes(loaded.uiTheme as (typeof VALID_UI_THEMES)[number])
           ? loaded.uiTheme
           : 'system';
       return {
         includeVectors: Boolean(loaded.includeVectors),
-        includeHiddenLayers: Boolean('includeHiddenLayers' in loaded && loaded.includeHiddenLayers),
+        includeHiddenLayers: Boolean(
+          'includeHiddenLayers' in loaded && loaded.includeHiddenLayers
+        ),
         smoothZoom: Boolean(loaded.smoothZoom),
         colorDisplayFormat: format,
         uiTheme: theme,
@@ -70,7 +76,11 @@ interface SessionCache {
   context: ScanContext;
 }
 
-async function saveSessionCache(scopeId: string, colors: SerializedColorEntry[], context: ScanContext): Promise<void> {
+async function saveSessionCache(
+  scopeId: string,
+  colors: SerializedColorEntry[],
+  context: ScanContext
+): Promise<void> {
   const scopeNodeIds = context.scopeNodeIds ?? [];
   if (scopeNodeIds.length === 0) return;
   try {
@@ -92,9 +102,19 @@ async function clearSessionCache(): Promise<void> {
 async function loadSessionCache(): Promise<SessionCache | null> {
   try {
     const raw = await figma.clientStorage.getAsync(SESSION_STORAGE_KEY);
-    if (raw && typeof raw === 'object' && 'scopeId' in raw && 'colors' in raw && 'context' in raw) {
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'scopeId' in raw &&
+      'colors' in raw &&
+      'context' in raw
+    ) {
       const data = raw as SessionCache;
-      if (Array.isArray(data.colors) && data.context && Array.isArray(data.scopeNodeIds)) {
+      if (
+        Array.isArray(data.colors) &&
+        data.context &&
+        Array.isArray(data.scopeNodeIds)
+      ) {
         return data;
       }
     }
@@ -132,7 +152,7 @@ figma.showUI(__html__, {
 figma.ui.onmessage = async (msg: UIMessage) => {
   switch (msg.type) {
     case 'select-nodes':
-      await handleSelectNodes(msg.nodeIds);
+      await handleSelectNodes(msg.nodeIds, msg.append);
       break;
     case 'zoom-to-node':
       await handleZoomToNode(msg.nodeId);
@@ -153,7 +173,13 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       );
       break;
     case 'get-settings':
-      sendSettingsToUI({ includeVectors, includeHiddenLayers, smoothZoom, colorDisplayFormat, uiTheme });
+      sendSettingsToUI({
+        includeVectors,
+        includeHiddenLayers,
+        smoothZoom,
+        colorDisplayFormat,
+        uiTheme,
+      });
       if (latestViewState) {
         figma.ui.postMessage({
           type: 'scan-complete',
@@ -163,13 +189,22 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       }
       break;
     case 'set-setting': {
-      const needsRescan = msg.key === 'includeVectors' || msg.key === 'includeHiddenLayers';
+      const needsRescan =
+        msg.key === 'includeVectors' || msg.key === 'includeHiddenLayers';
       if (msg.key === 'includeVectors') includeVectors = msg.value as boolean;
-      else if (msg.key === 'includeHiddenLayers') includeHiddenLayers = msg.value as boolean;
+      else if (msg.key === 'includeHiddenLayers')
+        includeHiddenLayers = msg.value as boolean;
       else if (msg.key === 'smoothZoom') smoothZoom = msg.value as boolean;
-      else if (msg.key === 'colorDisplayFormat') colorDisplayFormat = msg.value as PluginSettings['colorDisplayFormat'];
+      else if (msg.key === 'colorDisplayFormat')
+        colorDisplayFormat = msg.value as PluginSettings['colorDisplayFormat'];
       else if (msg.key === 'uiTheme') uiTheme = msg.value as PluginSettings['uiTheme'];
-      const settings = { includeVectors, includeHiddenLayers, smoothZoom, colorDisplayFormat, uiTheme };
+      const settings = {
+        includeVectors,
+        includeHiddenLayers,
+        smoothZoom,
+        colorDisplayFormat,
+        uiTheme,
+      };
       await saveSettings(settings);
       sendSettingsToUI(settings);
       if (needsRescan) await performScan();
@@ -178,17 +213,38 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   }
 };
 
-async function handleSelectNodes(nodeIds: string[]): Promise<void> {
+async function handleSelectNodes(nodeIds: string[], append?: boolean): Promise<void> {
   try {
     const nodes = await Promise.all(nodeIds.map((id) => figma.getNodeByIdAsync(id)));
-    const validNodes = nodes.filter(
+    const validNew = nodes.filter(
       (node): node is SceneNode => node !== null && 'id' in node
     );
     ignoreNextSelectionChange = true;
-    figma.currentPage.selection = validNodes;
 
-    if (validNodes.length > 0) {
-      figma.viewport.scrollAndZoomIntoView(validNodes);
+    let finalSelection: SceneNode[];
+    if (append && figma.currentPage.selection.length > 0) {
+      const seen = new Set<string>();
+      finalSelection = [];
+      for (const n of figma.currentPage.selection) {
+        if (!seen.has(n.id)) {
+          seen.add(n.id);
+          finalSelection.push(n);
+        }
+      }
+      for (const n of validNew) {
+        if (!seen.has(n.id)) {
+          seen.add(n.id);
+          finalSelection.push(n);
+        }
+      }
+    } else {
+      finalSelection = validNew;
+    }
+
+    figma.currentPage.selection = finalSelection;
+
+    if (finalSelection.length > 0) {
+      figma.viewport.scrollAndZoomIntoView(finalSelection);
     }
   } catch (error) {
     console.error('Failed to select nodes:', error);
@@ -399,7 +455,10 @@ async function performIncrementalUpdate(nodeIds: Set<string>): Promise<void> {
   );
 
   if (nodes.length > 0) {
-    const scanned = await scanNodesForColors(nodes, { includeVectors, includeHiddenLayers });
+    const scanned = await scanNodesForColors(nodes, {
+      includeVectors,
+      includeHiddenLayers,
+    });
     const serialized = serializeColors(scanned);
     mergeColorsIntoCachedResults(serialized);
   }
@@ -455,7 +514,10 @@ function getScopeId(): string | null {
     .join(',');
 }
 
-async function isNodeWithinScope(nodeId: string, scopeIds: Set<string>): Promise<boolean> {
+async function isNodeWithinScope(
+  nodeId: string,
+  scopeIds: Set<string>
+): Promise<boolean> {
   try {
     let node: BaseNode | null = await figma.getNodeByIdAsync(nodeId);
     while (node) {
@@ -513,7 +575,11 @@ function setupListeners(): void {
 
   figma.on('documentchange', (event) => {
     for (const change of event.documentChanges) {
-      if (change.type === 'CREATE' || change.type === 'DELETE' || change.type === 'PROPERTY_CHANGE') {
+      if (
+        change.type === 'CREATE' ||
+        change.type === 'DELETE' ||
+        change.type === 'PROPERTY_CHANGE'
+      ) {
         pendingChanges.push({ type: change.type, id: change.id });
       }
     }
@@ -574,7 +640,7 @@ function setupListeners(): void {
         }
 
         if (change.type === 'CREATE') {
-          if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+          if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
             shouldFullRescan = true;
             break;
           }
@@ -587,7 +653,7 @@ function setupListeners(): void {
         }
 
         if (change.type === 'PROPERTY_CHANGE') {
-          if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+          if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
             incrementalNodeIds.add(change.id);
           }
           continue;
@@ -598,7 +664,7 @@ function setupListeners(): void {
           break;
         }
 
-        if (scopeSet.size > 0 && await isNodeWithinScope(change.id, scopeSet)) {
+        if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
           shouldFullRescan = true;
           break;
         }
