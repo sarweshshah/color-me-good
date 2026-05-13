@@ -83,6 +83,8 @@ export function TooltipPortal() {
       return;
     }
 
+    let rafId: number | null = null;
+
     const update = () => {
       if (!trigger.isConnected) {
         setTrigger(null);
@@ -95,41 +97,74 @@ export function TooltipPortal() {
       setClampedStyle(null);
     };
 
+    const scheduleUpdate = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        update();
+      });
+    };
+
     update();
-    const raf = requestAnimationFrame(update);
-    const interval = setInterval(update, 100);
+
+    const scrollContainer = document.querySelector('.overflow-auto');
+    scrollContainer?.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+
     return () => {
-      cancelAnimationFrame(raf);
-      clearInterval(interval);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      scrollContainer?.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
     };
   }, [trigger]);
 
   useLayoutEffect(() => {
-    if (!style || !tooltipRef.current) return;
-    const el = tooltipRef.current;
-    const rect = el.getBoundingClientRect();
+    if (!style || !tooltipRef.current || !trigger) return;
+    const tooltipEl = tooltipRef.current;
+    const tooltipRect = tooltipEl.getBoundingClientRect();
     const app = document.getElementById('app');
     const panel = app?.getBoundingClientRect();
     const minLeft = panel ? panel.left + VIEWPORT_PADDING : VIEWPORT_PADDING;
     const maxRight = panel ? panel.right - VIEWPORT_PADDING : window.innerWidth - VIEWPORT_PADDING;
-    const leftEdge = rect.left;
-    const rightEdge = rect.right;
-    if (leftEdge >= minLeft && rightEdge <= maxRight) return;
-    const width = rect.width;
-    const hasTranslateY = style.transform.includes('translateY(-100%)');
-    let left: number;
-    let transform: string;
-    if (leftEdge < minLeft && rightEdge > maxRight) {
-      left = minLeft;
-      transform = hasTranslateY ? 'translateY(-100%)' : 'none';
-    } else if (leftEdge < minLeft) {
-      left = minLeft;
-      transform = hasTranslateY ? 'translateY(-100%)' : 'none';
-    } else {
-      left = maxRight - width;
-      transform = hasTranslateY ? 'translateX(-100%) translateY(-100%)' : 'translateX(-100%)';
+    const leftEdge = tooltipRect.left;
+    const rightEdge = tooltipRect.right;
+
+    if (leftEdge >= minLeft && rightEdge <= maxRight) {
+      setClampedStyle(null);
+      return;
     }
-    setClampedStyle({ left, transform });
+
+    const width = tooltipRect.width;
+    const position = (trigger.getAttribute('data-tooltip-position') || 'above') as 'above' | 'below';
+    const align = (trigger.getAttribute('data-tooltip-align') || 'center') as 'start' | 'center' | 'end';
+    const triggerRect = trigger.getBoundingClientRect();
+    const transforms: string[] = [];
+    if (position === 'above') transforms.push('translateY(-100%)');
+
+    let left = style.left;
+
+    if (align === 'end') {
+      transforms.push('translateX(-100%)');
+      left = triggerRect.right;
+      if (left - width < minLeft) {
+        left = minLeft + width;
+      }
+      if (left > maxRight) {
+        left = maxRight;
+      }
+    } else if (align === 'start') {
+      left = triggerRect.left;
+      if (left < minLeft) left = minLeft;
+      if (left + width > maxRight) left = maxRight - width;
+    } else {
+      transforms.push('translateX(-50%)');
+      left = triggerRect.left + triggerRect.width / 2;
+      const half = width / 2;
+      if (left - half < minLeft) left = minLeft + half;
+      if (left + half > maxRight) left = maxRight - half;
+    }
+
+    setClampedStyle({ left, transform: transforms.join(' ') || 'none' });
   }, [style, trigger, content]);
 
   if (!trigger || !style || !content) return null;

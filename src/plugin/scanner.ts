@@ -7,7 +7,7 @@ import {
   GradientType,
 } from '../shared/types';
 import { rgbaToHex, hashGradient, buildLayerPath } from './utils';
-import { resolveVariableBinding } from './variable-resolver';
+import { resolveVariableBinding, VariableResolverCache } from './variable-resolver';
 
 const VECTOR_NODE_TYPES: Set<string> = new Set([
   'VECTOR',
@@ -37,6 +37,7 @@ export async function scanCurrentPage(
   options: ScanOptions = {}
 ): Promise<{ colors: ColorEntry[]; context: ScanContext }> {
   const colorMap: ColorMap = {};
+  const resolverCache = new VariableResolverCache();
 
   const context = resolveScanContext();
 
@@ -106,7 +107,7 @@ export async function scanCurrentPage(
       for await (const node of traverseNodes(root)) {
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
         if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-        await extractColorsFromNode(node, colorMap);
+        await extractColorsFromNode(node, colorMap, resolverCache);
       }
     }
 
@@ -133,13 +134,14 @@ export async function scanNodesForColors(
   options: { includeVectors?: boolean; includeHiddenLayers?: boolean } = {}
 ): Promise<ColorEntry[]> {
   const colorMap: ColorMap = {};
+  const resolverCache = new VariableResolverCache();
   const includeHidden = options.includeHiddenLayers ?? false;
 
   for (const node of nodes) {
     if (!node) continue;
     if (!includeHidden && 'visible' in node && !node.visible) continue;
     if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-    await extractColorsFromNode(node, colorMap);
+    await extractColorsFromNode(node, colorMap, resolverCache);
   }
 
   return Object.values(colorMap);
@@ -167,10 +169,12 @@ function resolveScanContext(): ScanContext {
 
 async function extractColorsFromNode(
   node: SceneNode,
-  colorMap: ColorMap
+  colorMap: ColorMap,
+  resolverCache?: VariableResolverCache
 ): Promise<void> {
   try {
     const layerPath = buildLayerPath(node);
+    const fillPropertyType: PropertyType = node.type === 'TEXT' ? 'text' : 'fill';
 
     if ('fills' in node && Array.isArray(node.fills)) {
       for (let i = 0; i < node.fills.length; i++) {
@@ -178,12 +182,13 @@ async function extractColorsFromNode(
         if (paint.type === 'SOLID' && paint.visible !== false) {
           await addSolidColor(
             paint,
-            'fill',
+            fillPropertyType,
             i,
             node,
             layerPath,
             colorMap,
-            node.boundVariables?.fills?.[i]
+            node.boundVariables?.fills?.[i],
+            resolverCache
           );
         } else if (
           (paint.type === 'GRADIENT_LINEAR' ||
@@ -192,7 +197,7 @@ async function extractColorsFromNode(
             paint.type === 'GRADIENT_DIAMOND') &&
           paint.visible !== false
         ) {
-          await addGradientColor(paint, 'fill', i, node, layerPath, colorMap);
+          await addGradientColor(paint, fillPropertyType, i, node, layerPath, colorMap);
         }
       }
     }
@@ -208,7 +213,8 @@ async function extractColorsFromNode(
             node,
             layerPath,
             colorMap,
-            node.boundVariables?.strokes?.[i]
+            node.boundVariables?.strokes?.[i],
+            resolverCache
           );
         }
       }
@@ -234,7 +240,8 @@ async function extractColorsFromNode(
             node,
             layerPath,
             colorMap,
-            node.boundVariables?.effects?.[i]
+            node.boundVariables?.effects?.[i],
+            resolverCache
           );
         }
       }
@@ -251,7 +258,8 @@ async function addSolidColor(
   node: SceneNode,
   layerPath: string,
   colorMap: ColorMap,
-  boundVariable?: VariableAlias | VariableAlias[]
+  boundVariable?: VariableAlias | VariableAlias[],
+  resolverCache?: VariableResolverCache
 ): Promise<void> {
   const rgba = {
     r: paint.color.r,
@@ -261,7 +269,7 @@ async function addSolidColor(
   };
 
   const hex = rgbaToHex(rgba);
-  const tokenInfo = await resolveVariableBinding(boundVariable);
+  const tokenInfo = await resolveVariableBinding(boundVariable, resolverCache);
   // Same resolved color with different bound tokens = separate rows (fixes wrong token at page scope)
   const dedupKey = tokenInfo ? `${hex}|${tokenInfo.tokenName}` : hex;
 

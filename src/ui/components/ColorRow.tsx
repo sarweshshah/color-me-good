@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'preact/hooks';
+import { useMemo, useState, memo } from 'preact/compat';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { SHAPE_NODE_TYPES } from '../../shared/constants';
 import { matchesNodeFilters } from '../../shared/filters';
@@ -63,7 +63,7 @@ interface ColorRowProps {
   onCopySuccess?: () => void;
 }
 
-export function ColorRow({
+export const ColorRow = memo(function ColorRow({
   color,
   isSelected,
   propertyFilters,
@@ -225,7 +225,7 @@ export function ColorRow({
       )}
     </div>
   );
-}
+});
 
 interface ExpandedNodeListProps {
   color: SerializedColorEntry;
@@ -248,7 +248,6 @@ function ExpandedNodeList({
     () =>
       color.nodes.filter((n) => {
         if (hiddenOnlyFilter && n.visible !== false) return false;
-        if (n.propertyType === 'text') return false;
         if (nodeTypeFilters.size === 0) return true;
         const type = n.nodeType;
         if (!type) return false;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useState, useCallback } from 'preact/hooks';
 import { PluginMessage, UIMessage, PluginSettings } from '../../shared/messages';
 import { SerializedColorEntry, ScanContext } from '../../shared/types';
 
@@ -81,9 +81,9 @@ export function usePluginMessages() {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  const postMessage = (msg: UIMessage) => {
+  const postMessage = useCallback((msg: UIMessage) => {
     parent.postMessage({ pluginMessage: msg }, '*');
-  };
+  }, []);
 
   return { state, postMessage };
 }

@@ -27,7 +27,6 @@ const SORT_LABELS: Record<SortOption, string> = {
 };
 
 const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
-  { value: 'TEXT', label: 'Text', icon: Type },
   { value: 'Shape', label: 'Shape', icon: Square },
   { value: 'FRAME', label: 'Frame', icon: Frame },
   { value: 'SECTION', label: 'Section', icon: Layout },
@@ -261,6 +260,18 @@ export function SearchFilterBar({
 
                   <SectionLabel label="Node type" />
                   <div className="w-full">
+                    <MenuItem
+                      label="Text"
+                      icon={
+                        <Type
+                          size={14}
+                          className="shrink-0 text-figma-text-secondary/60"
+                        />
+                      }
+                      active={propertyFilters.has('text')}
+                      onClick={() => onPropertyFilterToggle('text')}
+                      checkbox
+                    />
                     {nodeTypeOptionsFiltered.map(({ value, label, icon: Icon }) => (
                       <MenuItem
                         key={value}

@@ -516,15 +516,21 @@ function getScopeId(): string | null {
 
 async function isNodeWithinScope(
   nodeId: string,
-  scopeIds: Set<string>
+  scopeIds: Set<string>,
+  batchCache?: Map<string, boolean>
 ): Promise<boolean> {
+  if (batchCache?.has(nodeId)) return batchCache.get(nodeId)!;
   try {
     let node: BaseNode | null = await figma.getNodeByIdAsync(nodeId);
     while (node) {
-      if (scopeIds.has(node.id)) return true;
+      if (scopeIds.has(node.id)) {
+        batchCache?.set(nodeId, true);
+        return true;
+      }
       node = node.parent;
     }
   } catch {}
+  batchCache?.set(nodeId, false);
   return false;
 }
 
@@ -629,6 +635,12 @@ function setupListeners(): void {
       const scannedIds = getScannedNodeIds();
       let shouldFullRescan = false;
       const incrementalNodeIds = new Set<string>();
+      const scopeCheckCache = new Map<string, boolean>();
+
+      const deletions: string[] = [];
+      const creates: string[] = [];
+      const propChangesKnown: string[] = [];
+      const propChangesUnknown: string[] = [];
 
       for (const change of changes) {
         if (change.type === 'DELETE') {
@@ -636,37 +648,41 @@ function setupListeners(): void {
             shouldFullRescan = true;
             break;
           }
-          continue;
-        }
-
-        if (change.type === 'CREATE') {
-          if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
-            shouldFullRescan = true;
-            break;
+          deletions.push(change.id);
+        } else if (change.type === 'CREATE') {
+          creates.push(change.id);
+        } else if (change.type === 'PROPERTY_CHANGE') {
+          if (scannedIds.has(change.id)) {
+            propChangesKnown.push(change.id);
+          } else {
+            propChangesUnknown.push(change.id);
           }
-          continue;
+        }
+      }
+
+      if (!shouldFullRescan && creates.length > 0 && scopeSet.size > 0) {
+        const results = await Promise.all(
+          creates.map((id) => isNodeWithinScope(id, scopeSet, scopeCheckCache))
+        );
+        if (results.some(Boolean)) {
+          shouldFullRescan = true;
+        }
+      }
+
+      if (!shouldFullRescan) {
+        for (const id of propChangesKnown) {
+          incrementalNodeIds.add(id);
         }
 
-        if (change.type === 'PROPERTY_CHANGE' && scannedIds.has(change.id)) {
-          incrementalNodeIds.add(change.id);
-          continue;
-        }
-
-        if (change.type === 'PROPERTY_CHANGE') {
-          if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
-            incrementalNodeIds.add(change.id);
+        if (propChangesUnknown.length > 0 && scopeSet.size > 0) {
+          const results = await Promise.all(
+            propChangesUnknown.map((id) => isNodeWithinScope(id, scopeSet, scopeCheckCache))
+          );
+          for (let i = 0; i < propChangesUnknown.length; i++) {
+            if (results[i]) {
+              incrementalNodeIds.add(propChangesUnknown[i]);
+            }
           }
-          continue;
-        }
-
-        if (scannedIds.has(change.id)) {
-          shouldFullRescan = true;
-          break;
-        }
-
-        if (scopeSet.size > 0 && (await isNodeWithinScope(change.id, scopeSet))) {
-          shouldFullRescan = true;
-          break;
         }
       }
 
