@@ -164,6 +164,27 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
+## [2.1] – 2026-05-13
+
+### Added ✨
+
+- **Add to canvas selection**: ⌘/Ctrl+Click a color row’s Select All control or an expanded element to add those nodes to the current Figma selection instead of replacing it. 🖱️
+
+### Changed 🔧
+
+- **Variable resolution caching**: Reuses variable, collection, and token lookups during a scan for faster results on large selections. ⚡
+- **Document change handling**: Batches scope checks with a per-update cache and routes more edits through incremental rescans instead of full rescans. 🔄
+- **Tooltips**: Repositions on scroll and resize with requestAnimationFrame, and clamps more reliably for start-, center-, and end-aligned triggers. 💬
+- **Text filtering**: Text is filtered under property type (Fill, Stroke, Text, Effect) instead of node type, and expanded element lists include text layers again. 🔎
+- **Smooth zoom**: Uses ease-in-out cubic easing for zoom-to-node. 🔎
+- **Startup reliability**: Requests settings only after the UI message listener is attached so initial plugin state is not missed. 🛡️
+
+### Performance 🚀
+
+- **Color rows**: Memoized row rendering to reduce unnecessary list updates. ⚡
+
+---
+
 ## [Unreleased] – Phase 3 (Planned)
 
 - JSON and CSV export
