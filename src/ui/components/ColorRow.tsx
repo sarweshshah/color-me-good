@@ -44,8 +44,8 @@ const VISIBLE_ELEMENTS_STEP = 20;
 function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
   const Icon = (nodeType && NODE_TYPE_ICONS[nodeType]) || Box;
   return (
-    <span className="w-6 h-6 flex items-center justify-center shrink-0 text-figma-text-secondary">
-      <Icon size={16} />
+    <span className="w-5 h-5 flex items-center justify-center shrink-0 text-figma-text-secondary">
+      <Icon size={14} />
     </span>
   );
 }
@@ -147,7 +147,7 @@ export const ColorRow = memo(function ColorRow({
 
   return (
     <div
-      className={`color-row border-b border-figma-border ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}
+      className={`color-row ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}
     >
       <div
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
@@ -264,22 +264,20 @@ function ExpandedNodeList({
   const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
 
   return (
-    <div className="bg-figma-surface border-t border-figma-border pt-1 pb-1 w-full">
+    <div className="color-row-expanded bg-figma-surface pt-1 pb-1 w-full">
       {visibleNodes.map((nodeRef, idx) => (
         <div
           key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
-          className="w-full py-2 pl-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center justify-between gap-3"
+          className="color-row-element w-full py-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center gap-3"
           onClick={(e) => onElementClick(nodeRef.nodeId, e as unknown as MouseEvent)}
         >
-          <div className="flex-1 min-w-0 flex items-center gap-1">
-            <NodeTypeIcon nodeType={nodeRef.nodeType} />
-            <div className="min-w-0">
-              <div className="text-figma-text text-[11px] font-medium truncate">
-                {nodeRef.nodeName}
-              </div>
-              <div className="text-figma-text-secondary text-[10px] truncate">
-                {nodeRef.layerPath}
-              </div>
+          <NodeTypeIcon nodeType={nodeRef.nodeType} />
+          <div className="flex-1 min-w-0">
+            <div className="text-figma-text text-[11px] font-medium truncate">
+              {nodeRef.nodeName}
+            </div>
+            <div className="text-figma-text-secondary text-[10px] truncate">
+              {nodeRef.layerPath}
             </div>
           </div>
           <span className="text-figma-text-secondary text-[10px] shrink-0">
@@ -288,7 +286,7 @@ function ExpandedNodeList({
         </div>
       ))}
       {remainingCount > 0 && (
-        <div className="py-2 px-4 text-center">
+        <div className="color-row-element py-2 pr-4">
           <button
             type="button"
             className="text-figma-blue text-xs hover:underline"

@@ -333,28 +333,38 @@ export function App() {
 
   if (state.isScanning) {
     return (
-      <div className="h-screen bg-figma-bg flex items-center justify-center">
+      <div className="h-screen bg-figma-bg flex flex-col">
         <ResizeHandles postMessage={postMessage} />
         <TooltipPortal />
-        <div className="text-center">
-          <div className="text-figma-text text-sm mb-2">Scanning...</div>
-          {state.scanProgress && (
-            <div className="text-figma-text-secondary text-xs">
-              {state.scanProgress.scanned.toLocaleString()} /{' '}
-              {state.scanProgress.total.toLocaleString()} nodes
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-figma-text text-sm mb-2">Scanning...</div>
+            {state.scanProgress && (
+              <div className="text-figma-text-secondary text-xs">
+                {state.scanProgress.scanned.toLocaleString()} /{' '}
+                {state.scanProgress.total.toLocaleString()} nodes
+              </div>
+            )}
+            <div className="w-48 h-1 bg-figma-border rounded-full overflow-hidden mt-3">
+              <div
+                className="h-full bg-figma-blue transition-all duration-200"
+                style={{
+                  width: state.scanProgress
+                    ? `${(state.scanProgress.scanned / state.scanProgress.total) * 100}%`
+                    : '0%',
+                }}
+              />
             </div>
-          )}
-          <div className="w-48 h-1 bg-figma-border rounded-full overflow-hidden mt-3">
-            <div
-              className="h-full bg-figma-blue transition-all duration-200"
-              style={{
-                width: state.scanProgress
-                  ? `${(state.scanProgress.scanned / state.scanProgress.total) * 100}%`
-                  : '0%',
-              }}
-            />
+            <button
+              type="button"
+              onClick={() => postMessage({ type: 'cancel-scan' })}
+              className="mt-4 px-3 py-1.5 text-xs text-figma-text-secondary border border-figma-border rounded hover:bg-figma-bg-hover hover:text-figma-text active:bg-figma-border transition-colors"
+            >
+              Cancel
+            </button>
           </div>
         </div>
+        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
       </div>
     );
   }

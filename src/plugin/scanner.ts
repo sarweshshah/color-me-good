@@ -84,12 +84,14 @@ export async function scanCurrentPage(
     yield node;
     scannedNodes++;
 
-    if (scannedNodes % 500 === 0) {
-      if (options.isCancelled?.()) return;
+    if (scannedNodes % 100 === 0) {
       if (options.onProgress) {
         options.onProgress(scannedNodes, totalNodes);
-        await new Promise((resolve) => setTimeout(resolve, 0));
       }
+      // Yield to the macrotask queue so UI messages (e.g. cancel) can be delivered.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Check AFTER the yield — the cancel message may have arrived during the await.
+      if (options.isCancelled?.()) return;
     }
 
     if ('children' in node) {
@@ -108,6 +110,7 @@ export async function scanCurrentPage(
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
         if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
         await extractColorsFromNode(node, colorMap, resolverCache);
+        if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
       }
     }
 

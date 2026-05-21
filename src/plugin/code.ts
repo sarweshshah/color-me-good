@@ -163,6 +163,16 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       lastScanScopeId = null;
       sendNoSelectionState();
       break;
+    case 'cancel-scan':
+      if (selectionDebounce !== null) {
+        clearTimeout(selectionDebounce);
+        selectionDebounce = null;
+      }
+      currentScanId++;
+      cachedResults = null;
+      lastScanScopeId = null;
+      sendNoSelectionState();
+      break;
     case 'request-rescan':
       await performScan();
       break;

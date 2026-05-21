@@ -22,22 +22,22 @@ function SettingRow({
   return (
     <div className="flex items-center justify-between gap-3 py-2">
       <div className="min-w-0">
-        <div className="text-sm text-figma-text font-medium">{label}</div>
+        <div className="text-xs text-figma-text font-medium">{label}</div>
         {description && (
-          <div className="text-xs text-figma-text-secondary mt-0.5">{description}</div>
+          <div className="text-[10px] text-figma-text-secondary mt-0.5">{description}</div>
         )}
       </div>
       <button
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className={`shrink-0 w-9 h-5 rounded-full transition-colors flex items-center ${
+        className={`shrink-0 w-7 h-4 rounded-full transition-colors flex items-center ${
           checked ? 'bg-figma-blue' : 'bg-figma-border'
         }`}
       >
         <span
-          className="block w-4 h-4 rounded-full bg-figma-onbrand shadow-sm transition-transform"
-          style={{ transform: checked ? 'translateX(18px)' : 'translateX(2px)' }}
+          className="block w-3 h-3 rounded-full bg-figma-onbrand shadow-sm transition-transform"
+          style={{ transform: checked ? 'translateX(13px)' : 'translateX(2px)' }}
         />
       </button>
     </div>
@@ -98,10 +98,10 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
 
       <Section title="Display">
         <div className="py-2">
-          <div className="text-sm text-figma-text font-medium mb-1.5">
+          <div className="text-xs text-figma-text font-medium">
             UI theme
           </div>
-          <div className="text-xs text-figma-text-secondary mb-2">
+          <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Choose light, dark, or follow system preference.
           </div>
           <div className="flex gap-2 mb-4">
@@ -122,10 +122,10 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           </div>
         </div>
         <div className="py-2">
-          <div className="text-sm text-figma-text font-medium mb-1.5">
+          <div className="text-xs text-figma-text font-medium">
             Color value format
           </div>
-          <div className="text-xs text-figma-text-secondary mb-2">
+          <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Format for displaying resolved and hard-coded colors.
           </div>
           <select

@@ -22,6 +22,7 @@ export type UIMessage =
   | SelectNodesMessage
   | ZoomToNodeMessage
   | ClearScopeMessage
+  | CancelScanMessage
   | RequestRescanMessage
   | ResizeMessage
   | GetSettingsMessage
@@ -61,6 +62,10 @@ export interface ZoomToNodeMessage {
 
 export interface ClearScopeMessage {
   type: 'clear-scope';
+}
+
+export interface CancelScanMessage {
+  type: 'cancel-scan';
 }
 
 export interface RequestRescanMessage {

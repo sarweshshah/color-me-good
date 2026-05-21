@@ -28,6 +28,7 @@ body {
   --figma-color-bg: #ffffff;
   --figma-color-bg-hover: #ebebeb;
   --figma-color-border: #eeeeee;
+  --figma-color-border-subtle: rgba(0, 0, 0, 0.02);
   --figma-color-border-strong: #e2e2e2;
   --figma-color-border-selected: #f6f6f6;
   --figma-color-bg-selected: #ffffff;
@@ -42,6 +43,45 @@ body {
   --figma-color-text-onsuccess: #ffffff;
   --figma-color-bg-warning: #e67700;
   --figma-color-text-onwarning: #383838;
+}
+
+/* Color row dividers — kept very subtle in both themes */
+.color-row {
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+}
+
+.figma-light .color-row {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.figma-dark .color-row {
+  border-bottom-color: rgba(255, 255, 255, 0.015);
+}
+
+.color-row-expanded {
+  border-top-width: 1px;
+  border-top-style: solid;
+}
+
+.figma-light .color-row-expanded {
+  border-top-color: rgba(0, 0, 0, 0.015);
+}
+
+.figma-dark .color-row-expanded {
+  border-top-color: rgba(255, 255, 255, 0.015);
+}
+
+.color-row-element {
+  padding-left: 1.25rem; /* px-3 + small nest offset */
+}
+
+.figma-light .color-row-element {
+  border-left: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.figma-dark .color-row-element {
+  border-left: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 /* Light theme only: default background for color rows (not when selected) */
@@ -61,6 +101,7 @@ body {
   --figma-color-bg: #2c2c2c;
   --figma-color-bg-hover: #404040;
   --figma-color-border: #404040;
+  --figma-color-border-subtle: rgba(255, 255, 255, 0.03);
   --figma-color-border-strong: #4a4a4a;
   --figma-color-border-selected: #0d99ff;
   --figma-color-bg-selected: #1a1a1a;
