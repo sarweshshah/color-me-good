@@ -22,6 +22,8 @@ export interface ScanOptions {
   onProgress?: (scanned: number, total: number) => void;
   onError?: (error: Error) => void;
   includeVectors?: boolean;
+  includeBooleanChildren?: boolean;
+  expandGradients?: boolean;
   includeHiddenLayers?: boolean;
   /** When true, the scan should abort (e.g. selection changed). */
   isCancelled?: () => boolean;
@@ -53,11 +55,13 @@ export async function scanCurrentPage(
   let totalNodes = 0;
   let scannedNodes = 0;
   const includeHidden = options.includeHiddenLayers ?? false;
+  const includeBooleanChildren = options.includeBooleanChildren ?? false;
+  const expandGradients = options.expandGradients ?? false;
 
   function countNodes(node: SceneNode): number {
     if (!includeHidden && 'visible' in node && !node.visible) return 0;
     let count = 1;
-    if ('children' in node) {
+    if ('children' in node && (includeBooleanChildren || node.type !== 'BOOLEAN_OPERATION')) {
       for (const child of node.children) {
         count += countNodes(child as SceneNode);
       }
@@ -94,7 +98,7 @@ export async function scanCurrentPage(
       if (options.isCancelled?.()) return;
     }
 
-    if ('children' in node) {
+    if ('children' in node && (includeBooleanChildren || node.type !== 'BOOLEAN_OPERATION')) {
       for (const child of node.children) {
         yield* traverseNodes(child as SceneNode);
       }
@@ -109,7 +113,7 @@ export async function scanCurrentPage(
       for await (const node of traverseNodes(root)) {
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
         if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-        await extractColorsFromNode(node, colorMap, resolverCache);
+        await extractColorsFromNode(node, colorMap, resolverCache, expandGradients);
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
       }
     }
@@ -134,17 +138,18 @@ export async function scanCurrentPage(
 
 export async function scanNodesForColors(
   nodes: SceneNode[],
-  options: { includeVectors?: boolean; includeHiddenLayers?: boolean } = {}
+  options: { includeVectors?: boolean; includeBooleanChildren?: boolean; expandGradients?: boolean; includeHiddenLayers?: boolean } = {}
 ): Promise<ColorEntry[]> {
   const colorMap: ColorMap = {};
   const resolverCache = new VariableResolverCache();
   const includeHidden = options.includeHiddenLayers ?? false;
+  const expandGradients = options.expandGradients ?? false;
 
   for (const node of nodes) {
     if (!node) continue;
     if (!includeHidden && 'visible' in node && !node.visible) continue;
     if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-    await extractColorsFromNode(node, colorMap, resolverCache);
+    await extractColorsFromNode(node, colorMap, resolverCache, expandGradients);
   }
 
   return Object.values(colorMap);
@@ -173,7 +178,8 @@ function resolveScanContext(): ScanContext {
 async function extractColorsFromNode(
   node: SceneNode,
   colorMap: ColorMap,
-  resolverCache?: VariableResolverCache
+  resolverCache?: VariableResolverCache,
+  expandGradients = false
 ): Promise<void> {
   try {
     const layerPath = buildLayerPath(node);
@@ -200,9 +206,41 @@ async function extractColorsFromNode(
             paint.type === 'GRADIENT_DIAMOND') &&
           paint.visible !== false
         ) {
-          await addGradientColor(paint, fillPropertyType, i, node, layerPath, colorMap);
+          if (expandGradients) {
+            addGradientStopsAsSolids(paint, fillPropertyType, i, node, layerPath, colorMap);
+          } else {
+            await addGradientColor(paint, fillPropertyType, i, node, layerPath, colorMap);
+          }
         }
       }
+    } else if ('fills' in node && 'vectorNetwork' in node) {
+      try {
+        const regions = (node as any).vectorNetwork?.regions as any[] | undefined;
+        if (regions) {
+          for (let r = 0; r < regions.length; r++) {
+            const regionFills = regions[r]?.fills as Paint[] | undefined;
+            if (!Array.isArray(regionFills)) continue;
+            for (let i = 0; i < regionFills.length; i++) {
+              const paint = regionFills[i];
+              if (paint.type === 'SOLID' && paint.visible !== false) {
+                await addSolidColor(paint, fillPropertyType, i, node, layerPath, colorMap, undefined, resolverCache);
+              } else if (
+                (paint.type === 'GRADIENT_LINEAR' ||
+                  paint.type === 'GRADIENT_RADIAL' ||
+                  paint.type === 'GRADIENT_ANGULAR' ||
+                  paint.type === 'GRADIENT_DIAMOND') &&
+                paint.visible !== false
+              ) {
+                if (expandGradients) {
+                  addGradientStopsAsSolids(paint as GradientPaint, fillPropertyType, i, node, layerPath, colorMap);
+                } else {
+                  await addGradientColor(paint as GradientPaint, fillPropertyType, i, node, layerPath, colorMap);
+                }
+              }
+            }
+          }
+        }
+      } catch (_) {}
     }
 
     if ('strokes' in node && Array.isArray(node.strokes)) {
@@ -360,6 +398,54 @@ async function addGradientColor(
     entry.propertyTypes.add(propertyType);
     entry.nodes.push(nodeRef);
     entry.usageCount++;
+  }
+}
+
+function addGradientStopsAsSolids(
+  paint: GradientPaint,
+  propertyType: PropertyType,
+  propertyIndex: number,
+  node: SceneNode,
+  layerPath: string,
+  colorMap: ColorMap
+): void {
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
+
+  for (const stop of paint.gradientStops) {
+    const rgba = {
+      r: stop.color.r,
+      g: stop.color.g,
+      b: stop.color.b,
+      a: stop.color.a ?? 1,
+    };
+    const hex = rgbaToHex(rgba);
+
+    if (!colorMap[hex]) {
+      colorMap[hex] = {
+        type: 'solid',
+        hex,
+        rgba,
+        gradient: null,
+        dedupKey: hex,
+        tokenName: null,
+        tokenCollection: null,
+        libraryName: null,
+        isLibraryVariable: false,
+        styleName: null,
+        styleId: null,
+        propertyTypes: new Set([propertyType]),
+        nodes: [nodeRef],
+        usageCount: 1,
+        isTokenBound: false,
+      };
+    } else {
+      const entry = colorMap[hex];
+      entry.propertyTypes.add(propertyType);
+      if (!entry.nodes.some((n) => n.nodeId === nodeRef.nodeId && n.propertyIndex === propertyIndex)) {
+        entry.nodes.push(nodeRef);
+        entry.usageCount++;
+      }
+    }
   }
 }
 

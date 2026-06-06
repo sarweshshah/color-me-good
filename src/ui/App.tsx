@@ -398,12 +398,6 @@ export function App() {
           <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
         </div>
         <Settings settings={state.settings} onSettingChange={handleSettingChange} />
-        <Footer
-          view="settings"
-          onOpenSettings={handleOpenSettings}
-          onOpenAbout={handleOpenAbout}
-          onBack={() => setView('list')}
-        />
         <TooltipPortal />
       </div>
     );

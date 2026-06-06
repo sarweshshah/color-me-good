@@ -1,7 +1,7 @@
 {
   "name": "color-me-good",
   "description": "A Figma plugin for color detection, auditing, and selection",
-  "version": "2.1",
+  "version": "2.2",
   "author": "Sarwesh Shah",
   "license": "MIT",
   "private": true,

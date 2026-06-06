@@ -79,6 +79,22 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           checked={settings.includeVectors}
           onChange={(v) => onSettingChange('includeVectors', v)}
         />
+        {settings.includeVectors && (
+          <div className="pl-4 border-l-2 border-figma-border ml-1">
+            <SettingRow
+              label="Include boolean children"
+              description="Surface fills and strokes from paths inside boolean groups (union, subtract, etc.)."
+              checked={settings.includeBooleanChildren}
+              onChange={(v) => onSettingChange('includeBooleanChildren', v)}
+            />
+          </div>
+        )}
+        <SettingRow
+          label="Expand gradients"
+          description="Also surface each gradient stop as an individual solid color."
+          checked={settings.expandGradients}
+          onChange={(v) => onSettingChange('expandGradients', v)}
+        />
         <SettingRow
           label="Include hidden layers"
           description="Include hidden (invisible) layers in the scan results."

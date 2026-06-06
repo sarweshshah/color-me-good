@@ -185,6 +185,24 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
+## [2.2] – 2026-06-05
+
+### Added ✨
+
+- **Include boolean children**: New setting under Settings → Scan (shown when “Include vectors” is on). When off (default), fills and strokes from individual paths inside boolean groups (union, subtract, etc.) are not surfaced—only the boolean group’s own paints are reported. 🔗
+- **Expand gradients**: New setting under Settings → Scan. When enabled, gradients are omitted from results and each stop color is surfaced as an individual solid color entry, making it easy to audit every color used in gradients. 🌈
+
+### Fixed 🐛
+
+- **Multi-tone vector colors**: VECTOR nodes with per-region fills (e.g. multi-tone icons) now correctly extract colors from `vectorNetwork.regions` when `node.fills` returns `figma.mixed`. Previously these nodes were silently skipped, resulting in "No colors found." 🎨
+
+### Changed 🔧
+
+- **Boolean group scanning**: Traversal skips child vectors inside boolean operations unless “Include boolean children” is enabled, reducing noise from immaterial path-level colors. 🔗
+- **Settings screen**: Removed the footer/status bar from the settings view; back navigation uses the header chevron. ⚙️
+
+---
+
 ## [Unreleased] – Phase 3 (Planned)
 
 - JSON and CSV export
