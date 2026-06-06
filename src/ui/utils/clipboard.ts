@@ -33,6 +33,17 @@ async function copyText(text: string): Promise<boolean> {
   return execCommandCopy(text);
 }
 
+export async function copyColorsDisplayValues(
+  colors: SerializedColorEntry[],
+  format: ColorDisplayFormat
+): Promise<boolean> {
+  if (colors.length === 0) return false;
+  const text = colors
+    .map((c) => `${formatResolvedColor(c, format)}\t${c.usageCount}`)
+    .join('\n');
+  return copyText(text);
+}
+
 export async function copyColorToClipboard(
   color: SerializedColorEntry,
   format: ColorDisplayFormat

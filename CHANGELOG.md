@@ -191,6 +191,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 - **Include boolean children**: New setting under Settings → Scan (shown when “Include vectors” is on). When off (default), fills and strokes from individual paths inside boolean groups (union, subtract, etc.) are not surfaced—only the boolean group’s own paints are reported. 🔗
 - **Expand gradients**: New setting under Settings → Scan. When enabled, gradients are omitted from results and each stop color is surfaced as an individual solid color entry, making it easy to audit every color used in gradients. 🌈
+- **Export**: Export the current filtered color list as JSON, CSV, or copy to clipboard via the download icon in the filter bar. 📥
 
 ### Fixed 🐛
 
@@ -205,6 +206,5 @@ All notable changes to Color Me Good will be documented in this file.
 
 ## [Unreleased] – Phase 3 (Planned)
 
-- JSON and CSV export
 - Color diff over time
 - Virtual scrolling for 500+ colors

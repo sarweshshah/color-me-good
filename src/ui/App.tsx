@@ -20,6 +20,8 @@ import type { PluginSettings, UITheme, UIMessage } from '../shared/messages';
 import { RESIZE_BOUNDS, SHAPE_NODE_TYPES } from '../shared/constants';
 import { matchesNodeFilters } from '../shared/filters';
 import { formatResolvedColor } from './utils/format';
+import { exportColors, ExportFormat } from './utils/export';
+import { copyColorsDisplayValues } from './utils/clipboard';
 
 type ResizeMode = 'corner' | 'right' | 'bottom';
 
@@ -331,6 +333,25 @@ export function App() {
     setTimeout(() => setShowCopiedToast(false), 1500);
   }, []);
 
+  const handleExport = useCallback(
+    async (format: ExportFormat) => {
+      if (format === 'clipboard') {
+        const success = await copyColorsDisplayValues(
+          filteredAndSortedColors,
+          colorDisplayFormat
+        );
+        if (success) handleCopySuccess();
+        return;
+      }
+      exportColors(format, {
+        colors: filteredAndSortedColors,
+        context: state.context,
+        colorDisplayFormat,
+      });
+    },
+    [filteredAndSortedColors, state.context, colorDisplayFormat, handleCopySuccess]
+  );
+
   if (state.isScanning) {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
@@ -519,6 +540,7 @@ export function App() {
           sortDirection={sortDirection}
           onSortChange={handleSortChange}
           includeVectors={includeVectors}
+          onExport={handleExport}
         />
       </div>
 
