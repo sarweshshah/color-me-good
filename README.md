@@ -17,7 +17,9 @@
 - **Live Updates**: Results update when the document or selection changes; hidden nodes are excluded. Property changes in the active scope are applied with incremental patch updates for faster refresh, and startup state is replayed to avoid missing initial scan results. Vector node types are excluded by default with an optional "Include vectors" setting in Settings.
 - **Multi-Select**: Shift+Click or Cmd/Ctrl+Click to select multiple color rows.
 - **Copy to Clipboard**: Click any color swatch to copy its value.
-- **Settings**: Persistent settings (Include vectors, Smooth zoom) via the Settings screen.
+- **Export**: Export the current filtered color list as JSON, CSV, or copy to clipboard via the download icon in the filter bar.
+- **Multi-tone vectors**: VECTOR nodes with per-region fills (e.g. multi-tone icons) have their region colors extracted correctly, even when `fills` reports a mixed value.
+- **Settings**: Persistent settings (Include vectors, Include boolean children, Expand gradients, Include hidden layers, Smooth zoom, color display format, and UI theme) via the Settings screen.
 
 ## Development
 
@@ -67,7 +69,7 @@ The plugin will be built to the `dist/` directory with:
 - `App.tsx`: Root component with state management and list/settings views
 - `components/`: Header, SummaryStrip, SearchFilterBar, ColorList, ColorRow, Settings, Footer, etc.
 - `hooks/`: usePluginMessages, useMultiSelect
-- `utils/`: Clipboard and formatting utilities
+- `utils/`: Clipboard, export (JSON/CSV), and formatting utilities
 
 ### Shared (`src/shared/`)
 - `types.ts`: TypeScript interfaces for ColorEntry, NodeRef, ScanContext
@@ -94,8 +96,8 @@ The plugin will be built to the `dist/` directory with:
 3. Use the × next to the scope indicator to clear the selection and return to the no-selection screen.
 4. Use the search bar and filter/sort controls to narrow and order the list. Click summary stats (Colors, Token-bound, Hard-coded) to filter by binding; use the filter menu for property and node type. Click the currently selected sort option again to flip sort direction. The summary reflects the filtered results.
 5. Click a color row to select all elements using that color; expand the row to see the element list with node type icons (matching active node-type filters), then use **Show more** to progressively reveal more elements; click an element to zoom to it.
-6. Click a color swatch to copy its value to the clipboard.
-7. Open Settings from the footer to toggle “Include vectors” and “Smooth zoom”; resize the panel (default 420×720; min 420×720, max 540×840) by dragging the right edge, bottom edge, or bottom-right corner.
+6. Click a color swatch to copy its value to the clipboard, or use the download icon in the filter bar to export the current filtered list as JSON, CSV, or copy colors.
+7. Open Settings from the header to toggle scan options (“Include vectors”, “Include boolean children”, “Expand gradients”, “Include hidden layers”), display preferences (color format, UI theme), and “Smooth zoom”; resize the panel (default 420×720; min 420×720, max 540×840) by dragging the right edge, bottom edge, or bottom-right corner.
 
 ## License
 
