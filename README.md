@@ -2,11 +2,12 @@
   <img src="assets/logo.png" alt="Color Me Good" width="128" height="128" />
 </p>
 
-<h1 align="center">Color Me Good</h1>
+<h1 align="center">
+  Color Me Good
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/v2.2-D1254B?style=flat" alt="v2.2" style="vertical-align: middle; margin-left: 6px;" /></a>
+</h1>
 
 <p align="center">A Figma plugin for color detection, auditing, and selection.</p>
-
-<p align="center"><strong>v2.2</strong></p>
 
 Select elements on the canvas to scan every unique color in scope—fills, strokes, effects, gradients, and design tokens. Filter, sort, select, zoom, copy, and export results without leaving Figma.
 
