@@ -95,7 +95,7 @@ export async function scanCurrentPage(
       // Yield to the macrotask queue so UI messages (e.g. cancel) can be delivered.
       await new Promise((resolve) => setTimeout(resolve, 0));
       // Check AFTER the yield — the cancel message may have arrived during the await.
-      if (options.isCancelled?.()) return;
+      if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
     }
 
     if ('children' in node && (includeBooleanChildren || node.type !== 'BOOLEAN_OPERATION')) {

@@ -181,6 +181,8 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       currentScanId++;
       cachedResults = null;
       lastScanScopeId = null;
+      ignoreNextSelectionChange = true;
+      figma.currentPage.selection = [];
       sendNoSelectionState();
       break;
     case 'request-rescan':
@@ -377,12 +379,15 @@ async function performScan(): Promise<void> {
         });
       },
       onError: (error) => {
+        if (error.message === SCAN_CANCELLED_MESSAGE) return;
         figma.ui.postMessage({
           type: 'scan-error',
           message: error.message,
         });
       },
     });
+
+    if (currentScanId !== myScanId) return;
 
     const serializedColors = serializeColors(result.colors);
 
