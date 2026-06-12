@@ -225,6 +225,7 @@ sequenceDiagram
 - Result caching in main thread
 - Efficient deduplication (Map-based)
 - Lazy element rendering (only visible rows)
+- Virtualized color list for large result sets (>150 colors)
 
 ### 2. Type Safety
 - Strict TypeScript configuration
@@ -261,7 +262,7 @@ sequenceDiagram
 - Click summary strip stats to set binding filter
 
 ### Simplified for MVP
-- Virtual scrolling: Not implemented (simple list is fast enough for 100-500 colors)
+- Virtual scrolling: Implemented for large lists (>150 colors) via `@tanstack/react-virtual`; smaller lists render plainly
 - Text variable binding: Simplified (Figma API limitation on text segments)
 - Effect colors: Deferred to Phase 2 as planned
 

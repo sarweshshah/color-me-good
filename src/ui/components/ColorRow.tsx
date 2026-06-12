@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect, memo } from 'preact/compat';
+import { useMemo, useRef, useEffect, memo } from 'preact/compat';
 import { gsap } from 'gsap';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { SHAPE_NODE_TYPES } from '../../shared/constants';
@@ -40,8 +40,8 @@ const NODE_TYPE_ICONS: Record<string, typeof Box> = {
   BOOLEAN_OPERATION: PenTool,
 };
 
-const INITIAL_VISIBLE_ELEMENTS = 20;
-const VISIBLE_ELEMENTS_STEP = 20;
+export const INITIAL_VISIBLE_ELEMENTS = 20;
+export const VISIBLE_ELEMENTS_STEP = 20;
 
 function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
   const Icon = (nodeType && NODE_TYPE_ICONS[nodeType]) || Box;
@@ -55,12 +55,16 @@ function NodeTypeIcon({ nodeType }: { nodeType?: string }) {
 interface ColorRowProps {
   color: SerializedColorEntry;
   isSelected: boolean;
+  isExpanded: boolean;
+  visibleCount: number;
   propertyFilters: Set<PropertyType>;
   nodeTypeFilters: Set<string>;
   hiddenOnlyFilter: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
+  onToggleExpand: (dedupKey: string) => void;
+  onShowMore: (dedupKey: string, total: number) => void;
   onElementClick: (nodeId: string, event: MouseEvent) => void;
   onElementDoubleClick: (nodeId: string, event: MouseEvent) => void;
   onCopySuccess?: () => void;
@@ -69,18 +73,20 @@ interface ColorRowProps {
 export const ColorRow = memo(function ColorRow({
   color,
   isSelected,
+  isExpanded,
+  visibleCount,
   propertyFilters,
   nodeTypeFilters,
   hiddenOnlyFilter,
   colorDisplayFormat,
   onSelectAll,
   onRowClick,
+  onToggleExpand,
+  onShowMore,
   onElementClick,
   onElementDoubleClick,
   onCopySuccess,
 }: ColorRowProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
   const swatchRef = useRef<HTMLDivElement>(null);
 
   const displayName = color.tokenName || formatResolvedColor(color, colorDisplayFormat);
@@ -157,12 +163,7 @@ export const ColorRow = memo(function ColorRow({
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
           onRowClick(color, e as unknown as MouseEvent);
-          if (isExpanded) {
-            setIsExpanded(false);
-          } else {
-            setVisibleCount(INITIAL_VISIBLE_ELEMENTS);
-            setIsExpanded(true);
-          }
+          onToggleExpand(color.dedupKey);
         }}
       >
         <div
@@ -222,9 +223,7 @@ export const ColorRow = memo(function ColorRow({
           nodeTypeFilters={nodeTypeFilters}
           hiddenOnlyFilter={hiddenOnlyFilter}
           visibleCount={visibleCount}
-          onShowMore={(total) =>
-            setVisibleCount((prev) => Math.min(total, prev + VISIBLE_ELEMENTS_STEP))
-          }
+          onShowMore={(total) => onShowMore(color.dedupKey, total)}
           onElementClick={onElementClick}
           onElementDoubleClick={onElementDoubleClick}
         />

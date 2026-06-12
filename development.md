@@ -162,7 +162,7 @@ Before submitting a PR or release:
 
 ## Known Limitations
 
-- Simple list rendering (no virtual scrolling; fast enough for typical lists up to ~500 colors)
+- Virtualized list rendering kicks in above 150 colors (`@tanstack/react-virtual`); smaller lists render plainly with the entrance animation
 
 ## Next Steps (Phase 2 / v2.0)
 
