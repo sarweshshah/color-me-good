@@ -82,6 +82,10 @@ export async function scanCurrentPage(
     );
   }
 
+  if (options.onProgress) {
+    options.onProgress(0, totalNodes);
+  }
+
   async function* traverseNodes(node: SceneNode): AsyncGenerator<SceneNode> {
     if (!includeHidden && 'visible' in node && !node.visible) return;
 

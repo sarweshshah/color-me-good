@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'preact/hooks';
+import { gsap } from 'gsap';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
@@ -14,7 +15,13 @@ import { Footer } from './components/Footer';
 import { TooltipPortal } from './components/TooltipPortal';
 import { Settings } from './components/Settings';
 import { About } from './components/About';
-import { ChevronLeft, MousePointerClick } from 'lucide-preact';
+import { ChevronLeft } from 'lucide-preact';
+import { ScanningState } from './components/ScanningState';
+import { EmptyState } from './components/EmptyState';
+import { AnimatedToast } from './components/AnimatedToast';
+import { ViewPanel } from './components/ViewPanel';
+import { useGsapContext } from './hooks/useGsapContext';
+import { DURATION, EASE, tweenVars } from './utils/motion';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings, UITheme, UIMessage } from '../shared/messages';
 import { RESIZE_BOUNDS, SHAPE_NODE_TYPES } from '../shared/constants';
@@ -135,6 +142,21 @@ export function App() {
   const includeVectors = state.settings?.includeVectors ?? false;
   const colorDisplayFormat = state.settings?.colorDisplayFormat ?? 'hex';
   const uiTheme = state.settings?.uiTheme ?? 'system';
+  const mainContentRef = useRef<HTMLDivElement>(null);
+
+  useGsapContext(
+    () => {
+      gsap.from('.app-chrome', tweenVars({
+        autoAlpha: 0,
+        y: -6,
+        duration: DURATION.normal,
+        stagger: 0.05,
+        ease: EASE.out,
+      }));
+    },
+    [view, state.colors.length, state.isScanning],
+    mainContentRef
+  );
 
   useEffect(() => {
     const applyTheme = (theme: UITheme) => {
@@ -358,32 +380,11 @@ export function App() {
         <ResizeHandles postMessage={postMessage} />
         <TooltipPortal />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-figma-text text-sm mb-2">Scanning...</div>
-            {state.scanProgress && (
-              <div className="text-figma-text-secondary text-xs">
-                {state.scanProgress.scanned.toLocaleString()} /{' '}
-                {state.scanProgress.total.toLocaleString()} nodes
-              </div>
-            )}
-            <div className="w-48 h-1 bg-figma-border rounded-full overflow-hidden mt-3">
-              <div
-                className="h-full bg-figma-blue transition-all duration-200"
-                style={{
-                  width: state.scanProgress
-                    ? `${(state.scanProgress.scanned / state.scanProgress.total) * 100}%`
-                    : '0%',
-                }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => postMessage({ type: 'cancel-scan' })}
-              className="mt-4 px-3 py-1.5 text-xs text-figma-text-secondary border border-figma-border rounded hover:bg-figma-bg-hover hover:text-figma-text active:bg-figma-border transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
+          <ScanningState
+            scanned={state.scanProgress?.scanned ?? 0}
+            total={state.scanProgress?.total ?? 0}
+            onCancel={() => postMessage({ type: 'cancel-scan' })}
+          />
         </div>
         <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
       </div>
@@ -407,18 +408,20 @@ export function App() {
     return (
       <div className="h-screen bg-figma-surface flex flex-col">
         <ResizeHandles postMessage={postMessage} />
-        <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setView('list')}
-            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
-        </div>
-        <Settings settings={state.settings} onSettingChange={handleSettingChange} />
+        <ViewPanel className="flex flex-col flex-1 min-h-0">
+          <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
+              aria-label="Back"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
+          </div>
+          <Settings settings={state.settings} onSettingChange={handleSettingChange} />
+        </ViewPanel>
         <TooltipPortal />
       </div>
     );
@@ -428,18 +431,20 @@ export function App() {
     return (
       <div className="h-screen bg-figma-surface flex flex-col">
         <ResizeHandles postMessage={postMessage} />
-        <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setView('list')}
-            className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
-            aria-label="Back"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <h1 className="text-sm font-semibold text-figma-text">About</h1>
-        </div>
-        <About />
+        <ViewPanel className="flex flex-col flex-1 min-h-0">
+          <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setView('list')}
+              className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
+              aria-label="Back"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <h1 className="text-sm font-semibold text-figma-text">About</h1>
+          </div>
+          <About />
+        </ViewPanel>
         <Footer
           view="about"
           onOpenSettings={handleOpenSettings}
@@ -468,22 +473,10 @@ export function App() {
         <ResizeHandles postMessage={postMessage} />
         <Header context={state.context} onClearScope={handleClearScope} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center px-6 max-w-[320px]">
-            <div className="flex justify-center mb-2 text-figma-text-tertiary non-scanned-state-icon">
-              <MousePointerClick
-                size={48}
-                strokeWidth={1.5}
-                className="text-figma-text-tertiary"
-              />
-            </div>
-            <div className="text-figma-text text-sm font-medium mb-1">
-              Select elements to scan
-            </div>
-            <div className="text-figma-text-secondary text-xs leading-snug">
-              Select one or more elements in the canvas. Colors from your selection will
-              appear here.
-            </div>
-          </div>
+          <EmptyState
+            title="Select elements to scan"
+            description="Select one or more elements in the canvas. Colors from your selection will appear here."
+          />
         </div>
         <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
         <TooltipPortal />
@@ -513,11 +506,11 @@ export function App() {
   }
 
   return (
-    <div className="h-screen bg-figma-bg flex flex-col overflow-hidden">
-      <div className="shrink-0">
+    <div ref={mainContentRef} className="h-screen bg-figma-bg flex flex-col overflow-hidden">
+      <div className="app-chrome shrink-0">
         <Header context={state.context} onClearScope={handleClearScope} />
       </div>
-      <div className="shrink-0">
+      <div className="app-chrome shrink-0">
         <SummaryStrip
           colors={state.colors}
           bindingFilter={bindingFilter}
@@ -525,7 +518,7 @@ export function App() {
           onResize={(width, height) => postMessage({ type: 'resize', width, height })}
         />
       </div>
-      <div className="shrink-0">
+      <div className="app-chrome shrink-0">
         <SearchFilterBar
           searchText={searchText}
           onSearchChange={setSearchText}
@@ -546,6 +539,7 @@ export function App() {
 
       <div className="flex-1 min-h-0 flex flex-col relative z-10">
         <ColorList
+          entranceKey={state.colors.map((c) => c.dedupKey).join('|')}
           colors={filteredAndSortedColors}
           selectedIds={selectedIds}
           propertyFilters={propertyFilters}
@@ -559,15 +553,7 @@ export function App() {
         />
       </div>
 
-      {showCopiedToast && (
-        <div
-          className="fixed left-1/2 -translate-x-1/2 bottom-14 z-[10001] bg-figma-green text-figma-onsuccess text-xs font-medium px-4 py-2 rounded shadow-lg"
-          role="status"
-          aria-live="polite"
-        >
-          Copied!
-        </div>
-      )}
+      {showCopiedToast && <AnimatedToast message="Copied!" />}
 
       <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
       <ResizeHandles postMessage={postMessage} />

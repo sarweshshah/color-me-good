@@ -1,10 +1,12 @@
-import { useMemo, useState, memo } from 'preact/compat';
+import { useMemo, useState, useRef, useEffect, memo } from 'preact/compat';
+import { gsap } from 'gsap';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { SHAPE_NODE_TYPES } from '../../shared/constants';
 import { matchesNodeFilters } from '../../shared/filters';
 import { Swatch } from './Swatch';
 import { formatResolvedColor } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
+import { DURATION, EASE, pulseScale, shouldAnimate, tweenVars } from '../utils/motion';
 import type { ColorDisplayFormat } from '../../shared/messages';
 import {
   SwatchBook,
@@ -77,6 +79,31 @@ export const ColorRow = memo(function ColorRow({
 }: ColorRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
+  const swatchRef = useRef<HTMLDivElement>(null);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const wasSelected = useRef(isSelected);
+
+  useEffect(() => {
+    if (!rowRef.current || !shouldAnimate()) {
+      wasSelected.current = isSelected;
+      return;
+    }
+    if (isSelected && !wasSelected.current) {
+      gsap.fromTo(
+        rowRef.current,
+        { scale: 1 },
+        {
+          scale: 1.008,
+          duration: DURATION.fast,
+          yoyo: true,
+          repeat: 1,
+          ease: EASE.out,
+          transformOrigin: 'left center',
+        }
+      );
+    }
+    wasSelected.current = isSelected;
+  }, [isSelected]);
 
   const displayName = color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
@@ -139,6 +166,7 @@ export const ColorRow = memo(function ColorRow({
 
   const handleCopy = async (e: Event) => {
     e.stopPropagation();
+    pulseScale(swatchRef.current);
     const success = await copyColorToClipboard(color, colorDisplayFormat);
     if (success) {
       onCopySuccess?.();
@@ -147,6 +175,7 @@ export const ColorRow = memo(function ColorRow({
 
   return (
     <div
+      ref={rowRef}
       className={`color-row ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}
     >
       <div
@@ -162,6 +191,7 @@ export const ColorRow = memo(function ColorRow({
         }}
       >
         <div
+          ref={swatchRef}
           className="relative"
           onClick={handleCopy}
           data-tooltip="Click to copy"
@@ -244,6 +274,8 @@ function ExpandedNodeList({
   onShowMore,
   onElementClick,
 }: ExpandedNodeListProps) {
+  const expandedRef = useRef<HTMLDivElement>(null);
+
   const nodesToShow = useMemo(
     () =>
       color.nodes.filter((n) => {
@@ -258,13 +290,39 @@ function ExpandedNodeList({
     [color.nodes, nodeTypeFilters, hiddenOnlyFilter]
   );
 
+  useEffect(() => {
+    const el = expandedRef.current;
+    if (!el) return;
+    const ctx = gsap.context(() => {
+      gsap.from(el, tweenVars({
+        autoAlpha: 0,
+        y: -4,
+        duration: DURATION.fast,
+        ease: EASE.out,
+      }));
+      gsap.from(el.querySelectorAll('.color-row-element'), tweenVars({
+        autoAlpha: 0,
+        x: -6,
+        duration: DURATION.fast,
+        stagger: 0.02,
+        ease: EASE.out,
+        overwrite: 'auto',
+      }));
+    }, el);
+    return () => ctx.revert();
+  }, [visibleCount, nodesToShow.length]);
+
   if (nodesToShow.length === 0) return null;
 
   const visibleNodes = nodesToShow.slice(0, visibleCount);
   const remainingCount = Math.max(0, nodesToShow.length - visibleNodes.length);
 
   return (
-    <div className="color-row-expanded bg-figma-surface pt-1 pb-1 w-full">
+    <div
+      ref={expandedRef}
+      className="color-row-expanded bg-figma-surface pt-1 pb-1 w-full"
+      style={{ visibility: 'hidden' }}
+    >
       {visibleNodes.map((nodeRef, idx) => (
         <div
           key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}

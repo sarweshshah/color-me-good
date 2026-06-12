@@ -197,3 +197,25 @@ body {
 #app.use-tooltip-portal [data-tooltip]::after {
   display: none;
 }
+
+.scanning-indeterminate {
+  width: 40%;
+  animation: scanning-indeterminate 1.2s ease-in-out infinite;
+}
+
+@keyframes scanning-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(350%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scanning-indeterminate {
+    animation: none;
+    width: 30%;
+    transform: none;
+  }
+}
