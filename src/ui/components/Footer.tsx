@@ -9,7 +9,7 @@ interface FooterProps {
 
 export function Footer({ view, onOpenSettings, onOpenAbout, onBack }: FooterProps) {
   return (
-    <footer className="shrink-0 flex-none z-0 bg-figma-surface-secondary border-t border-figma-border px-4 py-2 flex items-center justify-between">
+    <footer className="shrink-0 flex-none z-0 bg-figma-bg border-t border-figma-border px-4 py-2 flex items-center justify-between">
       {view === 'settings' || view === 'about' ? (
         <button
           className="text-xs text-figma-text-secondary hover:text-figma-blue transition-colors"

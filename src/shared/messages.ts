@@ -28,7 +28,10 @@ export type UIMessage =
   | RequestRescanMessage
   | ResizeMessage
   | GetSettingsMessage
-  | SetSettingMessage;
+  | SetSettingMessage
+  | UiViewChangedMessage;
+
+export type UiView = 'list' | 'settings' | 'about';
 
 export interface ScanStartedMessage {
   type: 'scan-started';
@@ -97,4 +100,9 @@ export interface SetSettingMessage {
   type: 'set-setting';
   key: keyof PluginSettings;
   value: PluginSettings[keyof PluginSettings];
+}
+
+export interface UiViewChangedMessage {
+  type: 'ui-view-changed';
+  view: UiView;
 }

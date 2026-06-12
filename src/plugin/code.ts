@@ -1,6 +1,6 @@
 import { scanCurrentPage, scanNodesForColors, SCAN_CANCELLED_MESSAGE } from './scanner';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
-import { UIMessage, PluginSettings } from '../shared/messages';
+import { UIMessage, PluginSettings, UiView } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
 const SESSION_STORAGE_KEY = 'color-me-good-session';
@@ -152,6 +152,36 @@ let colorDisplayFormat: PluginSettings['colorDisplayFormat'] = 'hex';
 let uiTheme: PluginSettings['uiTheme'] = 'system';
 let ignoreNextSelectionChange = false;
 let zoomToNodeTimer: ReturnType<typeof setTimeout> | null = null;
+let uiView: UiView = 'list';
+let pendingRescan = false;
+
+function isOnSettingsPage(): boolean {
+  return uiView === 'settings';
+}
+
+async function performScanOrDefer(): Promise<void> {
+  if (isOnSettingsPage()) {
+    pendingRescan = true;
+    return;
+  }
+  pendingRescan = false;
+  await performScan();
+}
+
+async function flushPendingRescan(): Promise<void> {
+  if (!pendingRescan) return;
+  pendingRescan = false;
+
+  const scopeId = getScopeId();
+  if (scopeId === null) {
+    lastScanScopeId = null;
+    sendNoSelectionState();
+    return;
+  }
+
+  lastScanScopeId = scopeId;
+  await performScan();
+}
 
 figma.showUI(__html__, {
   width: RESIZE_BOUNDS.minWidth,
@@ -242,7 +272,15 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       };
       await saveSettings(settings);
       sendSettingsToUI(settings);
-      if (needsRescan) await performScan();
+      if (needsRescan) await performScanOrDefer();
+      break;
+    }
+    case 'ui-view-changed': {
+      const previousView = uiView;
+      uiView = msg.view;
+      if (previousView === 'settings' && msg.view !== 'settings') {
+        await flushPendingRescan();
+      }
       break;
     }
   }
@@ -662,7 +700,11 @@ function setupListeners(): void {
     }
 
     const currentScopeId = getScopeId();
-    if (currentScopeId !== null && currentScopeId !== lastScanScopeId) {
+    if (
+      currentScopeId !== null &&
+      currentScopeId !== lastScanScopeId &&
+      !isOnSettingsPage()
+    ) {
       figma.ui.postMessage({ type: 'scan-started' });
     }
 
@@ -674,6 +716,10 @@ function setupListeners(): void {
       selectionDebounce = null;
       const scopeId = getScopeId();
       if (scopeId !== lastScanScopeId) {
+        if (isOnSettingsPage()) {
+          pendingRescan = true;
+          return;
+        }
         lastScanScopeId = scopeId;
         if (scopeId === null) {
           sendNoSelectionState();
@@ -708,6 +754,10 @@ function setupListeners(): void {
 
       if (scopeId === null) {
         if (lastScanScopeId !== null) {
+          if (isOnSettingsPage()) {
+            pendingRescan = true;
+            return;
+          }
           lastScanScopeId = null;
           sendNoSelectionState();
         }
@@ -733,7 +783,7 @@ function setupListeners(): void {
 
       if (!cachedResults) {
         lastScanScopeId = scopeId;
-        await performScan();
+        await performScanOrDefer();
         return;
       }
 
@@ -793,14 +843,18 @@ function setupListeners(): void {
 
       if (shouldFullRescan) {
         lastScanScopeId = scopeId;
-        await performScan();
+        await performScanOrDefer();
       } else if (incrementalNodeIds.size > 0) {
-        try {
-          await performIncrementalUpdate(incrementalNodeIds);
-        } catch (error) {
-          console.warn('Incremental update failed, falling back to full scan:', error);
-          lastScanScopeId = scopeId;
-          await performScan();
+        if (isOnSettingsPage()) {
+          pendingRescan = true;
+        } else {
+          try {
+            await performIncrementalUpdate(incrementalNodeIds);
+          } catch (error) {
+            console.warn('Incremental update failed, falling back to full scan:', error);
+            lastScanScopeId = scopeId;
+            await performScan();
+          }
         }
       }
     }, 300) as unknown as number;

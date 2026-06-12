@@ -160,6 +160,10 @@ export function App() {
   );
 
   useEffect(() => {
+    postMessage({ type: 'ui-view-changed', view });
+  }, [view, postMessage]);
+
+  useEffect(() => {
     const applyTheme = (theme: UITheme) => {
       const resolved =
         theme === 'system'
@@ -569,7 +573,7 @@ export function App() {
         {showCopiedToast && (
           <AnimatedToast message="Copied!" footerRef={statusBarRef} />
         )}
-        <div ref={statusBarRef} className="relative z-20 bg-figma-surface-secondary">
+        <div ref={statusBarRef} className="relative z-20 bg-figma-bg">
           <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
         </div>
       </div>
