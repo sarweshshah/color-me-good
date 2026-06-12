@@ -143,6 +143,7 @@ export function App() {
   const colorDisplayFormat = state.settings?.colorDisplayFormat ?? 'hex';
   const uiTheme = state.settings?.uiTheme ?? 'system';
   const mainContentRef = useRef<HTMLDivElement>(null);
+  const statusBarRef = useRef<HTMLDivElement>(null);
 
   useGsapContext(
     () => {
@@ -564,9 +565,14 @@ export function App() {
         />
       </div>
 
-      {showCopiedToast && <AnimatedToast message="Copied!" />}
-
-      <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
+      <div className="relative shrink-0 isolate">
+        {showCopiedToast && (
+          <AnimatedToast message="Copied!" footerRef={statusBarRef} />
+        )}
+        <div ref={statusBarRef} className="relative z-20 bg-figma-surface-secondary">
+          <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
+        </div>
+      </div>
       <ResizeHandles postMessage={postMessage} />
       <TooltipPortal />
     </div>

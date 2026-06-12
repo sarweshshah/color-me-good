@@ -7,6 +7,7 @@ export default {
         'figma-bg': 'var(--figma-color-bg-secondary, #f5f5f5)',
         'figma-bg-hover': 'var(--figma-color-bg-hover, #ebebeb)',
         'figma-surface': 'var(--figma-color-bg, #ffffff)',
+        'figma-surface-secondary': 'var(--figma-color-bg, #ffffff)',
         'figma-border': 'var(--figma-color-border, #e0e0e0)',
         'figma-border-subtle': 'var(--figma-color-border-subtle, #f0f0f0)',
         'figma-border-strong': 'var(--figma-color-border-strong, #e2e2e2)',
