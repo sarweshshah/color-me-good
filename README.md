@@ -4,7 +4,7 @@
 
 <h1 align="center">
   Color Me Good
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/v2.2-D1254B?style=flat" alt="v2.2" style="vertical-align: middle; margin-left: 6px;" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/v2.3-D1254B?style=flat" alt="v2.3" style="vertical-align: middle; margin-left: 6px;" /></a>
 </h1>
 
 <p align="center">A Figma plugin for color detection, auditing, and selection.</p>
@@ -24,7 +24,7 @@ Select elements on the canvas to scan every unique color in scope—fills, strok
 - Search by hex or token; filter by binding, property, node type, and visibility
 - Sort by usage, hex, or token (toggle direction)
 - Click a row to select all usages; expand for per-element list with progressive reveal
-- Zoom to elements; Shift/Cmd+Click for multi-select; ⌘/Ctrl+Click to add to selection
+- Single-click an element to scroll it into view; double-click to zoom; Shift/Cmd+Click for multi-select; ⌘/Ctrl+Click to add to selection
 - Copy swatch values; export filtered list as JSON, CSV, or clipboard
 
 **Settings**
@@ -36,7 +36,7 @@ Select elements on the canvas to scan every unique color in scope—fills, strok
 
 1. Run the plugin and **select** one or more nodes to scan.
 2. Use search, filters, and sort to narrow the list. Click summary stats to filter by binding.
-3. Click a color row to select usages, or expand to zoom to individual elements.
+3. Click a color row to select usages, or expand to scroll to (single-click) or zoom into (double-click) individual elements.
 4. Copy a swatch or use the download icon to export the current filtered list.
 5. Open **Settings** from the footer for scan and display preferences.
 

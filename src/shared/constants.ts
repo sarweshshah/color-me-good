@@ -1,4 +1,4 @@
-export const VERSION = '2.2';
+export const VERSION = '2.3';
 export const HELP_URL = 'https://github.com/sarweshshah/color-me-good#readme';
 export const CHANGELOG_URL =
   'https://github.com/sarweshshah/color-me-good/blob/master/CHANGELOG.md';

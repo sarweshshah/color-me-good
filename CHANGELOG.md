@@ -204,7 +204,15 @@ All notable changes to Color Me Good will be documented in this file.
 
 ---
 
-## [Unreleased] – Phase 3 (Planned)
+## [2.3] – 2026-06-12
 
-- Color diff over time
-- Virtual scrolling for 500+ colors
+### Added ✨
+
+- **Scroll into view**: Single-click an expanded element to select it and pan the canvas into view without changing zoom. 🎯
+- **Double-click zoom**: Double-click an expanded element to smooth-zoom to that node. 🔎
+
+### Changed 🔧
+
+- **Settings defers rescan**: Document changes while on the Settings page queue a rescan instead of running immediately; the scan runs when you return to the main view. ⚙️
+- **Toast positioning**: Copy confirmation toast anchors to the footer so it stays clear of the color list. 💬
+- **Summary strip**: Horizontal scroll support when stat labels overflow. 📐

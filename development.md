@@ -160,17 +160,15 @@ Before submitting a PR or release:
 - [ ] Verify gradients render correctly
 - [ ] Verify text colors extracted (styled ranges)
 
-## Known Limitations (Phase 1)
+## Known Limitations
 
-- No JSON/CSV export yet (Phase 3)
-- Simple list rendering (virtual scrolling optimization deferred to Phase 3)
+- Simple list rendering (no virtual scrolling; fast enough for typical lists up to ~500 colors)
 
 ## Next Steps (Phase 2 / v2.0)
 
-Phase 2 is in progress. See `Color_Me_Good_PRD.md` Section 10.2. JSON/CSV export deferred to Phase 3.
-
 - ✓ Session persistence, include hidden layers, hidden-only filter, opacity/alpha (done)
 - ✓ Effect color extraction (done in 1.2)
+- ✓ JSON/CSV export (done in 2.2)
 
 ## Troubleshooting
 
