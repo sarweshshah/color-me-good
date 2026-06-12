@@ -1,7 +1,6 @@
 import { useRef, useEffect } from 'preact/hooks';
 import { gsap } from 'gsap';
 import { SerializedColorEntry } from '../../shared/types';
-import { RESIZE_BOUNDS } from '../../shared/constants';
 import type { BindingFilter } from './SearchFilterBar';
 import { useGsapContext } from '../hooks/useGsapContext';
 import { DURATION, EASE, tweenVars } from '../utils/motion';
@@ -10,14 +9,12 @@ interface SummaryStripProps {
   colors: SerializedColorEntry[];
   bindingFilter: BindingFilter;
   onBindingFilterChange: (filter: BindingFilter) => void;
-  onResize?: (width: number, height: number) => void;
 }
 
 export function SummaryStrip({
   colors,
   bindingFilter,
   onBindingFilterChange,
-  onResize,
 }: SummaryStripProps) {
   const tokenBound = colors.filter((c) => c.isTokenBound).length;
   const hardCoded = colors.filter((c) => !c.isTokenBound).length;
@@ -39,39 +36,36 @@ export function SummaryStrip({
     stripRef
   );
 
-  useEffect(() => {
-    const el = rowRef.current;
-    if (!el || !onResize) return;
-    if (el.scrollWidth > el.clientWidth) {
-      onResize(RESIZE_BOUNDS.maxWidth, window.innerHeight);
-    }
-  }, [colors.length, tokenBound, hardCoded, totalElements, onResize]);
-
   return (
-    <div ref={stripRef} className="bg-figma-bg px-4 py-3 border-b border-figma-border-strong">
-      <div ref={rowRef} className="flex items-center gap-4 text-xs">
+    <div ref={stripRef} className="bg-figma-bg border-b border-figma-border-strong">
+      <div
+        ref={rowRef}
+        className="summary-strip-scroll flex items-center gap-4 text-xs px-4 py-3"
+        role="region"
+        aria-label="Color summary"
+      >
         <Stat
-          className="summary-stat"
+          className="summary-stat shrink-0"
           label="Colors"
           value={colors.length}
           active={bindingFilter === 'all'}
           onClick={() => onBindingFilterChange('all')}
         />
         <Stat
-          className="summary-stat"
-          label="Token-bound"
+          className="summary-stat shrink-0"
+          label="Tokens"
           value={tokenBound}
           active={bindingFilter === 'token-bound'}
           onClick={() => onBindingFilterChange('token-bound')}
         />
         <Stat
-          className="summary-stat"
+          className="summary-stat shrink-0"
           label="Hard-coded"
           value={hardCoded}
           active={bindingFilter === 'hard-coded'}
           onClick={() => onBindingFilterChange('hard-coded')}
         />
-        <Stat className="summary-stat" label="Elements" value={totalElements} />
+        <Stat className="summary-stat shrink-0" label="Elements" value={totalElements} />
       </div>
     </div>
   );

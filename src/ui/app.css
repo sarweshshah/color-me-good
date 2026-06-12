@@ -89,6 +89,28 @@ body {
   background: var(--figma-color-bg, #ffffff);
 }
 
+/* Summary strip: horizontal scroll when stats overflow the plugin width */
+.summary-strip-scroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--figma-color-border-strong) transparent;
+}
+
+.summary-strip-scroll::-webkit-scrollbar {
+  height: 4px;
+}
+
+.summary-strip-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.summary-strip-scroll::-webkit-scrollbar-thumb {
+  background: var(--figma-color-border-strong);
+  border-radius: 2px;
+}
+
 /* Light theme only: more visible filter indicator in SummaryStrip */
 .figma-light .summary-strip-stat-active {
   border: 1px solid var(--figma-color-border-selected, #f6f6f6);

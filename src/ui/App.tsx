@@ -136,7 +136,7 @@ export function App() {
   const [propertyFilters, setPropertyFilters] = useState<Set<PropertyType>>(new Set());
   const [nodeTypeFilters, setNodeTypeFilters] = useState<Set<string>>(new Set());
   const [hiddenOnlyFilter, setHiddenOnlyFilter] = useState(false);
-  const [sortBy, setSortBy] = useState<SortOption>('usage');
+  const [sortBy, setSortBy] = useState<SortOption>('token');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   const includeVectors = state.settings?.includeVectors ?? false;
@@ -342,11 +342,22 @@ export function App() {
   };
 
   const handleElementClick = (nodeId: string, event: MouseEvent) => {
+    if (event.detail > 1) return;
+    event.stopPropagation();
     if (event.metaKey || event.ctrlKey) {
-      event.stopPropagation();
-      postMessage({ type: 'select-nodes', nodeIds: [nodeId], append: true });
+      postMessage({ type: 'select-nodes', nodeIds: [nodeId], append: true, zoom: false });
       return;
     }
+    postMessage({
+      type: 'select-nodes',
+      nodeIds: [nodeId],
+      zoom: false,
+      scrollIntoView: true,
+    });
+  };
+
+  const handleElementDoubleClick = (nodeId: string, event: MouseEvent) => {
+    event.stopPropagation();
     postMessage({ type: 'zoom-to-node', nodeId });
   };
 
@@ -515,10 +526,9 @@ export function App() {
           colors={state.colors}
           bindingFilter={bindingFilter}
           onBindingFilterChange={setBindingFilter}
-          onResize={(width, height) => postMessage({ type: 'resize', width, height })}
         />
       </div>
-      <div className="app-chrome shrink-0">
+      <div className="app-chrome shrink-0 relative z-20">
         <SearchFilterBar
           searchText={searchText}
           onSearchChange={setSearchText}
@@ -537,7 +547,7 @@ export function App() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col relative z-10">
+      <div className="flex-1 min-h-0 flex flex-col relative z-0">
         <ColorList
           entranceKey={state.colors.map((c) => c.dedupKey).join('|')}
           colors={filteredAndSortedColors}
@@ -549,6 +559,7 @@ export function App() {
           onSelectAll={handleSelectAll}
           onRowClick={handleRowClick}
           onElementClick={handleElementClick}
+          onElementDoubleClick={handleElementDoubleClick}
           onCopySuccess={handleCopySuccess}
         />
       </div>

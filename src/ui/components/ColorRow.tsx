@@ -6,7 +6,7 @@ import { matchesNodeFilters } from '../../shared/filters';
 import { Swatch } from './Swatch';
 import { formatResolvedColor } from '../utils/format';
 import { copyColorToClipboard } from '../utils/clipboard';
-import { DURATION, EASE, pulseScale, shouldAnimate, tweenVars } from '../utils/motion';
+import { DURATION, EASE, pulseScale, tweenVars } from '../utils/motion';
 import type { ColorDisplayFormat } from '../../shared/messages';
 import {
   SwatchBook,
@@ -62,6 +62,7 @@ interface ColorRowProps {
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string, event: MouseEvent) => void;
+  onElementDoubleClick: (nodeId: string, event: MouseEvent) => void;
   onCopySuccess?: () => void;
 }
 
@@ -75,35 +76,12 @@ export const ColorRow = memo(function ColorRow({
   onSelectAll,
   onRowClick,
   onElementClick,
+  onElementDoubleClick,
   onCopySuccess,
 }: ColorRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_ELEMENTS);
   const swatchRef = useRef<HTMLDivElement>(null);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const wasSelected = useRef(isSelected);
-
-  useEffect(() => {
-    if (!rowRef.current || !shouldAnimate()) {
-      wasSelected.current = isSelected;
-      return;
-    }
-    if (isSelected && !wasSelected.current) {
-      gsap.fromTo(
-        rowRef.current,
-        { scale: 1 },
-        {
-          scale: 1.008,
-          duration: DURATION.fast,
-          yoyo: true,
-          repeat: 1,
-          ease: EASE.out,
-          transformOrigin: 'left center',
-        }
-      );
-    }
-    wasSelected.current = isSelected;
-  }, [isSelected]);
 
   const displayName = color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
@@ -174,10 +152,7 @@ export const ColorRow = memo(function ColorRow({
   };
 
   return (
-    <div
-      ref={rowRef}
-      className={`color-row ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}
-    >
+    <div className={`color-row ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}>
       <div
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
@@ -251,6 +226,7 @@ export const ColorRow = memo(function ColorRow({
             setVisibleCount((prev) => Math.min(total, prev + VISIBLE_ELEMENTS_STEP))
           }
           onElementClick={onElementClick}
+          onElementDoubleClick={onElementDoubleClick}
         />
       )}
     </div>
@@ -264,6 +240,7 @@ interface ExpandedNodeListProps {
   visibleCount: number;
   onShowMore: (totalCount: number) => void;
   onElementClick: (nodeId: string, event: MouseEvent) => void;
+  onElementDoubleClick: (nodeId: string, event: MouseEvent) => void;
 }
 
 function ExpandedNodeList({
@@ -273,8 +250,11 @@ function ExpandedNodeList({
   visibleCount,
   onShowMore,
   onElementClick,
+  onElementDoubleClick,
 }: ExpandedNodeListProps) {
   const expandedRef = useRef<HTMLDivElement>(null);
+  const animatedNodeCountRef = useRef(0);
+  const prevNodesKeyRef = useRef('');
 
   const nodesToShow = useMemo(
     () =>
@@ -290,27 +270,50 @@ function ExpandedNodeList({
     [color.nodes, nodeTypeFilters, hiddenOnlyFilter]
   );
 
+  const nodesKey = useMemo(
+    () => nodesToShow.map((n) => `${n.nodeId}:${n.propertyType}`).join('|'),
+    [nodesToShow]
+  );
+
   useEffect(() => {
     const el = expandedRef.current;
     if (!el) return;
-    const ctx = gsap.context(() => {
-      gsap.from(el, tweenVars({
-        autoAlpha: 0,
-        y: -4,
-        duration: DURATION.fast,
-        ease: EASE.out,
-      }));
-      gsap.from(el.querySelectorAll('.color-row-element'), tweenVars({
-        autoAlpha: 0,
-        x: -6,
-        duration: DURATION.fast,
-        stagger: 0.02,
-        ease: EASE.out,
-        overwrite: 'auto',
-      }));
-    }, el);
-    return () => ctx.revert();
-  }, [visibleCount, nodesToShow.length]);
+    const tween = gsap.from(el, tweenVars({
+      autoAlpha: 0,
+      duration: DURATION.faster,
+      ease: EASE.out,
+    }));
+    return () => {
+      tween.kill();
+    };
+  }, []);
+
+  useEffect(() => {
+    const el = expandedRef.current;
+    if (!el) return;
+
+    if (prevNodesKeyRef.current !== nodesKey) {
+      animatedNodeCountRef.current = 0;
+      prevNodesKeyRef.current = nodesKey;
+    }
+
+    const nodeElements = el.querySelectorAll('.color-row-element[data-node-row]');
+    const startIdx = animatedNodeCountRef.current;
+    const newElements = Array.from(nodeElements).slice(startIdx);
+    if (newElements.length === 0) return;
+
+    const tween = gsap.from(newElements, tweenVars({
+      autoAlpha: 0,
+      duration: DURATION.faster,
+      stagger: 0.01,
+      ease: EASE.out,
+    }));
+    animatedNodeCountRef.current = nodeElements.length;
+
+    return () => {
+      tween.kill();
+    };
+  }, [visibleCount, nodesKey]);
 
   if (nodesToShow.length === 0) return null;
 
@@ -326,8 +329,12 @@ function ExpandedNodeList({
       {visibleNodes.map((nodeRef, idx) => (
         <div
           key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
+          data-node-row
           className="color-row-element w-full py-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center gap-3"
           onClick={(e) => onElementClick(nodeRef.nodeId, e as unknown as MouseEvent)}
+          onDblClick={(e) =>
+            onElementDoubleClick(nodeRef.nodeId, e as unknown as MouseEvent)
+          }
         >
           <NodeTypeIcon nodeType={nodeRef.nodeType} />
           <div className="flex-1 min-w-0">

@@ -28,6 +28,8 @@ const SORT_LABELS: Record<SortOption, string> = {
   token: 'Token Name',
 };
 
+const SORT_OPTIONS: SortOption[] = ['token', 'usage', 'hex'];
+
 const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
   { value: 'Shape', label: 'Shape', icon: Square },
   { value: 'FRAME', label: 'Frame', icon: Frame },
@@ -87,7 +89,7 @@ export function SearchFilterBar({
 
   const hasActiveFilters = searchText.length > 0 || activeFilterCount > 0;
 
-  const isSortCustom = sortBy !== 'usage';
+  const isSortCustom = sortBy !== 'token';
 
   const handleExport = useCallback(
     (format: ExportFormat) => {
@@ -170,7 +172,7 @@ export function SearchFilterBar({
                   </div>
                   <div className="w-full border-t border-figma-border" />
                   <div className="w-full pt-2">
-                    {(Object.keys(SORT_LABELS) as SortOption[]).map((key) => (
+                    {SORT_OPTIONS.map((key) => (
                       <MenuItem
                         key={key}
                         label={

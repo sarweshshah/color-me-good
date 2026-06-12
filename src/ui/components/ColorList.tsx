@@ -4,7 +4,7 @@ import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import type { ColorDisplayFormat } from '../../shared/messages';
 import { ColorRow } from './ColorRow';
 import { useGsapContext } from '../hooks/useGsapContext';
-import { DURATION, EASE, tweenVars } from '../utils/motion';
+import { DELAY, DURATION, EASE, tweenVars } from '../utils/motion';
 
 interface ColorListProps {
   /** Changes when the underlying scan results change (not filters/sort). */
@@ -18,6 +18,7 @@ interface ColorListProps {
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string, event: MouseEvent) => void;
+  onElementDoubleClick: (nodeId: string, event: MouseEvent) => void;
   onCopySuccess?: () => void;
 }
 
@@ -32,6 +33,7 @@ export function ColorList({
   onSelectAll,
   onRowClick,
   onElementClick,
+  onElementDoubleClick,
   onCopySuccess,
 }: ColorListProps) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -44,6 +46,7 @@ export function ColorList({
         autoAlpha: 0,
         y: 6,
         duration: DURATION.normal,
+        delay: DELAY.afterHeader,
         stagger: { amount: 0.35, from: 'start' },
         ease: EASE.out,
         overwrite: 'auto',
@@ -77,6 +80,7 @@ export function ColorList({
           onSelectAll={onSelectAll}
           onRowClick={onRowClick}
           onElementClick={onElementClick}
+          onElementDoubleClick={onElementDoubleClick}
           onCopySuccess={onCopySuccess}
         />
       ))}

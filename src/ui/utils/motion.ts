@@ -1,9 +1,15 @@
 import { gsap } from 'gsap';
 
 export const DURATION = {
+  faster: 0.12,
   fast: 0.2,
   normal: 0.35,
   slow: 0.5,
+} as const;
+
+/** Pause list entrance until the top header chrome has settled. */
+export const DELAY = {
+  afterHeader: 0.3,
 } as const;
 
 export const EASE = {

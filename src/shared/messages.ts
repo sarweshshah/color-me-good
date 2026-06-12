@@ -55,6 +55,10 @@ export interface SelectNodesMessage {
   type: 'select-nodes';
   nodeIds: string[];
   append?: boolean;
+  /** Zoom to fit selection in the viewport. Defaults to true. */
+  zoom?: boolean;
+  /** Pan the viewport so the selection is visible without changing zoom. */
+  scrollIntoView?: boolean;
 }
 
 export interface ZoomToNodeMessage {

@@ -162,7 +162,12 @@ figma.showUI(__html__, {
 figma.ui.onmessage = async (msg: UIMessage) => {
   switch (msg.type) {
     case 'select-nodes':
-      await handleSelectNodes(msg.nodeIds, msg.append);
+      await handleSelectNodes(
+        msg.nodeIds,
+        msg.append,
+        msg.zoom ?? true,
+        msg.scrollIntoView ?? false
+      );
       break;
     case 'zoom-to-node':
       await handleZoomToNode(msg.nodeId);
@@ -243,7 +248,70 @@ figma.ui.onmessage = async (msg: UIMessage) => {
   }
 };
 
-async function handleSelectNodes(nodeIds: string[], append?: boolean): Promise<void> {
+function getSceneNodeBounds(node: SceneNode): Rect | null {
+  if ('absoluteBoundingBox' in node) {
+    return (node as LayoutMixin).absoluteBoundingBox;
+  }
+  return null;
+}
+
+function scrollNodesIntoViewWithoutZoom(nodes: SceneNode[], padding = 24): void {
+  if (nodes.length === 0) return;
+
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (const node of nodes) {
+    const bounds = getSceneNodeBounds(node);
+    if (!bounds) continue;
+    minX = Math.min(minX, bounds.x);
+    minY = Math.min(minY, bounds.y);
+    maxX = Math.max(maxX, bounds.x + bounds.width);
+    maxY = Math.max(maxY, bounds.y + bounds.height);
+  }
+
+  if (!Number.isFinite(minX)) return;
+
+  const bounds = {
+    x: minX,
+    y: minY,
+    width: maxX - minX,
+    height: maxY - minY,
+  };
+  const vp = figma.viewport.bounds;
+  const center = figma.viewport.center;
+  let dx = 0;
+  let dy = 0;
+
+  if (bounds.width > vp.width - padding * 2) {
+    dx = bounds.x + bounds.width / 2 - center.x;
+  } else if (bounds.x < vp.x + padding) {
+    dx = bounds.x - padding - vp.x;
+  } else if (bounds.x + bounds.width > vp.x + vp.width - padding) {
+    dx = bounds.x + bounds.width + padding - (vp.x + vp.width);
+  }
+
+  if (bounds.height > vp.height - padding * 2) {
+    dy = bounds.y + bounds.height / 2 - center.y;
+  } else if (bounds.y < vp.y + padding) {
+    dy = bounds.y - padding - vp.y;
+  } else if (bounds.y + bounds.height > vp.y + vp.height - padding) {
+    dy = bounds.y + bounds.height + padding - (vp.y + vp.height);
+  }
+
+  if (dx !== 0 || dy !== 0) {
+    figma.viewport.center = { x: center.x + dx, y: center.y + dy };
+  }
+}
+
+async function handleSelectNodes(
+  nodeIds: string[],
+  append?: boolean,
+  zoom = true,
+  scrollIntoView = false
+): Promise<void> {
   try {
     const nodes = await Promise.all(nodeIds.map((id) => figma.getNodeByIdAsync(id)));
     const validNew = nodes.filter(
@@ -273,8 +341,12 @@ async function handleSelectNodes(nodeIds: string[], append?: boolean): Promise<v
 
     figma.currentPage.selection = finalSelection;
 
-    if (finalSelection.length > 0) {
+    if (finalSelection.length === 0) return;
+
+    if (zoom) {
       figma.viewport.scrollAndZoomIntoView(finalSelection);
+    } else if (scrollIntoView) {
+      scrollNodesIntoViewWithoutZoom(finalSelection);
     }
   } catch (error) {
     console.error('Failed to select nodes:', error);
@@ -311,10 +383,7 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
       return;
     }
 
-    const bounds =
-      'absoluteBoundingBox' in sceneNode
-        ? (sceneNode as LayoutMixin).absoluteBoundingBox
-        : null;
+    const bounds = getSceneNodeBounds(sceneNode);
 
     if (!bounds) {
       figma.viewport.scrollAndZoomIntoView([sceneNode]);
@@ -328,7 +397,6 @@ async function handleZoomToNode(nodeId: string): Promise<void> {
     const vp = figma.viewport.bounds;
     const pad = ZOOM_PADDING * 2;
     const targetZoom = Math.min(
-      startZoom,
       (startZoom * vp.width) / (bounds.width + pad),
       (startZoom * vp.height) / (bounds.height + pad)
     );
