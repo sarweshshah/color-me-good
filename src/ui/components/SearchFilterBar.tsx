@@ -19,16 +19,16 @@ import { PropertyType } from '../../shared/types';
 import type { ExportFormat } from '../utils/export';
 
 export type BindingFilter = 'all' | 'token-bound' | 'hard-coded';
-export type SortOption = 'usage' | 'hex' | 'token';
+export type SortOption = 'usage' | 'color' | 'token';
 export type SortDirection = 'asc' | 'desc';
 
 const SORT_LABELS: Record<SortOption, string> = {
   usage: 'Usage Count',
-  hex: 'Hex Value',
+  color: 'Color',
   token: 'Token Name',
 };
 
-const SORT_OPTIONS: SortOption[] = ['token', 'usage', 'hex'];
+const SORT_OPTIONS: SortOption[] = ['token', 'usage', 'color'];
 
 const NODE_TYPE_OPTIONS: { value: string; label: string; icon: typeof Type }[] = [
   { value: 'Shape', label: 'Shape', icon: Square },

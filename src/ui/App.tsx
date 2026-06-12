@@ -29,6 +29,7 @@ import { matchesNodeFilters } from '../shared/filters';
 import { formatResolvedColor } from './utils/format';
 import { exportColors, ExportFormat } from './utils/export';
 import { copyColorsDisplayValues } from './utils/clipboard';
+import { compareColorSort } from './utils/colorSort';
 
 type ResizeMode = 'corner' | 'right' | 'bottom';
 
@@ -299,14 +300,10 @@ export function App() {
           return a.dedupKey.localeCompare(b.dedupKey) * direction;
         });
         break;
-      case 'hex':
-        sorted.sort((a, b) => {
-          const aHex = a.hex || '';
-          const bHex = b.hex || '';
-          const hexDiff = aHex.localeCompare(bHex);
-          if (hexDiff !== 0) return hexDiff * direction;
-          return a.dedupKey.localeCompare(b.dedupKey) * direction;
-        });
+      case 'color':
+        sorted.sort((a, b) =>
+          compareColorSort(a, b, direction as 1 | -1)
+        );
         break;
       case 'token':
         sorted.sort((a, b) => {
