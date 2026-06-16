@@ -338,6 +338,18 @@ export function App() {
     postMessage({ type: 'select-nodes', nodeIds, append });
   };
 
+  const handleDetachVariable = (color: SerializedColorEntry, event: MouseEvent) => {
+    event.stopPropagation();
+    const bindings = color.nodes
+      .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
+      .map((n) => ({
+        nodeId: n.nodeId,
+        propertyType: n.propertyType,
+        propertyIndex: n.propertyIndex,
+      }));
+    postMessage({ type: 'detach-variable', bindings });
+  };
+
   const handleRowClick = (color: SerializedColorEntry, event: MouseEvent) => {
     const allColorIds = filteredAndSortedColors.map((c) => c.dedupKey);
     handleClick(color.dedupKey, allColorIds, event);
@@ -559,6 +571,7 @@ export function App() {
           hiddenOnlyFilter={hiddenOnlyFilter}
           colorDisplayFormat={colorDisplayFormat}
           onSelectAll={handleSelectAll}
+          onDetachVariable={handleDetachVariable}
           onRowClick={handleRowClick}
           onElementClick={handleElementClick}
           onElementDoubleClick={handleElementDoubleClick}

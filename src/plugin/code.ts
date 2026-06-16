@@ -1,5 +1,6 @@
 import { scanCurrentPage, scanNodesForColors, SCAN_CANCELLED_MESSAGE } from './scanner';
-import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
+import { detachVariablesFromRefs } from './variable-detacher';
+import { SerializedColorEntry, ColorEntry, ScanContext, PropertyType } from '../shared/types';
 import { UIMessage, PluginSettings, UiView } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
@@ -201,6 +202,9 @@ figma.ui.onmessage = async (msg: UIMessage) => {
       break;
     case 'zoom-to-node':
       await handleZoomToNode(msg.nodeId);
+      break;
+    case 'detach-variable':
+      await handleDetachVariable(msg.bindings);
       break;
     case 'clear-scope':
       ignoreNextSelectionChange = true;
@@ -405,6 +409,32 @@ function lerp(a: number, b: number, t: number): number {
 
 const ZOOM_DURATION_MS = 280;
 const ZOOM_PADDING = 40;
+
+async function handleDetachVariable(
+  bindings: Array<{
+    nodeId: string;
+    propertyType: PropertyType;
+    propertyIndex: number;
+  }>
+): Promise<void> {
+  if (bindings.length === 0) return;
+
+  try {
+    const { detached, failed } = await detachVariablesFromRefs(bindings);
+    if (detached === 0 && failed > 0) {
+      figma.ui.postMessage({
+        type: 'scan-error',
+        message: 'Failed to detach variable',
+      });
+    }
+  } catch (error) {
+    console.error('Failed to detach variables:', error);
+    figma.ui.postMessage({
+      type: 'scan-error',
+      message: 'Failed to detach variable',
+    });
+  }
+}
 
 async function handleZoomToNode(nodeId: string): Promise<void> {
   try {

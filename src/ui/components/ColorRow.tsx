@@ -13,6 +13,7 @@ import {
   Circle,
   LibraryBig,
   Crosshair,
+  Unlink,
   Type,
   Square,
   Minus,
@@ -62,6 +63,7 @@ interface ColorRowProps {
   hiddenOnlyFilter: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
+  onDetachVariable: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onToggleExpand: (dedupKey: string) => void;
   onShowMore: (dedupKey: string, total: number) => void;
@@ -80,6 +82,7 @@ export const ColorRow = memo(function ColorRow({
   hiddenOnlyFilter,
   colorDisplayFormat,
   onSelectAll,
+  onDetachVariable,
   onRowClick,
   onToggleExpand,
   onShowMore,
@@ -129,6 +132,13 @@ export const ColorRow = memo(function ColorRow({
             ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
             : 'Select all elements with this color'
         }. ⌘/Ctrl+Click: add to canvas selection`;
+
+  const detachTooltip =
+    hasActiveFilters && filteredNodes.length === 0
+      ? 'No matching elements'
+      : color.tokenName
+        ? `Detach "${color.tokenName}" from all elements with this color`
+        : 'Detach variable from all elements with this color';
 
   const badge = color.isTokenBound ? (
     <span
@@ -203,6 +213,20 @@ export const ColorRow = memo(function ColorRow({
             <Layers size={10} className="shrink-0" />
             {displayCount}
           </span>
+          {color.isTokenBound && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDetachVariable(color, e as unknown as MouseEvent);
+              }}
+              className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
+              data-tooltip={detachTooltip}
+              data-tooltip-align="end"
+              aria-label="Detach variable"
+            >
+              <Unlink size={12} />
+            </button>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -211,6 +235,7 @@ export const ColorRow = memo(function ColorRow({
             className="p-0.5 text-figma-text-secondary hover:text-figma-blue transition-colors rounded hover:bg-figma-bg"
             data-tooltip={selectAllTooltip}
             data-tooltip-align="end"
+            aria-label="Locate color"
           >
             <Crosshair size={12} />
           </button>

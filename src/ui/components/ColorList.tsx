@@ -27,6 +27,7 @@ interface ColorListProps {
   hiddenOnlyFilter: boolean;
   colorDisplayFormat: ColorDisplayFormat;
   onSelectAll: (color: SerializedColorEntry, event: MouseEvent) => void;
+  onDetachVariable: (color: SerializedColorEntry, event: MouseEvent) => void;
   onRowClick: (color: SerializedColorEntry, event: MouseEvent) => void;
   onElementClick: (nodeId: string, event: MouseEvent) => void;
   onElementDoubleClick: (nodeId: string, event: MouseEvent) => void;
@@ -44,6 +45,7 @@ export function ColorList({
   hiddenOnlyFilter,
   colorDisplayFormat,
   onSelectAll,
+  onDetachVariable,
   onRowClick,
   onElementClick,
   onElementDoubleClick,
@@ -97,6 +99,7 @@ export function ColorList({
       hiddenOnlyFilter={hiddenOnlyFilter}
       colorDisplayFormat={colorDisplayFormat}
       onSelectAll={onSelectAll}
+      onDetachVariable={onDetachVariable}
       onRowClick={onRowClick}
       onToggleExpand={onToggleExpand}
       onShowMore={onShowMore}

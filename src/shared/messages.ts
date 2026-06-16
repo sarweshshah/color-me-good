@@ -1,4 +1,4 @@
-import { SerializedColorEntry, ScanContext } from './types';
+import { SerializedColorEntry, ScanContext, PropertyType } from './types';
 
 export type ColorDisplayFormat = 'hex' | 'rgba' | 'hsla' | 'hsba';
 export type UITheme = 'light' | 'dark' | 'system';
@@ -23,6 +23,7 @@ export type PluginMessage =
 export type UIMessage =
   | SelectNodesMessage
   | ZoomToNodeMessage
+  | DetachVariableMessage
   | ClearScopeMessage
   | CancelScanMessage
   | RequestRescanMessage
@@ -67,6 +68,15 @@ export interface SelectNodesMessage {
 export interface ZoomToNodeMessage {
   type: 'zoom-to-node';
   nodeId: string;
+}
+
+export interface DetachVariableMessage {
+  type: 'detach-variable';
+  bindings: Array<{
+    nodeId: string;
+    propertyType: PropertyType;
+    propertyIndex: number;
+  }>;
 }
 
 export interface ClearScopeMessage {
