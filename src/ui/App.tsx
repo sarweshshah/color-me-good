@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'preact/hooks';
-import { gsap } from 'gsap';
 import { usePluginMessages } from './hooks/usePluginMessages';
 import { useMultiSelect } from './hooks/useMultiSelect';
 import { Header } from './components/Header';
@@ -21,11 +20,12 @@ import { EmptyState } from './components/EmptyState';
 import { AnimatedToast } from './components/AnimatedToast';
 import { ViewPanel } from './components/ViewPanel';
 import { useGsapContext } from './hooks/useGsapContext';
-import { DURATION, EASE, tweenVars } from './utils/motion';
+import { animateFromInScope, DURATION, EASE } from './utils/motion';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings, UITheme, UIMessage } from '../shared/messages';
 import { RESIZE_BOUNDS, SHAPE_NODE_TYPES } from '../shared/constants';
 import { matchesNodeFilters } from '../shared/filters';
+import { flattenNodeRefBindings } from '../shared/nodeRefs';
 import { formatResolvedColor } from './utils/format';
 import { exportColors, ExportFormat } from './utils/export';
 import { copyColorsDisplayValues } from './utils/clipboard';
@@ -145,18 +145,19 @@ export function App() {
   const uiTheme = state.settings?.uiTheme ?? 'system';
   const mainContentRef = useRef<HTMLDivElement>(null);
   const statusBarRef = useRef<HTMLDivElement>(null);
+  const listEntranceKey = state.colors.map((c) => c.dedupKey).join('|');
 
   useGsapContext(
-    () => {
-      gsap.from('.app-chrome', tweenVars({
+    (scope) => {
+      animateFromInScope(scope, '.app-chrome', {
         autoAlpha: 0,
         y: -6,
         duration: DURATION.normal,
         stagger: 0.05,
         ease: EASE.out,
-      }));
+      });
     },
-    [view, state.colors.length, state.isScanning],
+    [view, listEntranceKey],
     mainContentRef
   );
 
@@ -331,9 +332,13 @@ export function App() {
 
   const handleSelectAll = (color: SerializedColorEntry, event: MouseEvent) => {
     event.stopPropagation();
-    const nodeIds = color.nodes
-      .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
-      .map((n) => n.nodeId);
+    const nodeIds = [
+      ...new Set(
+        color.nodes
+          .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
+          .map((n) => n.nodeId)
+      ),
+    ];
     const append = event.metaKey || event.ctrlKey;
     postMessage({ type: 'select-nodes', nodeIds, append });
   };
@@ -342,13 +347,7 @@ export function App() {
     event.stopPropagation();
     const bindings = color.nodes
       .filter((n) => matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter))
-      .map((n) => ({
-        nodeId: n.nodeId,
-        propertyType: n.propertyType,
-        propertyIndex: n.propertyIndex,
-        characterStart: n.characterStart,
-        characterEnd: n.characterEnd,
-      }));
+      .flatMap((n) => flattenNodeRefBindings(n));
     postMessage({ type: 'detach-variable', bindings });
   };
 

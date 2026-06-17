@@ -1,7 +1,7 @@
 import { useRef } from 'preact/hooks';
 import { gsap } from 'gsap';
 import { useGsapContext } from '../hooks/useGsapContext';
-import { DURATION, EASE, tweenVars } from '../utils/motion';
+import { animateFromInScope, DURATION, EASE, tweenVars } from '../utils/motion';
 import { MousePointerClick } from 'lucide-preact';
 
 interface EmptyStateProps {
@@ -13,29 +13,32 @@ export function EmptyState({ title, description }: EmptyStateProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useGsapContext(
-    () => {
-      gsap.from('.empty-state-icon', tweenVars({
+    (scope) => {
+      animateFromInScope(scope, '.empty-state-icon', {
         autoAlpha: 0,
         scale: 0.85,
         duration: DURATION.slow,
         ease: EASE.bounce,
-      }));
-      gsap.from('.empty-state-copy', tweenVars({
+      });
+      animateFromInScope(scope, '.empty-state-copy', {
         autoAlpha: 0,
         y: 10,
         duration: DURATION.normal,
         ease: EASE.out,
         stagger: 0.08,
         delay: 0.12,
-      }));
-      gsap.to('.empty-state-icon', tweenVars({
-        y: -4,
-        duration: 1.6,
-        repeat: -1,
-        yoyo: true,
-        ease: 'sine.inOut',
-        delay: 0.5,
-      }));
+      });
+      const icon = scope.querySelector('.empty-state-icon');
+      if (icon) {
+        gsap.to(icon, tweenVars({
+          y: -4,
+          duration: 1.6,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: 0.5,
+        }));
+      }
     },
     [],
     ref

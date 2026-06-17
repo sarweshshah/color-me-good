@@ -13,14 +13,13 @@ export function AnimatedToast({ message, footerRef }: AnimatedToastProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useGsapContext(
-    () => {
-      const el = ref.current;
+    (scope) => {
       const footer = footerRef.current;
-      if (!el || !footer) return;
+      if (!footer) return;
 
       const footerHeight = footer.offsetHeight;
       gsap.fromTo(
-        el,
+        scope,
         { y: footerHeight, autoAlpha: 1 },
         tweenVars({
           y: 0,

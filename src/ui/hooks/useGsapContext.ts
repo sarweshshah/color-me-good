@@ -1,16 +1,16 @@
-import { useEffect } from 'preact/hooks';
+import { useLayoutEffect } from 'preact/hooks';
 import { RefObject } from 'preact';
 import { gsap } from 'gsap';
 
 export function useGsapContext(
-  setup: () => void,
+  setup: (scope: HTMLElement) => void,
   deps: unknown[],
   scopeRef: RefObject<HTMLElement>
 ) {
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = scopeRef.current;
     if (!el) return;
-    const ctx = gsap.context(setup, el);
+    const ctx = gsap.context(() => setup(el), el);
     return () => ctx.revert();
   }, deps);
 }

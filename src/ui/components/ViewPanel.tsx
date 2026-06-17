@@ -13,8 +13,8 @@ export function ViewPanel({ children, className = '' }: ViewPanelProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useGsapContext(
-    () => {
-      gsap.from(ref.current, tweenVars({
+    (scope) => {
+      gsap.from(scope, tweenVars({
         autoAlpha: 0,
         x: 16,
         duration: DURATION.normal,

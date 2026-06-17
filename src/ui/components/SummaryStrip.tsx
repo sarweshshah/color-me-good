@@ -3,7 +3,7 @@ import { gsap } from 'gsap';
 import { SerializedColorEntry } from '../../shared/types';
 import type { BindingFilter } from './SearchFilterBar';
 import { useGsapContext } from '../hooks/useGsapContext';
-import { DURATION, EASE, tweenVars } from '../utils/motion';
+import { animateFromInScope, DURATION, EASE } from '../utils/motion';
 
 interface SummaryStripProps {
   colors: SerializedColorEntry[];
@@ -23,16 +23,16 @@ export function SummaryStrip({
   const stripRef = useRef<HTMLDivElement>(null);
 
   useGsapContext(
-    () => {
-      gsap.from('.summary-stat', tweenVars({
+    (scope) => {
+      animateFromInScope(scope, '.summary-stat', {
         autoAlpha: 0,
         y: 6,
         duration: DURATION.normal,
         stagger: 0.06,
         ease: EASE.out,
-      }));
+      });
     },
-    [colors.length],
+    [],
     stripRef
   );
 

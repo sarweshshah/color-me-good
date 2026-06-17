@@ -1,6 +1,7 @@
 import { scanCurrentPage, scanNodesForColors, SCAN_CANCELLED_MESSAGE } from './scanner';
 import { detachVariablesFromRefs } from './variable-detacher';
 import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
+import { mergeNodeRefLists, countUniqueElements } from './nodeRefs';
 import { UIMessage, PluginSettings, UiView, VariableBindingRef } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
@@ -570,7 +571,7 @@ function removeNodesFromCachedResults(nodeIds: Set<string>): void {
     nextColors.push({
       ...color,
       nodes: nextNodes,
-      usageCount: nextNodes.length,
+      usageCount: countUniqueElements(nextNodes),
       propertyTypes: Array.from(new Set(nextNodes.map((n) => n.propertyType))),
     });
   }
@@ -593,11 +594,11 @@ function mergeColorsIntoCachedResults(colors: SerializedColorEntry[]): void {
       continue;
     }
 
-    const mergedNodes = [...existing.nodes, ...incoming.nodes];
+    const mergedNodes = mergeNodeRefLists(existing.nodes, incoming.nodes);
     byDedupKey[incoming.dedupKey] = {
       ...existing,
       nodes: mergedNodes,
-      usageCount: mergedNodes.length,
+      usageCount: countUniqueElements(mergedNodes),
       propertyTypes: Array.from(
         new Set([...existing.propertyTypes, ...incoming.propertyTypes])
       ),
@@ -894,6 +895,9 @@ async function initPlugin() {
   smoothZoom = settings.smoothZoom;
   colorDisplayFormat = settings.colorDisplayFormat;
   uiTheme = settings.uiTheme;
+
+  // Required before documentchange handlers when documentAccess is dynamic-page.
+  await figma.loadAllPagesAsync();
 
   const scopeId = getScopeId();
 

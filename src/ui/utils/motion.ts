@@ -29,6 +29,17 @@ export function tweenVars(vars: gsap.TweenVars): gsap.TweenVars {
   return vars;
 }
 
+/** Run gsap.from only when matching elements exist inside scope (avoids GSAP target warnings). */
+export function animateFromInScope(
+  scope: Element,
+  selector: string,
+  vars: gsap.TweenVars
+): gsap.core.Tween | undefined {
+  const targets = scope.querySelectorAll(selector);
+  if (targets.length === 0) return;
+  return gsap.from(targets, tweenVars(vars));
+}
+
 export function pulseScale(target: Element | null) {
   if (!target || !shouldAnimate()) return;
   gsap.fromTo(

@@ -18,6 +18,8 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
+        // Figma loads code.js as a single script — no cross-file imports allowed.
+        manualChunks: () => undefined,
       },
     },
   },

@@ -15,8 +15,8 @@ export function ScanningState({ scanned, total, onCancel }: ScanningStateProps) 
   const percent = hasTotal ? Math.min(100, (scanned / total) * 100) : 0;
 
   useGsapContext(
-    () => {
-      gsap.from(containerRef.current, tweenVars({
+    (scope) => {
+      gsap.from(scope, tweenVars({
         autoAlpha: 0,
         y: 8,
         duration: DURATION.normal,

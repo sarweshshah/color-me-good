@@ -34,6 +34,8 @@ export interface NodeRef {
   characterStart?: number;
   /** Exclusive end index for a styled text run (TEXT nodes only). */
   characterEnd?: number;
+  /** Additional styled text runs on the same layer using this color. */
+  characterRanges?: { characterStart: number; characterEnd: number }[];
   /** When false, the node is hidden (invisible) in Figma. */
   visible?: boolean;
 }

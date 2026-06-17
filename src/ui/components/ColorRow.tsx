@@ -2,6 +2,7 @@ import { useMemo, useRef, useEffect, memo } from 'preact/compat';
 import { gsap } from 'gsap';
 import { SerializedColorEntry, PropertyType } from '../../shared/types';
 import { SHAPE_NODE_TYPES } from '../../shared/constants';
+import { formatNodeRefRangeHint, countUniqueElements, groupNodeRefsByElement, formatPropertyTypes } from '../../shared/nodeRefs';
 import { matchesNodeFilters } from '../../shared/filters';
 import { Swatch } from './Swatch';
 import { formatResolvedColor } from '../utils/format';
@@ -94,30 +95,31 @@ export const ColorRow = memo(function ColorRow({
 
   const displayName = color.tokenName || formatResolvedColor(color, colorDisplayFormat);
 
-  const { filteredNodes, displayCount, hasActiveFilters } = useMemo(() => {
+  const { filteredElements, displayCount, hasActiveFilters } = useMemo(() => {
     const filtered = color.nodes.filter((n) =>
       matchesNodeFilters(n, propertyFilters, nodeTypeFilters, hiddenOnlyFilter)
     );
+    const elements = groupNodeRefsByElement(filtered);
     const hasFilters =
       propertyFilters.size > 0 || nodeTypeFilters.size > 0 || hiddenOnlyFilter;
     return {
-      filteredNodes: filtered,
-      displayCount: hasFilters ? filtered.length : color.usageCount,
+      filteredElements: elements,
+      displayCount: countUniqueElements(filtered),
       hasActiveFilters: hasFilters,
     };
-  }, [color.nodes, color.usageCount, propertyFilters, nodeTypeFilters, hiddenOnlyFilter]);
+  }, [color.nodes, propertyFilters, nodeTypeFilters, hiddenOnlyFilter]);
 
   const nodesByType = useMemo(
     () =>
-      filteredNodes.reduce(
-        (acc, n) => {
-          const t = n.nodeType || 'Unknown';
+      filteredElements.reduce(
+        (acc, { nodeRef }) => {
+          const t = nodeRef.nodeType || 'Unknown';
           acc[t] = (acc[t] || 0) + 1;
           return acc;
         },
         {} as Record<string, number>
       ),
-    [filteredNodes]
+    [filteredElements]
   );
   const tooltipBreakdown = Object.entries(nodesByType)
     .sort(([, a], [, b]) => b - a)
@@ -125,16 +127,16 @@ export const ColorRow = memo(function ColorRow({
     .join('\n');
 
   const selectAllTooltip =
-    hasActiveFilters && filteredNodes.length === 0
+    hasActiveFilters && filteredElements.length === 0
       ? 'No matching elements'
       : `${
-          hasActiveFilters && filteredNodes.length > 0
-            ? `Select all ${filteredNodes.length} matching element${filteredNodes.length === 1 ? '' : 's'}`
+          hasActiveFilters && filteredElements.length > 0
+            ? `Select all ${filteredElements.length} matching element${filteredElements.length === 1 ? '' : 's'}`
             : 'Select all elements with this color'
         }. ⌘/Ctrl+Click: add to canvas selection`;
 
   const detachTooltip =
-    hasActiveFilters && filteredNodes.length === 0
+    hasActiveFilters && filteredElements.length === 0
       ? 'No matching elements'
       : color.tokenName
         ? `Detach "${color.tokenName}" from all elements with this color`
@@ -280,22 +282,21 @@ function ExpandedNodeList({
   const animatedNodeCountRef = useRef(0);
   const prevNodesKeyRef = useRef('');
 
-  const nodesToShow = useMemo(
-    () =>
-      color.nodes.filter((n) => {
-        if (hiddenOnlyFilter && n.visible !== false) return false;
-        if (nodeTypeFilters.size === 0) return true;
-        const type = n.nodeType;
-        if (!type) return false;
-        if (nodeTypeFilters.has(type)) return true;
-        if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
-        return false;
-      }),
-    [color.nodes, nodeTypeFilters, hiddenOnlyFilter]
-  );
+  const nodesToShow = useMemo(() => {
+    const filtered = color.nodes.filter((n) => {
+      if (hiddenOnlyFilter && n.visible !== false) return false;
+      if (nodeTypeFilters.size === 0) return true;
+      const type = n.nodeType;
+      if (!type) return false;
+      if (nodeTypeFilters.has(type)) return true;
+      if (nodeTypeFilters.has('Shape') && SHAPE_NODE_TYPES.has(type)) return true;
+      return false;
+    });
+    return groupNodeRefsByElement(filtered);
+  }, [color.nodes, nodeTypeFilters, hiddenOnlyFilter]);
 
   const nodesKey = useMemo(
-    () => nodesToShow.map((n) => `${n.nodeId}:${n.propertyType}`).join('|'),
+    () => nodesToShow.map((n) => n.nodeRef.nodeId).join('|'),
     [nodesToShow]
   );
 
@@ -350,9 +351,11 @@ function ExpandedNodeList({
       className="color-row-expanded bg-figma-surface pt-1 pb-1 w-full"
       style={{ visibility: 'hidden' }}
     >
-      {visibleNodes.map((nodeRef, idx) => (
+      {visibleNodes.map(({ nodeRef, propertyTypes }, idx) => {
+        const rangeHint = formatNodeRefRangeHint(nodeRef);
+        return (
         <div
-          key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${nodeRef.characterStart ?? ''}-${idx}`}
+          key={`${nodeRef.nodeId}-${idx}`}
           data-node-row
           className="color-row-element w-full py-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center gap-3"
           onClick={(e) => onElementClick(nodeRef.nodeId, e as unknown as MouseEvent)}
@@ -366,14 +369,15 @@ function ExpandedNodeList({
               {nodeRef.nodeName}
             </div>
             <div className="text-figma-text-secondary text-[10px] truncate">
-              {nodeRef.layerPath}
+              {rangeHint ? `${nodeRef.layerPath} · ${rangeHint}` : nodeRef.layerPath}
             </div>
           </div>
           <span className="text-figma-text-secondary text-[10px] shrink-0">
-            {nodeRef.propertyType}
+            {formatPropertyTypes(propertyTypes)}
           </span>
         </div>
-      ))}
+        );
+      })}
       {remainingCount > 0 && (
         <div className="color-row-element py-2 pr-4">
           <button

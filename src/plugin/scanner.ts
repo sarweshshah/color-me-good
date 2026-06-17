@@ -6,6 +6,7 @@ import {
   GradientData,
   GradientType,
 } from '../shared/types';
+import { mergeNodeRefIntoEntry, countUniqueElements } from './nodeRefs';
 import { rgbaToHex, hashGradient, buildLayerPath } from './utils';
 import {
   resolveGradientStopBinding,
@@ -490,8 +491,8 @@ async function addSolidColor(
   } else {
     const entry = colorMap[dedupKey];
     entry.propertyTypes.add(propertyType);
-    entry.nodes.push(nodeRef);
-    entry.usageCount++;
+    mergeNodeRefIntoEntry(entry.nodes, nodeRef);
+    entry.usageCount = countUniqueElements(entry.nodes);
   }
 }
 
@@ -550,8 +551,8 @@ async function addGradientColor(
   } else {
     const entry = colorMap[dedupKey];
     entry.propertyTypes.add(propertyType);
-    entry.nodes.push(nodeRef);
-    entry.usageCount++;
+    mergeNodeRefIntoEntry(entry.nodes, nodeRef);
+    entry.usageCount = countUniqueElements(entry.nodes);
   }
 }
 
