@@ -6,37 +6,41 @@ interface SwatchProps {
   size?: number;
 }
 
+const CHECKERBOARD = `
+  linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
+  linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)
+`;
+
+function swatchSizeStyle(size: number): Record<string, string> {
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+  };
+}
+
 export function Swatch({ color, size = 24 }: SwatchProps) {
   if (color.type === 'solid' && color.hex) {
+    const fill = formatHex(color.hex);
     return (
       <div
-        className="rounded border border-figma-border shrink-0"
+        className="color-swatch color-swatch--checkerboard shrink-0"
         style={{
-          width: `${size}px`,
-          height: `${size}px`,
-          background: `
-            linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
-            linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc)
+          ...swatchSizeStyle(size),
+          backgroundImage: `
+            linear-gradient(${fill}, ${fill}),
+            ${CHECKERBOARD}
           `,
-          backgroundSize: '8px 8px',
-          backgroundPosition: '0 0, 4px 4px',
         }}
-      >
-        <div
-          className="w-full h-full rounded"
-          style={{ backgroundColor: formatHex(color.hex) }}
-        />
-      </div>
+      />
     );
   }
 
   if (color.type === 'gradient' && color.gradient) {
     return (
       <div
-        className="rounded border border-figma-border shrink-0"
+        className="color-swatch shrink-0"
         style={{
-          width: `${size}px`,
-          height: `${size}px`,
+          ...swatchSizeStyle(size),
           background: gradientToCSSString(color.gradient),
         }}
       />
@@ -45,8 +49,8 @@ export function Swatch({ color, size = 24 }: SwatchProps) {
 
   return (
     <div
-      className="rounded border border-figma-border shrink-0 bg-figma-border"
-      style={{ width: `${size}px`, height: `${size}px` }}
+      className="color-swatch shrink-0 bg-figma-border"
+      style={swatchSizeStyle(size)}
     />
   );
 }
