@@ -35,6 +35,11 @@ interface ColorMap {
   [dedupKey: string]: ColorEntry;
 }
 
+interface TextSegmentRange {
+  characterStart: number;
+  characterEnd: number;
+}
+
 export async function scanCurrentPage(
   options: ScanOptions = {}
 ): Promise<{ colors: ColorEntry[]; context: ScanContext }> {
@@ -189,7 +194,15 @@ async function extractColorsFromNode(
     const layerPath = buildLayerPath(node);
     const fillPropertyType: PropertyType = node.type === 'TEXT' ? 'text' : 'fill';
 
-    if ('fills' in node && Array.isArray(node.fills)) {
+    if (node.type === 'TEXT') {
+      await extractTextSegmentColors(
+        node as TextNode,
+        layerPath,
+        colorMap,
+        resolverCache,
+        expandGradients
+      );
+    } else if ('fills' in node && Array.isArray(node.fills)) {
       for (let i = 0; i < node.fills.length; i++) {
         const paint = node.fills[i];
         if (paint.type === 'SOLID' && paint.visible !== false) {
@@ -296,6 +309,75 @@ async function extractColorsFromNode(
   }
 }
 
+async function extractTextSegmentColors(
+  textNode: TextNode,
+  layerPath: string,
+  colorMap: ColorMap,
+  resolverCache?: VariableResolverCache,
+  expandGradients = false
+): Promise<void> {
+  const segments = textNode.getStyledTextSegments(['fills']);
+
+  for (const segment of segments) {
+    if (segment.start >= segment.end) continue;
+
+    const segmentRange: TextSegmentRange = {
+      characterStart: segment.start,
+      characterEnd: segment.end,
+    };
+
+    for (let i = 0; i < segment.fills.length; i++) {
+      const paint = segment.fills[i];
+      const boundVariable =
+        paint.type === 'SOLID'
+          ? paint.boundVariables?.color ?? textNode.boundVariables?.fills?.[i]
+          : textNode.boundVariables?.fills?.[i];
+
+      if (paint.type === 'SOLID' && paint.visible !== false) {
+        await addSolidColor(
+          paint,
+          'text',
+          i,
+          textNode,
+          layerPath,
+          colorMap,
+          boundVariable,
+          resolverCache,
+          segmentRange
+        );
+      } else if (
+        (paint.type === 'GRADIENT_LINEAR' ||
+          paint.type === 'GRADIENT_RADIAL' ||
+          paint.type === 'GRADIENT_ANGULAR' ||
+          paint.type === 'GRADIENT_DIAMOND') &&
+        paint.visible !== false
+      ) {
+        if (expandGradients) {
+          addGradientStopsAsSolids(
+            paint,
+            'text',
+            i,
+            textNode,
+            layerPath,
+            colorMap,
+            segmentRange
+          );
+        } else {
+          await addGradientColor(
+            paint,
+            'text',
+            i,
+            textNode,
+            layerPath,
+            colorMap,
+            segmentRange
+          );
+        }
+      }
+    }
+  }
+}
+
 async function addSolidColor(
   paint: SolidPaint,
   propertyType: PropertyType,
@@ -304,7 +386,8 @@ async function addSolidColor(
   layerPath: string,
   colorMap: ColorMap,
   boundVariable?: VariableAlias | VariableAlias[],
-  resolverCache?: VariableResolverCache
+  resolverCache?: VariableResolverCache,
+  segment?: TextSegmentRange
 ): Promise<void> {
   const rgba = {
     r: paint.color.r,
@@ -318,7 +401,7 @@ async function addSolidColor(
   // Same resolved color with different bound tokens = separate rows (fixes wrong token at page scope)
   const dedupKey = tokenInfo ? `${hex}|${tokenInfo.tokenName}` : hex;
 
-  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex, segment);
 
   if (!colorMap[dedupKey]) {
     colorMap[dedupKey] = {
@@ -352,7 +435,8 @@ async function addGradientColor(
   propertyIndex: number,
   node: SceneNode,
   layerPath: string,
-  colorMap: ColorMap
+  colorMap: ColorMap,
+  segment?: TextSegmentRange
 ): Promise<void> {
   const gradientTypeMap: { [key: string]: GradientType } = {
     GRADIENT_LINEAR: 'LINEAR',
@@ -377,7 +461,7 @@ async function addGradientColor(
 
   const dedupKey = hashGradient(gradientData);
 
-  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex, segment);
 
   if (!colorMap[dedupKey]) {
     colorMap[dedupKey] = {
@@ -411,9 +495,10 @@ function addGradientStopsAsSolids(
   propertyIndex: number,
   node: SceneNode,
   layerPath: string,
-  colorMap: ColorMap
+  colorMap: ColorMap,
+  segment?: TextSegmentRange
 ): void {
-  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex);
+  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex, segment);
 
   for (const stop of paint.gradientStops) {
     const rgba = {
@@ -445,7 +530,15 @@ function addGradientStopsAsSolids(
     } else {
       const entry = colorMap[hex];
       entry.propertyTypes.add(propertyType);
-      if (!entry.nodes.some((n) => n.nodeId === nodeRef.nodeId && n.propertyIndex === propertyIndex)) {
+      if (
+        !entry.nodes.some(
+          (n) =>
+            n.nodeId === nodeRef.nodeId &&
+            n.propertyIndex === propertyIndex &&
+            n.characterStart === nodeRef.characterStart &&
+            n.characterEnd === nodeRef.characterEnd
+        )
+      ) {
         entry.nodes.push(nodeRef);
         entry.usageCount++;
       }
@@ -457,7 +550,8 @@ function buildNodeRef(
   node: SceneNode,
   layerPath: string,
   propertyType: PropertyType,
-  propertyIndex: number
+  propertyIndex: number,
+  segment?: TextSegmentRange
 ): NodeRef {
   return {
     nodeId: node.id,
@@ -466,6 +560,12 @@ function buildNodeRef(
     layerPath,
     propertyType,
     propertyIndex,
+    ...(segment
+      ? {
+          characterStart: segment.characterStart,
+          characterEnd: segment.characterEnd,
+        }
+      : {}),
     visible: 'visible' in node ? node.visible : true,
   };
 }

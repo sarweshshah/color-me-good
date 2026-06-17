@@ -12,16 +12,22 @@ export function Header({ context, onClearScope }: HeaderProps) {
   const isMultiSelect = hasScope && context.scopeNodeIds!.length > 1;
 
   const scopeContent = !hasScope ? (
-    <span className="text-figma-text-secondary font-medium">None</span>
+    <span className="text-figma-text-secondary font-medium truncate min-w-0">None</span>
   ) : isMultiSelect ? (
-    <span className="text-figma-text font-medium inline-flex items-center gap-1">
+    <span className="text-figma-text font-medium inline-flex items-center gap-1 shrink-0">
       <Layers size={12} />
       {context.scopeNodeIds!.length}
     </span>
   ) : context.scopeNodeName ? (
-    <span className="text-figma-text font-medium">{context.scopeNodeName}</span>
+    <span
+      className="text-figma-text font-medium truncate min-w-0"
+      data-tooltip={context.scopeNodeName}
+      data-tooltip-align="start"
+    >
+      {context.scopeNodeName}
+    </span>
   ) : (
-    <span className="text-figma-text font-medium">Entire Page</span>
+    <span className="text-figma-text font-medium truncate min-w-0">Entire Page</span>
   );
 
   return (
@@ -30,14 +36,14 @@ export function Header({ context, onClearScope }: HeaderProps) {
         <h1 className="text-figma-text font-semibold text-sm">Color Me Good</h1>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 bg-figma-bg px-3 py-1.5 rounded border border-figma-border text-xs">
-          <span className="text-figma-text-secondary">Scope:</span>
+      <div className="flex items-center gap-2 min-w-0">
+        <div className="inline-flex items-center gap-2 min-w-0 max-w-full bg-figma-bg px-3 py-1.5 rounded border border-figma-border text-xs overflow-hidden">
+          <span className="text-figma-text-secondary shrink-0">Scope:</span>
           {scopeContent}
           {hasScope && (
             <button
               onClick={onClearScope}
-              className="ml-1 text-figma-text-secondary hover:text-figma-text transition-colors"
+              className="shrink-0 text-figma-text-secondary hover:text-figma-text transition-colors"
               data-tooltip="Clear selection"
               data-tooltip-align="start"
             >

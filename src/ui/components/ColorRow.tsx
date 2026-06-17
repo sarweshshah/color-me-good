@@ -352,7 +352,7 @@ function ExpandedNodeList({
     >
       {visibleNodes.map((nodeRef, idx) => (
         <div
-          key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${idx}`}
+          key={`${nodeRef.nodeId}-${nodeRef.propertyType}-${nodeRef.characterStart ?? ''}-${idx}`}
           data-node-row
           className="color-row-element w-full py-2 pr-4 hover:bg-figma-bg-hover cursor-pointer flex items-center gap-3"
           onClick={(e) => onElementClick(nodeRef.nodeId, e as unknown as MouseEvent)}

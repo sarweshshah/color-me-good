@@ -346,6 +346,8 @@ export function App() {
         nodeId: n.nodeId,
         propertyType: n.propertyType,
         propertyIndex: n.propertyIndex,
+        characterStart: n.characterStart,
+        characterEnd: n.characterEnd,
       }));
     postMessage({ type: 'detach-variable', bindings });
   };

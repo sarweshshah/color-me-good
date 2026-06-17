@@ -4,19 +4,64 @@ export interface VariableBindingRef {
   nodeId: string;
   propertyType: PropertyType;
   propertyIndex: number;
+  characterStart?: number;
+  characterEnd?: number;
 }
 
 function unbindSolidPaint(paint: SolidPaint): SolidPaint {
   return figma.variables.setBoundVariableForPaint(paint, 'color', null);
 }
 
+function detachTextRangeFills(
+  textNode: TextNode,
+  propertyIndex: number,
+  characterStart: number,
+  characterEnd: number
+): boolean {
+  const rangeFills = textNode.getRangeFills(characterStart, characterEnd);
+  if (!Array.isArray(rangeFills)) return false;
+
+  const fills = [...rangeFills];
+  const paint = fills[propertyIndex];
+  if (!paint || paint.type !== 'SOLID') return false;
+
+  fills[propertyIndex] = unbindSolidPaint(paint);
+  textNode.setRangeFills(characterStart, characterEnd, fills);
+  return true;
+}
+
 export function detachVariableFromNode(
   node: SceneNode,
   propertyType: PropertyType,
-  propertyIndex: number
+  propertyIndex: number,
+  characterStart?: number,
+  characterEnd?: number
 ): boolean {
   try {
-    if (propertyType === 'fill' || propertyType === 'text') {
+    if (propertyType === 'text') {
+      if (
+        characterStart !== undefined &&
+        characterEnd !== undefined &&
+        node.type === 'TEXT'
+      ) {
+        return detachTextRangeFills(
+          node as TextNode,
+          propertyIndex,
+          characterStart,
+          characterEnd
+        );
+      }
+
+      if (!('fills' in node) || !Array.isArray(node.fills)) return false;
+      const fills = [...(node.fills as Paint[])];
+      const paint = fills[propertyIndex];
+      if (!paint || paint.type !== 'SOLID') return false;
+      fills[propertyIndex] = unbindSolidPaint(paint);
+      (node as GeometryMixin).fills = fills;
+      return true;
+    }
+
+    if (propertyType === 'fill') {
       if (!('fills' in node) || !Array.isArray(node.fills)) return false;
       const fills = [...(node.fills as Paint[])];
       const paint = fills[propertyIndex];
@@ -66,7 +111,7 @@ export async function detachVariablesFromRefs(
   let failed = 0;
 
   for (const ref of refs) {
-    const key = `${ref.nodeId}:${ref.propertyType}:${ref.propertyIndex}`;
+    const key = `${ref.nodeId}:${ref.propertyType}:${ref.propertyIndex}:${ref.characterStart ?? ''}:${ref.characterEnd ?? ''}`;
     if (seen.has(key)) continue;
     seen.add(key);
 
@@ -76,7 +121,15 @@ export async function detachVariablesFromRefs(
       continue;
     }
 
-    if (detachVariableFromNode(node as SceneNode, ref.propertyType, ref.propertyIndex)) {
+    if (
+      detachVariableFromNode(
+        node as SceneNode,
+        ref.propertyType,
+        ref.propertyIndex,
+        ref.characterStart,
+        ref.characterEnd
+      )
+    ) {
       detached++;
     } else {
       failed++;

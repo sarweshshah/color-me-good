@@ -30,6 +30,10 @@ export interface NodeRef {
   layerPath: string;
   propertyType: PropertyType;
   propertyIndex: number;
+  /** Inclusive start index for a styled text run (TEXT nodes only). */
+  characterStart?: number;
+  /** Exclusive end index for a styled text run (TEXT nodes only). */
+  characterEnd?: number;
   /** When false, the node is hidden (invisible) in Figma. */
   visible?: boolean;
 }

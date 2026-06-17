@@ -1,7 +1,7 @@
 import { scanCurrentPage, scanNodesForColors, SCAN_CANCELLED_MESSAGE } from './scanner';
 import { detachVariablesFromRefs } from './variable-detacher';
-import { SerializedColorEntry, ColorEntry, ScanContext, PropertyType } from '../shared/types';
-import { UIMessage, PluginSettings, UiView } from '../shared/messages';
+import { SerializedColorEntry, ColorEntry, ScanContext } from '../shared/types';
+import { UIMessage, PluginSettings, UiView, VariableBindingRef } from '../shared/messages';
 
 const SETTINGS_STORAGE_KEY = 'color-me-good-settings';
 const SESSION_STORAGE_KEY = 'color-me-good-session';
@@ -410,13 +410,7 @@ function lerp(a: number, b: number, t: number): number {
 const ZOOM_DURATION_MS = 280;
 const ZOOM_PADDING = 40;
 
-async function handleDetachVariable(
-  bindings: Array<{
-    nodeId: string;
-    propertyType: PropertyType;
-    propertyIndex: number;
-  }>
-): Promise<void> {
+async function handleDetachVariable(bindings: VariableBindingRef[]): Promise<void> {
   if (bindings.length === 0) return;
 
   try {

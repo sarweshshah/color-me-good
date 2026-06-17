@@ -70,13 +70,17 @@ export interface ZoomToNodeMessage {
   nodeId: string;
 }
 
+export interface VariableBindingRef {
+  nodeId: string;
+  propertyType: PropertyType;
+  propertyIndex: number;
+  characterStart?: number;
+  characterEnd?: number;
+}
+
 export interface DetachVariableMessage {
   type: 'detach-variable';
-  bindings: Array<{
-    nodeId: string;
-    propertyType: PropertyType;
-    propertyIndex: number;
-  }>;
+  bindings: VariableBindingRef[];
 }
 
 export interface ClearScopeMessage {
