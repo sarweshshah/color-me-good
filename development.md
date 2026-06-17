@@ -31,9 +31,11 @@ The scanner (`scanner.ts`) implements:
 
 4. **Variable/Style Detection**:
    - Check `node.boundVariables` for Variable bindings
+   - Check `paint.boundVariables` on solid fills and gradient stops
+   - Fall back to linked paint style (`fillStyleId` / `strokeStyleId`) via `getStyleByIdAsync` when node bindings are absent
+   - Resolve tokens from style paints and style-level `boundVariables.paints` (style names are not shown in the UI)
    - Use async `getVariableByIdAsync` / `getVariableCollectionByIdAsync`
-   - Check `fillStyleId` / `strokeStyleId` for Style bindings
-   - Detect local vs. library via `variable.remote` / `style.remote`
+   - Detect local vs. library via `variable.remote`
 
 5. **Deduplication**:
    - Solid colors: 8-char hex (RRGGBBAA) as key

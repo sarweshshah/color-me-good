@@ -8,6 +8,7 @@ All notable changes to Color Me Good will be documented in this file.
 
 - **Character-level text colors**: Mixed-color text layers are scanned per styled run via `getStyledTextSegments`, so each distinct fill color in a single text layer is detected (fixes cases where `node.fills` is `figma.mixed` and was previously skipped).
 - **Range-aware variable detach**: Detaching a token-bound text color unbinds only the matching character range when fills differ by run.
+- **Paint-style token resolution**: Colors applied via paint styles now resolve to their underlying variables (or hard-coded hex) by checking node bindings, paint bindings, and the linked style definition—including gradient stops when **Expand gradients** is enabled.
 
 ---
 

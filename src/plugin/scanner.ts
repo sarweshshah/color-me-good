@@ -7,6 +7,11 @@ import {
   GradientType,
 } from '../shared/types';
 import { rgbaToHex, hashGradient, buildLayerPath } from './utils';
+import {
+  resolveGradientStopBinding,
+  resolveSolidPaintBinding,
+  StyleResolverCache,
+} from './paint-binding-resolver';
 import { resolveVariableBinding, VariableResolverCache } from './variable-resolver';
 
 const VECTOR_NODE_TYPES: Set<string> = new Set([
@@ -45,6 +50,7 @@ export async function scanCurrentPage(
 ): Promise<{ colors: ColorEntry[]; context: ScanContext }> {
   const colorMap: ColorMap = {};
   const resolverCache = new VariableResolverCache();
+  const styleCache = new StyleResolverCache();
 
   const context = resolveScanContext();
 
@@ -122,7 +128,7 @@ export async function scanCurrentPage(
       for await (const node of traverseNodes(root)) {
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
         if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-        await extractColorsFromNode(node, colorMap, resolverCache, expandGradients);
+        await extractColorsFromNode(node, colorMap, resolverCache, styleCache, expandGradients);
         if (options.isCancelled?.()) throw new Error(SCAN_CANCELLED_MESSAGE);
       }
     }
@@ -151,6 +157,7 @@ export async function scanNodesForColors(
 ): Promise<ColorEntry[]> {
   const colorMap: ColorMap = {};
   const resolverCache = new VariableResolverCache();
+  const styleCache = new StyleResolverCache();
   const includeHidden = options.includeHiddenLayers ?? false;
   const expandGradients = options.expandGradients ?? false;
 
@@ -158,7 +165,7 @@ export async function scanNodesForColors(
     if (!node) continue;
     if (!includeHidden && 'visible' in node && !node.visible) continue;
     if (!options.includeVectors && VECTOR_NODE_TYPES.has(node.type)) continue;
-    await extractColorsFromNode(node, colorMap, resolverCache, expandGradients);
+    await extractColorsFromNode(node, colorMap, resolverCache, styleCache, expandGradients);
   }
 
   return Object.values(colorMap);
@@ -187,7 +194,8 @@ function resolveScanContext(): ScanContext {
 async function extractColorsFromNode(
   node: SceneNode,
   colorMap: ColorMap,
-  resolverCache?: VariableResolverCache,
+  resolverCache: VariableResolverCache,
+  styleCache: StyleResolverCache,
   expandGradients = false
 ): Promise<void> {
   try {
@@ -200,12 +208,20 @@ async function extractColorsFromNode(
         layerPath,
         colorMap,
         resolverCache,
+        styleCache,
         expandGradients
       );
     } else if ('fills' in node && Array.isArray(node.fills)) {
       for (let i = 0; i < node.fills.length; i++) {
         const paint = node.fills[i];
         if (paint.type === 'SOLID' && paint.visible !== false) {
+          const boundVariable = await resolveSolidPaintBinding(
+            node,
+            'fills',
+            i,
+            paint,
+            styleCache
+          );
           await addSolidColor(
             paint,
             fillPropertyType,
@@ -213,7 +229,7 @@ async function extractColorsFromNode(
             node,
             layerPath,
             colorMap,
-            node.boundVariables?.fills?.[i],
+            boundVariable,
             resolverCache
           );
         } else if (
@@ -224,7 +240,17 @@ async function extractColorsFromNode(
           paint.visible !== false
         ) {
           if (expandGradients) {
-            addGradientStopsAsSolids(paint, fillPropertyType, i, node, layerPath, colorMap);
+            await addGradientStopsAsSolids(
+              paint,
+              'fills',
+              fillPropertyType,
+              i,
+              node,
+              layerPath,
+              colorMap,
+              resolverCache,
+              styleCache
+            );
           } else {
             await addGradientColor(paint, fillPropertyType, i, node, layerPath, colorMap);
           }
@@ -240,7 +266,23 @@ async function extractColorsFromNode(
             for (let i = 0; i < regionFills.length; i++) {
               const paint = regionFills[i];
               if (paint.type === 'SOLID' && paint.visible !== false) {
-                await addSolidColor(paint, fillPropertyType, i, node, layerPath, colorMap, undefined, resolverCache);
+                const boundVariable = await resolveSolidPaintBinding(
+                  node,
+                  'fills',
+                  i,
+                  paint,
+                  styleCache
+                );
+                await addSolidColor(
+                  paint,
+                  fillPropertyType,
+                  i,
+                  node,
+                  layerPath,
+                  colorMap,
+                  boundVariable,
+                  resolverCache
+                );
               } else if (
                 (paint.type === 'GRADIENT_LINEAR' ||
                   paint.type === 'GRADIENT_RADIAL' ||
@@ -249,7 +291,17 @@ async function extractColorsFromNode(
                 paint.visible !== false
               ) {
                 if (expandGradients) {
-                  addGradientStopsAsSolids(paint as GradientPaint, fillPropertyType, i, node, layerPath, colorMap);
+                  await addGradientStopsAsSolids(
+                    paint as GradientPaint,
+                    'fills',
+                    fillPropertyType,
+                    i,
+                    node,
+                    layerPath,
+                    colorMap,
+                    resolverCache,
+                    styleCache
+                  );
                 } else {
                   await addGradientColor(paint as GradientPaint, fillPropertyType, i, node, layerPath, colorMap);
                 }
@@ -264,6 +316,13 @@ async function extractColorsFromNode(
       for (let i = 0; i < node.strokes.length; i++) {
         const paint = node.strokes[i];
         if (paint.type === 'SOLID' && paint.visible !== false) {
+          const boundVariable = await resolveSolidPaintBinding(
+            node,
+            'strokes',
+            i,
+            paint,
+            styleCache
+          );
           await addSolidColor(
             paint,
             'stroke',
@@ -271,7 +330,7 @@ async function extractColorsFromNode(
             node,
             layerPath,
             colorMap,
-            node.boundVariables?.strokes?.[i],
+            boundVariable,
             resolverCache
           );
         }
@@ -313,7 +372,8 @@ async function extractTextSegmentColors(
   textNode: TextNode,
   layerPath: string,
   colorMap: ColorMap,
-  resolverCache?: VariableResolverCache,
+  resolverCache: VariableResolverCache,
+  styleCache: StyleResolverCache,
   expandGradients = false
 ): Promise<void> {
   const segments = textNode.getStyledTextSegments(['fills']);
@@ -328,12 +388,15 @@ async function extractTextSegmentColors(
 
     for (let i = 0; i < segment.fills.length; i++) {
       const paint = segment.fills[i];
-      const boundVariable =
-        paint.type === 'SOLID'
-          ? paint.boundVariables?.color ?? textNode.boundVariables?.fills?.[i]
-          : textNode.boundVariables?.fills?.[i];
 
       if (paint.type === 'SOLID' && paint.visible !== false) {
+        const boundVariable = await resolveSolidPaintBinding(
+          textNode,
+          'fills',
+          i,
+          paint,
+          styleCache
+        );
         await addSolidColor(
           paint,
           'text',
@@ -353,13 +416,16 @@ async function extractTextSegmentColors(
         paint.visible !== false
       ) {
         if (expandGradients) {
-          addGradientStopsAsSolids(
+          await addGradientStopsAsSolids(
             paint,
+            'fills',
             'text',
             i,
             textNode,
             layerPath,
             colorMap,
+            resolverCache,
+            styleCache,
             segmentRange
           );
         } else {
@@ -489,60 +555,45 @@ async function addGradientColor(
   }
 }
 
-function addGradientStopsAsSolids(
+async function addGradientStopsAsSolids(
   paint: GradientPaint,
+  field: 'fills' | 'strokes',
   propertyType: PropertyType,
   propertyIndex: number,
   node: SceneNode,
   layerPath: string,
   colorMap: ColorMap,
+  resolverCache: VariableResolverCache,
+  styleCache: StyleResolverCache,
   segment?: TextSegmentRange
-): void {
-  const nodeRef = buildNodeRef(node, layerPath, propertyType, propertyIndex, segment);
-
-  for (const stop of paint.gradientStops) {
-    const rgba = {
-      r: stop.color.r,
-      g: stop.color.g,
-      b: stop.color.b,
-      a: stop.color.a ?? 1,
+): Promise<void> {
+  for (let stopIndex = 0; stopIndex < paint.gradientStops.length; stopIndex++) {
+    const stop = paint.gradientStops[stopIndex];
+    const syntheticPaint: SolidPaint = {
+      type: 'SOLID',
+      color: { r: stop.color.r, g: stop.color.g, b: stop.color.b },
+      opacity: stop.color.a ?? 1,
+      visible: true,
     };
-    const hex = rgbaToHex(rgba);
-
-    if (!colorMap[hex]) {
-      colorMap[hex] = {
-        type: 'solid',
-        hex,
-        rgba,
-        gradient: null,
-        dedupKey: hex,
-        tokenName: null,
-        tokenCollection: null,
-        libraryName: null,
-        isLibraryVariable: false,
-        styleName: null,
-        styleId: null,
-        propertyTypes: new Set([propertyType]),
-        nodes: [nodeRef],
-        usageCount: 1,
-        isTokenBound: false,
-      };
-    } else {
-      const entry = colorMap[hex];
-      entry.propertyTypes.add(propertyType);
-      if (
-        !entry.nodes.some(
-          (n) =>
-            n.nodeId === nodeRef.nodeId &&
-            n.propertyIndex === propertyIndex &&
-            n.characterStart === nodeRef.characterStart &&
-            n.characterEnd === nodeRef.characterEnd
-        )
-      ) {
-        entry.nodes.push(nodeRef);
-        entry.usageCount++;
-      }
-    }
+    const boundVariable = await resolveGradientStopBinding(
+      node,
+      field,
+      propertyIndex,
+      stopIndex,
+      paint,
+      styleCache
+    );
+    await addSolidColor(
+      syntheticPaint,
+      propertyType,
+      propertyIndex,
+      node,
+      layerPath,
+      colorMap,
+      boundVariable,
+      resolverCache,
+      segment
+    );
   }
 }
 
