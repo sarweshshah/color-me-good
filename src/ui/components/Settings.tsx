@@ -1,4 +1,11 @@
+import { Monitor, Moon, Sun } from 'lucide-preact';
 import { PluginSettings, ColorDisplayFormat } from '../../shared/messages';
+
+const THEME_OPTIONS = [
+  { value: 'system' as const, label: 'System', icon: Monitor },
+  { value: 'light' as const, label: 'Light', icon: Sun },
+  { value: 'dark' as const, label: 'Dark', icon: Moon },
+];
 
 interface SettingsProps {
   settings: PluginSettings | null;
@@ -121,18 +128,19 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
             Choose light, dark, or follow system preference.
           </div>
           <div className="flex gap-2 mb-4">
-            {(['light', 'dark', 'system'] as const).map((theme) => (
+            {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
               <button
-                key={theme}
+                key={value}
                 type="button"
-                onClick={() => onSettingChange('uiTheme', theme)}
-                className={`flex-1 px-3 py-2 rounded-md border text-xs font-medium capitalize transition-colors ${
-                  (settings.uiTheme ?? 'system') === theme
+                onClick={() => onSettingChange('uiTheme', value)}
+                className={`flex-1 px-3 py-2 rounded-md border text-xs font-medium transition-colors inline-flex items-center justify-center gap-1.5 ${
+                  (settings.uiTheme ?? 'system') === value
                     ? 'bg-figma-blue border-figma-blue text-figma-onbrand'
                     : 'bg-figma-surface border-figma-border text-figma-text hover:bg-figma-bg-hover'
                 }`}
               >
-                {theme}
+                <Icon size={14} className="shrink-0" />
+                {label}
               </button>
             ))}
           </div>

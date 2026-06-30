@@ -40,7 +40,7 @@ export function SummaryStrip({
     <div ref={stripRef} className="bg-figma-bg border-b border-figma-border-strong">
       <div
         ref={rowRef}
-        className="summary-strip-scroll flex items-center gap-4 text-xs px-4 py-3"
+        className="summary-strip-scroll flex items-stretch text-xs h-8"
         role="region"
         aria-label="Color summary"
       >
@@ -79,13 +79,7 @@ interface StatProps {
   onClick?: () => void;
 }
 
-function Stat({
-  className = '',
-  label,
-  value,
-  active = false,
-  onClick,
-}: StatProps) {
+function Stat({ className = '', label, value, active = false, onClick }: StatProps) {
   const valueRef = useRef<HTMLSpanElement>(null);
   const prevValue = useRef(value);
 
@@ -132,7 +126,7 @@ function Stat({
       <button
         type="button"
         onClick={onClick}
-        className={`${className} rounded px-1.5 py-0.5 -mx-1.5 -my-0.5 transition-colors ${
+        className={`${className} flex items-center px-3 transition-colors ${
           active
             ? 'summary-strip-stat-active bg-figma-bg-selected text-figma-text'
             : 'hover:bg-figma-border/40 cursor-pointer'
@@ -143,5 +137,5 @@ function Stat({
     );
   }
 
-  return <div className={className}>{content}</div>;
+  return <div className={`${className} flex items-center px-3`}>{content}</div>;
 }

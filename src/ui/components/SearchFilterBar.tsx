@@ -112,7 +112,11 @@ export function SearchFilterBar({
       if (sortOpen && sortRef.current && !sortRef.current.contains(e.target as Node)) {
         setSortOpen(false);
       }
-      if (exportOpen && exportRef.current && !exportRef.current.contains(e.target as Node)) {
+      if (
+        exportOpen &&
+        exportRef.current &&
+        !exportRef.current.contains(e.target as Node)
+      ) {
         setExportOpen(false);
       }
     };

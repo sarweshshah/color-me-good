@@ -32,10 +32,6 @@ export function Header({ context, onClearScope }: HeaderProps) {
 
   return (
     <header className="bg-figma-surface border-b border-figma-border px-4 py-3">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-figma-text font-semibold text-sm">Color Me Good</h1>
-      </div>
-
       <div className="flex items-center gap-2 min-w-0">
         <div className="inline-flex items-center gap-2 min-w-0 max-w-full bg-figma-bg px-3 py-1.5 rounded border border-figma-border text-xs overflow-hidden">
           <span className="text-figma-text-secondary shrink-0">Scope:</span>
