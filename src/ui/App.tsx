@@ -14,116 +14,23 @@ import { Footer } from './components/Footer';
 import { TooltipPortal } from './components/TooltipPortal';
 import { Settings } from './components/Settings';
 import { About } from './components/About';
-import { ChevronLeft } from 'lucide-preact';
 import { ScanningState } from './components/ScanningState';
 import { EmptyState } from './components/EmptyState';
 import { AnimatedToast } from './components/AnimatedToast';
 import { ViewPanel } from './components/ViewPanel';
+import { ResizeHandles } from './components/ResizeHandles';
+import { PanelHeader } from './components/ui/PanelHeader';
 import { useGsapContext } from './hooks/useGsapContext';
 import { animateFromInScope, DURATION, EASE } from './utils/motion';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
-import type { PluginSettings, UITheme, UIMessage } from '../shared/messages';
-import { RESIZE_BOUNDS, SHAPE_NODE_TYPES } from '../shared/constants';
+import type { PluginSettings, UITheme } from '../shared/messages';
+import { SHAPE_NODE_TYPES } from '../shared/constants';
 import { matchesNodeFilters } from '../shared/filters';
 import { flattenNodeRefBindings } from '../shared/nodeRefs';
 import { formatResolvedColor } from './utils/format';
 import { exportColors, ExportFormat } from './utils/export';
 import { copyColorsDisplayValues } from './utils/clipboard';
 import { compareColorSort } from './utils/colorSort';
-
-type ResizeMode = 'corner' | 'right' | 'bottom';
-
-function useResize(postMessage: (msg: UIMessage) => void, mode: ResizeMode) {
-  const dragging = useRef(false);
-  const startPos = useRef({ x: 0, y: 0 });
-  const startSize = useRef({ w: 0, h: 0 });
-
-  const onPointerDown = useCallback((e: PointerEvent) => {
-    dragging.current = true;
-    startPos.current = { x: e.clientX, y: e.clientY };
-    startSize.current = {
-      w: window.innerWidth,
-      h: window.innerHeight,
-    };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  }, []);
-
-  const onPointerMove = useCallback(
-    (e: PointerEvent) => {
-      if (!dragging.current) return;
-      const dx = e.clientX - startPos.current.x;
-      const dy = e.clientY - startPos.current.y;
-      let newW = startSize.current.w;
-      let newH = startSize.current.h;
-      if (mode === 'corner' || mode === 'right')
-        newW = Math.max(RESIZE_BOUNDS.minWidth, Math.min(RESIZE_BOUNDS.maxWidth, startSize.current.w + dx));
-      if (mode === 'corner' || mode === 'bottom')
-        newH = Math.max(RESIZE_BOUNDS.minHeight, Math.min(RESIZE_BOUNDS.maxHeight, startSize.current.h + dy));
-      postMessage({ type: 'resize', width: Math.round(newW), height: Math.round(newH) });
-    },
-    [postMessage, mode]
-  );
-
-  const onPointerUp = useCallback(() => {
-    dragging.current = false;
-  }, []);
-
-  return { onPointerDown, onPointerMove, onPointerUp };
-}
-
-function ResizeHandles({ postMessage }: { postMessage: (msg: UIMessage) => void }) {
-  const corner = useResize(postMessage, 'corner');
-  const right = useResize(postMessage, 'right');
-  const bottom = useResize(postMessage, 'bottom');
-
-  const z = { zIndex: 10002 };
-  return (
-    <>
-      <div
-        onPointerDown={corner.onPointerDown}
-        onPointerMove={corner.onPointerMove}
-        onPointerUp={corner.onPointerUp}
-        style={{
-          position: 'fixed',
-          right: 0,
-          bottom: 0,
-          width: 16,
-          height: 16,
-          cursor: 'nwse-resize',
-          ...z,
-        }}
-      />
-      <div
-        onPointerDown={right.onPointerDown}
-        onPointerMove={right.onPointerMove}
-        onPointerUp={right.onPointerUp}
-        style={{
-          position: 'fixed',
-          right: 0,
-          top: 0,
-          bottom: 12,
-          width: 4,
-          cursor: 'ew-resize',
-          ...z,
-        }}
-      />
-      <div
-        onPointerDown={bottom.onPointerDown}
-        onPointerMove={bottom.onPointerMove}
-        onPointerUp={bottom.onPointerUp}
-        style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 12,
-          height: 4,
-          cursor: 'ns-resize',
-          ...z,
-        }}
-      />
-    </>
-  );
-}
 
 export function App() {
   const { state, postMessage } = usePluginMessages();
@@ -435,17 +342,7 @@ export function App() {
       <div className="h-screen bg-figma-surface flex flex-col">
         <ResizeHandles postMessage={postMessage} />
         <ViewPanel className="flex flex-col flex-1 min-h-0">
-          <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setView('list')}
-              className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
-              aria-label="Back"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className="text-sm font-semibold text-figma-text">Settings</h1>
-          </div>
+          <PanelHeader title="Settings" onBack={() => setView('list')} />
           <Settings settings={state.settings} onSettingChange={handleSettingChange} />
         </ViewPanel>
         <TooltipPortal />
@@ -458,17 +355,7 @@ export function App() {
       <div className="h-screen bg-figma-surface flex flex-col">
         <ResizeHandles postMessage={postMessage} />
         <ViewPanel className="flex flex-col flex-1 min-h-0">
-          <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setView('list')}
-              className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
-              aria-label="Back"
-            >
-              <ChevronLeft size={20} />
-            </button>
-            <h1 className="text-sm font-semibold text-figma-text">About</h1>
-          </div>
+          <PanelHeader title="About" onBack={() => setView('list')} />
           <About />
         </ViewPanel>
         <Footer
@@ -516,14 +403,10 @@ export function App() {
         <ResizeHandles postMessage={postMessage} />
         <Header context={state.context} onClearScope={handleClearScope} />
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center px-6">
-            <div className="text-figma-text-secondary text-sm">
-              No colors found in selection.
-            </div>
-            <div className="text-figma-text-secondary text-xs mt-1">
-              Try selecting different elements or expanding the selection.
-            </div>
-          </div>
+          <EmptyState
+            title="No colors found in selection"
+            description="Try selecting different elements or expanding the selection."
+          />
         </div>
         <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
         <TooltipPortal />

@@ -1,9 +1,9 @@
-import { useRef, useEffect } from 'preact/hooks';
-import { gsap } from 'gsap';
+import { useRef } from 'preact/hooks';
 import { SerializedColorEntry } from '../../shared/types';
-import type { BindingFilter } from './SearchFilterBar';
+import type { BindingFilter } from '../types/filters';
 import { useGsapContext } from '../hooks/useGsapContext';
 import { animateFromInScope, DURATION, EASE } from '../utils/motion';
+import { SummaryStat } from './ui/SummaryStat';
 
 interface SummaryStripProps {
   colors: SerializedColorEntry[];
@@ -44,98 +44,29 @@ export function SummaryStrip({
         role="region"
         aria-label="Color summary"
       >
-        <Stat
+        <SummaryStat
           className="summary-stat shrink-0"
           label="Colors"
           value={colors.length}
           active={bindingFilter === 'all'}
           onClick={() => onBindingFilterChange('all')}
         />
-        <Stat
+        <SummaryStat
           className="summary-stat shrink-0"
           label="Tokens"
           value={tokenBound}
           active={bindingFilter === 'token-bound'}
           onClick={() => onBindingFilterChange('token-bound')}
         />
-        <Stat
+        <SummaryStat
           className="summary-stat shrink-0"
           label="Hard-coded"
           value={hardCoded}
           active={bindingFilter === 'hard-coded'}
           onClick={() => onBindingFilterChange('hard-coded')}
         />
-        <Stat className="summary-stat shrink-0" label="Elements" value={totalElements} />
+        <SummaryStat className="summary-stat shrink-0" label="Elements" value={totalElements} />
       </div>
     </div>
   );
-}
-
-interface StatProps {
-  className?: string;
-  label: string;
-  value: number;
-  active?: boolean;
-  onClick?: () => void;
-}
-
-function Stat({ className = '', label, value, active = false, onClick }: StatProps) {
-  const valueRef = useRef<HTMLSpanElement>(null);
-  const prevValue = useRef(value);
-
-  useEffect(() => {
-    const el = valueRef.current;
-    if (!el || prevValue.current === value) return;
-
-    const from = prevValue.current;
-    prevValue.current = value;
-
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) {
-      el.textContent = String(value);
-      return;
-    }
-
-    const proxy = { val: from };
-    gsap.to(proxy, {
-      val: value,
-      duration: DURATION.normal,
-      ease: EASE.out,
-      onUpdate: () => {
-        el.textContent = String(Math.round(proxy.val));
-      },
-      onComplete: () => {
-        el.textContent = String(value);
-      },
-    });
-  }, [value]);
-
-  const content = (
-    <div className="flex items-center gap-1">
-      <span className={active ? 'text-figma-text' : 'text-figma-text-secondary'}>
-        {label}:
-      </span>
-      <span ref={valueRef} className="font-semibold text-figma-text tabular-nums">
-        {value}
-      </span>
-    </div>
-  );
-
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`${className} flex items-center px-3 transition-colors ${
-          active
-            ? 'summary-strip-stat-active bg-figma-bg-selected text-figma-text'
-            : 'hover:bg-figma-border/40 cursor-pointer'
-        }`}
-      >
-        {content}
-      </button>
-    );
-  }
-
-  return <div className={`${className} flex items-center px-3`}>{content}</div>;
 }

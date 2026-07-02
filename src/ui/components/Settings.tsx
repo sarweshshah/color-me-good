@@ -1,5 +1,7 @@
 import { Monitor, Moon, Sun } from 'lucide-preact';
 import { PluginSettings, ColorDisplayFormat } from '../../shared/messages';
+import { SettingRow } from './ui/SettingRow';
+import { SettingsSection } from './ui/SettingsSection';
 
 const THEME_OPTIONS = [
   { value: 'system' as const, label: 'System', icon: Monitor },
@@ -15,59 +17,6 @@ interface SettingsProps {
   ) => void;
 }
 
-function SettingRow({
-  label,
-  description,
-  checked,
-  onChange,
-}: {
-  label: string;
-  description?: string;
-  checked: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 py-2">
-      <div className="min-w-0">
-        <div className="text-xs text-figma-text font-medium">{label}</div>
-        {description && (
-          <div className="text-[10px] text-figma-text-secondary mt-0.5">{description}</div>
-        )}
-      </div>
-      <button
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={`shrink-0 w-7 h-4 rounded-full transition-colors flex items-center ${
-          checked ? 'bg-figma-blue' : 'bg-figma-border'
-        }`}
-      >
-        <span
-          className="block w-3 h-3 rounded-full bg-figma-onbrand shadow-sm transition-transform"
-          style={{ transform: checked ? 'translateX(13px)' : 'translateX(2px)' }}
-        />
-      </button>
-    </div>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: preact.ComponentChildren;
-}) {
-  return (
-    <section className="border-b border-figma-border last:border-b-0">
-      <h2 className="text-[10px] font-medium text-figma-text-secondary uppercase tracking-wider px-4 pt-4 pb-2">
-        {title}
-      </h2>
-      <div className="px-4 pb-4">{children}</div>
-    </section>
-  );
-}
-
 export function Settings({ settings, onSettingChange }: SettingsProps) {
   if (!settings) {
     return (
@@ -79,7 +28,7 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
 
   return (
     <div className="flex-1 overflow-auto bg-figma-surface">
-      <Section title="Scan">
+      <SettingsSection title="Scan">
         <SettingRow
           label="Include vectors"
           description="Include vector nodes (e.g. shapes, paths) in the scan."
@@ -108,22 +57,20 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           checked={settings.includeHiddenLayers}
           onChange={(v) => onSettingChange('includeHiddenLayers', v)}
         />
-      </Section>
+      </SettingsSection>
 
-      <Section title="Behavior">
+      <SettingsSection title="Behavior">
         <SettingRow
           label="Smooth zoom"
           description="Animate viewport when zooming to an element."
           checked={settings.smoothZoom}
           onChange={(v) => onSettingChange('smoothZoom', v)}
         />
-      </Section>
+      </SettingsSection>
 
-      <Section title="Display">
+      <SettingsSection title="Display">
         <div className="py-2">
-          <div className="text-xs text-figma-text font-medium">
-            UI theme
-          </div>
+          <div className="text-xs text-figma-text font-medium">UI theme</div>
           <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Choose light, dark, or follow system preference.
           </div>
@@ -146,9 +93,7 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
           </div>
         </div>
         <div className="py-2">
-          <div className="text-xs text-figma-text font-medium">
-            Color value format
-          </div>
+          <div className="text-xs text-figma-text font-medium">Color value format</div>
           <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Format for displaying resolved and hard-coded colors.
           </div>
@@ -168,8 +113,7 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
             <option value="hsba">HSBA</option>
           </select>
         </div>
-      </Section>
-
+      </SettingsSection>
     </div>
   );
 }
