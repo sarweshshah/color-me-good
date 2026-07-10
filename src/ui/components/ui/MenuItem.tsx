@@ -11,16 +11,17 @@ export interface MenuItemProps {
 export function MenuItem({ label, icon, active, onClick, checkbox }: MenuItemProps) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`w-full text-left px-3 py-1 text-xs rounded-none flex items-center gap-2.5 transition-colors ${
+      className={`w-full text-left px-2.5 py-0.5 text-[11px] flex items-center gap-1.5 transition-colors ${
         active
           ? 'bg-figma-blue/8 text-figma-blue font-medium'
           : 'text-figma-text hover:bg-figma-bg/80'
       }`}
     >
-      {checkbox && (
+      {checkbox ? (
         <span
-          className={`w-3.5 h-3.5 rounded flex items-center justify-center shrink-0 border ${
+          className={`w-3 h-3 rounded flex items-center justify-center shrink-0 border ${
             active
               ? 'bg-figma-blue border-figma-blue'
               : 'border-figma-border/80 bg-figma-surface'
@@ -28,8 +29,8 @@ export function MenuItem({ label, icon, active, onClick, checkbox }: MenuItemPro
         >
           {active && (
             <svg
-              width="8"
-              height="8"
+              width="7"
+              height="7"
               viewBox="0 0 8 8"
               fill="none"
               stroke="white"
@@ -41,12 +42,16 @@ export function MenuItem({ label, icon, active, onClick, checkbox }: MenuItemPro
             </svg>
           )}
         </span>
-      )}
-      {!checkbox && active && (
-        <span className="w-1.5 h-1.5 rounded-full bg-figma-blue shrink-0" />
+      ) : (
+        <span
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+            active ? 'bg-figma-blue' : 'bg-transparent'
+          }`}
+          aria-hidden="true"
+        />
       )}
       {icon}
-      {label}
+      <span className="truncate leading-snug">{label}</span>
     </button>
   );
 }

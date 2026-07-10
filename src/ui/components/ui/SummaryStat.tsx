@@ -47,19 +47,29 @@ export function SummaryStat({
     });
   }, [value]);
 
+  const interactive = Boolean(onClick);
+
   const content = (
     <div className="flex items-center gap-1">
       <span
         className={`font-mono text-[10px] uppercase tracking-wider ${
-          active ? 'text-figma-blue' : 'text-figma-text-secondary'
+          active
+            ? 'text-figma-blue'
+            : interactive
+              ? 'text-figma-text-secondary'
+              : 'text-figma-text-tertiary'
         }`}
       >
         {label}
       </span>
       <span
         ref={valueRef}
-        className={`font-semibold tabular-nums ${
-          active ? 'text-figma-blue' : 'text-figma-text'
+        className={`tabular-nums ${
+          active
+            ? 'font-semibold text-figma-blue'
+            : interactive
+              ? 'font-semibold text-figma-text'
+              : 'font-medium text-figma-text-secondary'
         }`}
       >
         {value}

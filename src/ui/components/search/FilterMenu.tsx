@@ -82,7 +82,7 @@ export function FilterMenu({
       {open && (
         <DropdownPanel
           title="Filters"
-          width="w-52"
+          width="w-48"
           headerAction={
             hasActiveFilters ? (
               <button
@@ -90,7 +90,7 @@ export function FilterMenu({
                   onClearFilters();
                   onClose();
                 }}
-                className="text-[11px] text-figma-blue hover:underline"
+                className="text-[10px] text-figma-blue hover:underline"
               >
                 Clear all
               </button>
@@ -98,62 +98,52 @@ export function FilterMenu({
           }
         >
           <SectionLabel label="Visibility" />
-          <div className="w-full">
-            <MenuItem
-              label="Hidden only"
-              icon={<EyeOff size={14} className="shrink-0 text-figma-text-secondary/60" />}
-              active={hiddenOnlyFilter}
-              onClick={onHiddenOnlyFilterToggle}
-              checkbox
-            />
-          </div>
+          <MenuItem
+            label="Hidden only"
+            icon={<EyeOff size={12} className="shrink-0 text-figma-text-secondary/60" />}
+            active={hiddenOnlyFilter}
+            onClick={onHiddenOnlyFilterToggle}
+            checkbox
+          />
 
           <SectionLabel label="Property" />
-          <div className="w-full">
-            <MenuItem
-              label="Fill"
-              active={propertyFilters.has('fill')}
-              onClick={() => onPropertyFilterToggle('fill')}
-              checkbox
-            />
-            <MenuItem
-              label="Stroke"
-              active={propertyFilters.has('stroke')}
-              onClick={() => onPropertyFilterToggle('stroke')}
-              checkbox
-            />
-            <MenuItem
-              label="Effect"
-              active={propertyFilters.has('effect')}
-              onClick={() => onPropertyFilterToggle('effect')}
-              checkbox
-            />
-          </div>
+          <MenuItem
+            label="Fill"
+            active={propertyFilters.has('fill')}
+            onClick={() => onPropertyFilterToggle('fill')}
+            checkbox
+          />
+          <MenuItem
+            label="Stroke"
+            active={propertyFilters.has('stroke')}
+            onClick={() => onPropertyFilterToggle('stroke')}
+            checkbox
+          />
+          <MenuItem
+            label="Effect"
+            active={propertyFilters.has('effect')}
+            onClick={() => onPropertyFilterToggle('effect')}
+            checkbox
+          />
 
           <SectionLabel label="Node type" />
-          <div className="w-full">
+          <MenuItem
+            label="Text"
+            icon={<Type size={12} className="shrink-0 text-figma-text-secondary/60" />}
+            active={propertyFilters.has('text')}
+            onClick={() => onPropertyFilterToggle('text')}
+            checkbox
+          />
+          {nodeTypeOptions.map(({ value, label, icon: Icon }) => (
             <MenuItem
-              label="Text"
-              icon={<Type size={14} className="shrink-0 text-figma-text-secondary/60" />}
-              active={propertyFilters.has('text')}
-              onClick={() => onPropertyFilterToggle('text')}
+              key={value}
+              label={label}
+              icon={<Icon size={12} className="shrink-0 text-figma-text-secondary/60" />}
+              active={nodeTypeFilters.has(value)}
+              onClick={() => onNodeTypeFilterToggle(value)}
               checkbox
             />
-            {nodeTypeOptions.map(({ value, label, icon: Icon }) => (
-              <MenuItem
-                key={value}
-                label={label}
-                icon={
-                  Icon ? (
-                    <Icon size={14} className="shrink-0 text-figma-text-secondary/60" />
-                  ) : null
-                }
-                active={nodeTypeFilters.has(value)}
-                onClick={() => onNodeTypeFilterToggle(value)}
-                checkbox
-              />
-            ))}
-          </div>
+          ))}
         </DropdownPanel>
       )}
     </div>
