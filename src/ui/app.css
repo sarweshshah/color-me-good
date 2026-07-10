@@ -107,6 +107,17 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Summary strip: faint top/bottom hairlines */
+.summary-strip {
+  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.figma-dark .summary-strip {
+  border-top-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
 /* Summary strip: horizontal scroll when stats overflow the plugin width */
 .summary-strip-scroll {
   overflow-x: auto;

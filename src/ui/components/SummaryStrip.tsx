@@ -37,7 +37,7 @@ export function SummaryStrip({
   );
 
   return (
-    <div ref={stripRef}>
+    <div ref={stripRef} className="summary-strip">
       <div
         ref={rowRef}
         className="summary-strip-scroll flex items-stretch text-xs h-8"
