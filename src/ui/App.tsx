@@ -60,7 +60,6 @@ export function App() {
         autoAlpha: 0,
         y: -6,
         duration: DURATION.normal,
-        stagger: 0.05,
         ease: EASE.out,
       });
     },
@@ -345,6 +344,12 @@ export function App() {
           <PanelHeader title="Settings" onBack={() => setView('list')} />
           <Settings settings={state.settings} onSettingChange={handleSettingChange} />
         </ViewPanel>
+        <Footer
+          view="settings"
+          onOpenSettings={handleOpenSettings}
+          onOpenAbout={handleOpenAbout}
+          onBack={() => setView('list')}
+        />
         <TooltipPortal />
       </div>
     );
@@ -380,11 +385,39 @@ export function App() {
   const hasSelectionButNoColors =
     state.context && state.colors.length === 0 && !hasNoSelection;
 
+  const emptyChrome = (showScope: boolean) => (
+    <div className="app-chrome shrink-0 relative z-20 bg-figma-bg">
+      {showScope && (
+        <Header context={state.context} onClearScope={handleClearScope} />
+      )}
+      <SummaryStrip
+        colors={state.colors}
+        bindingFilter={bindingFilter}
+        onBindingFilterChange={setBindingFilter}
+      />
+      <SearchFilterBar
+        searchText={searchText}
+        onSearchChange={setSearchText}
+        propertyFilters={propertyFilters}
+        onPropertyFilterToggle={handlePropertyFilterToggle}
+        nodeTypeFilters={nodeTypeFilters}
+        onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
+        hiddenOnlyFilter={hiddenOnlyFilter}
+        onHiddenOnlyFilterToggle={() => setHiddenOnlyFilter((v) => !v)}
+        onClearFilters={handleClearFilters}
+        sortBy={sortBy}
+        sortDirection={sortDirection}
+        onSortChange={handleSortChange}
+        includeVectors={includeVectors}
+      />
+    </div>
+  );
+
   if (hasNoSelection) {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
         <ResizeHandles postMessage={postMessage} />
-        <Header context={state.context} onClearScope={handleClearScope} />
+        {emptyChrome(false)}
         <div className="flex-1 flex items-center justify-center">
           <EmptyState
             title="Select elements to scan"
@@ -401,7 +434,7 @@ export function App() {
     return (
       <div className="h-screen bg-figma-bg flex flex-col">
         <ResizeHandles postMessage={postMessage} />
-        <Header context={state.context} onClearScope={handleClearScope} />
+        {emptyChrome(true)}
         <div className="flex-1 flex items-center justify-center">
           <EmptyState
             title="No colors found in selection"
@@ -416,17 +449,13 @@ export function App() {
 
   return (
     <div ref={mainContentRef} className="h-screen bg-figma-bg flex flex-col overflow-hidden">
-      <div className="app-chrome shrink-0">
+      <div className="app-chrome shrink-0 relative z-20 bg-figma-bg">
         <Header context={state.context} onClearScope={handleClearScope} />
-      </div>
-      <div className="app-chrome shrink-0">
         <SummaryStrip
           colors={state.colors}
           bindingFilter={bindingFilter}
           onBindingFilterChange={setBindingFilter}
         />
-      </div>
-      <div className="app-chrome shrink-0 relative z-20">
         <SearchFilterBar
           searchText={searchText}
           onSearchChange={setSearchText}
@@ -441,7 +470,6 @@ export function App() {
           sortDirection={sortDirection}
           onSortChange={handleSortChange}
           includeVectors={includeVectors}
-          onExport={handleExport}
         />
       </div>
 

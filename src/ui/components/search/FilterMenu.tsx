@@ -66,12 +66,17 @@ export function FilterMenu({
   return (
     <div className="relative" ref={menuRef}>
       <ToolbarButton
-        active={open || activeFilterCount > 0}
+        active={open}
         tooltip="Filters"
         onClick={onToggle}
-        badge={activeFilterCount}
       >
-        <Filter size={14} strokeWidth={2} />
+        {activeFilterCount > 0 ? (
+          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-figma-orange text-white text-[10px] font-semibold tabular-nums leading-none flex items-center justify-center">
+            {activeFilterCount}
+          </span>
+        ) : (
+          <Filter size={14} strokeWidth={2} />
+        )}
       </ToolbarButton>
 
       {open && (

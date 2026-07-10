@@ -85,11 +85,11 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen, exportOpen]);
 
   return (
-    <div className="px-2 py-2 border-b border-figma-border-strong bg-figma-bg">
-      <div className="flex items-center gap-2">
+    <div className="chrome-toolbar bg-figma-bg-selected overflow-visible">
+      <div className="flex items-center h-8 overflow-visible">
         <SearchInput value={searchText} onChange={onSearchChange} />
 
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center shrink-0 h-full border-t border-figma-border">
           <SortMenu
             open={sortOpen}
             sortBy={sortBy}
@@ -126,20 +126,17 @@ export function SearchFilterBar({
           />
 
           {onExport && (
-            <>
-              <div className="w-px h-5 bg-figma-border" />
-              <ExportMenu
-                open={exportOpen}
-                onToggle={() => {
-                  setExportOpen(!exportOpen);
-                  setFilterOpen(false);
-                  setSortOpen(false);
-                }}
-                onExport={handleExport}
-                onClose={() => setExportOpen(false)}
-                menuRef={exportRef}
-              />
-            </>
+            <ExportMenu
+              open={exportOpen}
+              onToggle={() => {
+                setExportOpen(!exportOpen);
+                setFilterOpen(false);
+                setSortOpen(false);
+              }}
+              onExport={handleExport}
+              onClose={() => setExportOpen(false)}
+              menuRef={exportRef}
+            />
           )}
         </div>
       </div>

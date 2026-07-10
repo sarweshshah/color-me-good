@@ -170,7 +170,9 @@ export const ColorRow = memo(function ColorRow({
   };
 
   return (
-    <div className={`color-row ${isSelected ? 'color-row-selected bg-figma-blue/10' : ''}`}>
+    <div
+      className={`color-row ${isExpanded ? 'color-row-selected bg-figma-blue/10' : ''}`}
+    >
       <div
         className="px-3 py-1.5 hover:bg-figma-surface/50 cursor-pointer flex items-center gap-3"
         onClick={(e) => {
@@ -348,7 +350,7 @@ function ExpandedNodeList({
   return (
     <div
       ref={expandedRef}
-      className="color-row-expanded bg-figma-surface pt-1 pb-1 w-full"
+      className="color-row-expanded w-full"
       style={{ visibility: 'hidden' }}
     >
       {visibleNodes.map(({ nodeRef, propertyTypes }, idx) => {

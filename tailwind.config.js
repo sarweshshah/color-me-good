@@ -3,6 +3,18 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '!./src/node_modules/**'],
   theme: {
     extend: {
+      fontFamily: {
+        mono: [
+          'ui-monospace',
+          'SFMono-Regular',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'Liberation Mono',
+          'Courier New',
+          'monospace',
+        ],
+      },
       colors: {
         'figma-bg': 'var(--figma-color-bg-secondary, #f5f5f5)',
         'figma-bg-hover': 'var(--figma-color-bg-hover, #ebebeb)',

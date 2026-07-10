@@ -69,12 +69,12 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
       </SettingsSection>
 
       <SettingsSection title="Display">
-        <div className="py-2">
+        <div className="pt-2 pb-3">
           <div className="text-xs text-figma-text font-medium">UI theme</div>
           <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Choose light, dark, or follow system preference.
           </div>
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2">
             {THEME_OPTIONS.map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
@@ -92,7 +92,7 @@ export function Settings({ settings, onSettingChange }: SettingsProps) {
             ))}
           </div>
         </div>
-        <div className="py-2">
+        <div className="pt-1 pb-2">
           <div className="text-xs text-figma-text font-medium">Color value format</div>
           <div className="text-[10px] text-figma-text-secondary mt-0.5 mb-2">
             Format for displaying resolved and hard-coded colors.

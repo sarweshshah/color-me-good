@@ -7,22 +7,25 @@ interface SearchInputProps {
 
 export function SearchInput({ value, onChange }: SearchInputProps) {
   return (
-    <div className="flex-1 flex items-center gap-2 min-h-8 min-w-0 bg-figma-surface rounded-md border border-figma-border focus-within:border-figma-blue/50 transition-colors">
-      <Search size={14} className="ml-3 text-figma-icon shrink-0" />
+    <div className="flex-1 flex items-center min-w-0 h-8">
+      <span className="flex items-center justify-center shrink-0 w-8 h-full text-figma-text-tertiary">
+        <Search size={13} strokeWidth={1.75} />
+      </span>
       <input
         type="text"
         value={value}
         onInput={(e) => onChange((e.target as HTMLInputElement).value)}
         placeholder="Search hex, token…"
-        className="flex-1 min-w-0 h-8 bg-transparent text-figma-text text-xs leading-8 pr-2 focus:outline-none placeholder:text-figma-text-secondary/70"
+        className="flex-1 min-w-0 h-full bg-transparent text-figma-text text-xs font-medium leading-none focus:outline-none placeholder:text-figma-text-secondary placeholder:font-normal"
       />
       {value.length > 0 && (
         <button
+          type="button"
           onClick={() => onChange('')}
-          className="mr-2 p-0.5 rounded text-figma-text-secondary/70 hover:text-figma-text hover:bg-figma-border/40 transition-colors"
+          className="shrink-0 flex items-center justify-center w-8 h-full text-figma-text-tertiary hover:text-figma-text transition-colors"
           aria-label="Clear search"
         >
-          <X size={12} />
+          <X size={13} strokeWidth={2} />
         </button>
       )}
     </div>

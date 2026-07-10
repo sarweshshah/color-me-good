@@ -73,17 +73,8 @@ body {
   border-bottom-color: rgba(255, 255, 255, 0.015);
 }
 
-.color-row-expanded {
-  border-top-width: 1px;
-  border-top-style: solid;
-}
-
-.figma-light .color-row-expanded {
-  border-top-color: rgba(0, 0, 0, 0.015);
-}
-
-.figma-dark .color-row-expanded {
-  border-top-color: rgba(255, 255, 255, 0.015);
+.color-row-selected {
+  border-bottom-color: transparent;
 }
 
 .color-row-element {
@@ -101,6 +92,19 @@ body {
 /* Light theme only: default background for color rows (not when selected) */
 .figma-light .color-row:not(.color-row-selected) {
   background: var(--figma-color-bg, #ffffff);
+}
+
+/* Sticky chrome: list separation comes from the search bar edges */
+.app-chrome {
+  border-bottom: none;
+}
+
+.app-footer {
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.figma-dark .app-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 /* Summary strip: horizontal scroll when stats overflow the plugin width */
@@ -127,8 +131,22 @@ body {
 
 /* Light theme only: more visible filter indicator in SummaryStrip */
 .figma-light .summary-strip-stat-active {
-  border: 1px solid var(--figma-color-border-selected, #f6f6f6);
+  border: 0.5px solid var(--figma-color-border-selected, #f6f6f6);
+  border-bottom: none;
   background: var(--figma-color-bg-selected, #a7a7a7);
+}
+
+/* Search row: selected surface with bottom hairline */
+.chrome-toolbar {
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.figma-light .chrome-toolbar {
+  background: var(--figma-color-bg-selected, #ffffff);
+}
+
+.figma-dark .chrome-toolbar {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
 /* Dark theme: explicit variable overrides (Figma injects vars based on its theme, so we override when user selects dark) */

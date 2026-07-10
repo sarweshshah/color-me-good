@@ -2,46 +2,118 @@ import { useState, useEffect, useLayoutEffect, useRef } from 'preact/hooks';
 
 const TOOLTIP_Z_INDEX = 10003;
 const OFFSET_PX = 4;
-const VIEWPORT_PADDING = 12;
+const VIEWPORT_PADDING = 8;
 
-function getTooltipPosition(
-  rect: DOMRect,
-  position: 'above' | 'below',
-  align: 'start' | 'center' | 'end'
-): { top: number; left: number; transform: string } {
-  const transform: string[] = [];
-  let left = 0;
-  let top = 0;
+type TooltipPosition = 'above' | 'below';
+type TooltipAlign = 'start' | 'center' | 'end';
 
+interface TooltipStyle {
+  top: number;
+  left: number;
+  transform: string;
+  maxWidth: number;
+}
+
+function readAttrs(trigger: Element): {
+  position: TooltipPosition;
+  align: TooltipAlign;
+} {
+  return {
+    position: (trigger.getAttribute('data-tooltip-position') || 'above') as TooltipPosition,
+    align: (trigger.getAttribute('data-tooltip-align') || 'center') as TooltipAlign,
+  };
+}
+
+function getPanelBounds(): { top: number; left: number; right: number; bottom: number } {
+  const app = document.getElementById('app');
+  const panel = app?.getBoundingClientRect();
+  if (panel) {
+    return {
+      top: panel.top + VIEWPORT_PADDING,
+      left: panel.left + VIEWPORT_PADDING,
+      right: panel.right - VIEWPORT_PADDING,
+      bottom: panel.bottom - VIEWPORT_PADDING,
+    };
+  }
+  return {
+    top: VIEWPORT_PADDING,
+    left: VIEWPORT_PADDING,
+    right: window.innerWidth - VIEWPORT_PADDING,
+    bottom: window.innerHeight - VIEWPORT_PADDING,
+  };
+}
+
+function placeTooltip(
+  triggerRect: DOMRect,
+  tooltipSize: { width: number; height: number },
+  preferredPosition: TooltipPosition,
+  align: TooltipAlign
+): TooltipStyle {
+  const bounds = getPanelBounds();
+  const maxWidth = Math.max(80, bounds.right - bounds.left);
+  const width = Math.min(tooltipSize.width || 160, maxWidth);
+  const height = tooltipSize.height || 24;
+
+  const spaceAbove = triggerRect.top - bounds.top;
+  const spaceBelow = bounds.bottom - triggerRect.bottom;
+
+  let position = preferredPosition;
+  if (position === 'above' && height + OFFSET_PX > spaceAbove && spaceBelow >= spaceAbove) {
+    position = 'below';
+  } else if (position === 'below' && height + OFFSET_PX > spaceBelow && spaceAbove > spaceBelow) {
+    position = 'above';
+  }
+
+  const transforms: string[] = [];
+  let top: number;
   if (position === 'above') {
-    top = rect.top - OFFSET_PX;
-    transform.push('translateY(-100%)');
+    top = triggerRect.top - OFFSET_PX;
+    transforms.push('translateY(-100%)');
+    if (top - height < bounds.top) {
+      top = bounds.top + height;
+    }
   } else {
-    top = rect.bottom + OFFSET_PX;
+    top = triggerRect.bottom + OFFSET_PX;
+    if (top + height > bounds.bottom) {
+      top = Math.max(bounds.top, bounds.bottom - height);
+    }
   }
 
-  switch (align) {
-    case 'start':
-      left = rect.left;
-      break;
-    case 'end':
-      left = rect.right;
-      transform.push('translateX(-100%)');
-      break;
-    default:
-      left = rect.left + rect.width / 2;
-      transform.push('translateX(-50%)');
-      break;
+  let left: number;
+  if (align === 'start') {
+    left = triggerRect.left;
+  } else if (align === 'end') {
+    left = triggerRect.right;
+    transforms.push('translateX(-100%)');
+  } else {
+    left = triggerRect.left + triggerRect.width / 2;
+    transforms.push('translateX(-50%)');
   }
 
-  return { top, left, transform: transform.join(' ') || 'none' };
+  if (align === 'end') {
+    if (left - width < bounds.left) left = bounds.left + width;
+    if (left > bounds.right) left = bounds.right;
+  } else if (align === 'start') {
+    if (left < bounds.left) left = bounds.left;
+    if (left + width > bounds.right) left = bounds.right - width;
+  } else {
+    const half = width / 2;
+    if (left - half < bounds.left) left = bounds.left + half;
+    if (left + half > bounds.right) left = bounds.right - half;
+  }
+
+  return {
+    top,
+    left,
+    transform: transforms.join(' ') || 'none',
+    maxWidth,
+  };
 }
 
 export function TooltipPortal() {
   const [trigger, setTrigger] = useState<Element | null>(null);
   const [content, setContent] = useState<string>('');
-  const [style, setStyle] = useState<{ top: number; left: number; transform: string } | null>(null);
-  const [clampedStyle, setClampedStyle] = useState<{ left: number; transform: string } | null>(null);
+  const [style, setStyle] = useState<TooltipStyle | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,13 +132,18 @@ export function TooltipPortal() {
         if (text == null || text === '') return;
         setTrigger(el);
         setContent(text);
+        setStyle(null);
       }
     };
 
     const onOut = (e: MouseEvent) => {
       const from = (e.target as Element).closest?.('[data-tooltip]');
       const to = (e.relatedTarget as Element)?.closest?.('[data-tooltip]');
-      if (from && !to) setTrigger(null);
+      if (from && !to) {
+        setTrigger(null);
+        setContent('');
+        setStyle(null);
+      }
     };
 
     document.addEventListener('mouseover', onOver, true);
@@ -77,99 +154,52 @@ export function TooltipPortal() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!trigger) {
-      setStyle(null);
-      return;
-    }
+  useLayoutEffect(() => {
+    if (!trigger || !content) return;
 
-    let rafId: number | null = null;
-
-    const update = () => {
-      if (!trigger.isConnected) {
+    const measureAndPlace = () => {
+      const el = tooltipRef.current;
+      if (!trigger.isConnected || !el) {
         setTrigger(null);
+        setStyle(null);
         return;
       }
-      const position = (trigger.getAttribute('data-tooltip-position') || 'above') as 'above' | 'below';
-      const align = (trigger.getAttribute('data-tooltip-align') || 'center') as 'start' | 'center' | 'end';
-      const rect = trigger.getBoundingClientRect();
-      setStyle(getTooltipPosition(rect, position, align));
-      setClampedStyle(null);
+
+      const { position, align } = readAttrs(trigger);
+      const triggerRect = trigger.getBoundingClientRect();
+      const tooltipRect = el.getBoundingClientRect();
+      setStyle(
+        placeTooltip(
+          triggerRect,
+          { width: tooltipRect.width, height: tooltipRect.height },
+          position,
+          align
+        )
+      );
     };
 
-    const scheduleUpdate = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        update();
-      });
-    };
+    measureAndPlace();
+    const rafId = requestAnimationFrame(measureAndPlace);
 
-    update();
-
-    const scrollContainer = document.querySelector('.overflow-auto');
-    scrollContainer?.addEventListener('scroll', scheduleUpdate, { passive: true });
-    window.addEventListener('resize', scheduleUpdate);
+    const scrollContainers = document.querySelectorAll('.overflow-auto, .overscroll-contain');
+    scrollContainers.forEach((node) => {
+      node.addEventListener('scroll', measureAndPlace, { passive: true });
+    });
+    window.addEventListener('resize', measureAndPlace);
 
     return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      scrollContainer?.removeEventListener('scroll', scheduleUpdate);
-      window.removeEventListener('resize', scheduleUpdate);
+      cancelAnimationFrame(rafId);
+      scrollContainers.forEach((node) => {
+        node.removeEventListener('scroll', measureAndPlace);
+      });
+      window.removeEventListener('resize', measureAndPlace);
     };
-  }, [trigger]);
+  }, [trigger, content]);
 
-  useLayoutEffect(() => {
-    if (!style || !tooltipRef.current || !trigger) return;
-    const tooltipEl = tooltipRef.current;
-    const tooltipRect = tooltipEl.getBoundingClientRect();
-    const app = document.getElementById('app');
-    const panel = app?.getBoundingClientRect();
-    const minLeft = panel ? panel.left + VIEWPORT_PADDING : VIEWPORT_PADDING;
-    const maxRight = panel ? panel.right - VIEWPORT_PADDING : window.innerWidth - VIEWPORT_PADDING;
-    const leftEdge = tooltipRect.left;
-    const rightEdge = tooltipRect.right;
+  if (!trigger || !content) return null;
 
-    if (leftEdge >= minLeft && rightEdge <= maxRight) {
-      setClampedStyle(null);
-      return;
-    }
-
-    const width = tooltipRect.width;
-    const position = (trigger.getAttribute('data-tooltip-position') || 'above') as 'above' | 'below';
-    const align = (trigger.getAttribute('data-tooltip-align') || 'center') as 'start' | 'center' | 'end';
-    const triggerRect = trigger.getBoundingClientRect();
-    const transforms: string[] = [];
-    if (position === 'above') transforms.push('translateY(-100%)');
-
-    let left = style.left;
-
-    if (align === 'end') {
-      transforms.push('translateX(-100%)');
-      left = triggerRect.right;
-      if (left - width < minLeft) {
-        left = minLeft + width;
-      }
-      if (left > maxRight) {
-        left = maxRight;
-      }
-    } else if (align === 'start') {
-      left = triggerRect.left;
-      if (left < minLeft) left = minLeft;
-      if (left + width > maxRight) left = maxRight - width;
-    } else {
-      transforms.push('translateX(-50%)');
-      left = triggerRect.left + triggerRect.width / 2;
-      const half = width / 2;
-      if (left - half < minLeft) left = minLeft + half;
-      if (left + half > maxRight) left = maxRight - half;
-    }
-
-    setClampedStyle({ left, transform: transforms.join(' ') || 'none' });
-  }, [style, trigger, content]);
-
-  if (!trigger || !style || !content) return null;
-
-  const displayStyle = clampedStyle ? { ...style, ...clampedStyle } : style;
+  const bounds = getPanelBounds();
+  const fallbackMaxWidth = Math.max(80, bounds.right - bounds.left);
 
   return (
     <div
@@ -177,9 +207,9 @@ export function TooltipPortal() {
       className="fixed pointer-events-none"
       style={{
         zIndex: TOOLTIP_Z_INDEX,
-        top: displayStyle.top,
-        left: displayStyle.left,
-        transform: displayStyle.transform,
+        top: style?.top ?? 0,
+        left: style?.left ?? 0,
+        transform: style?.transform ?? 'none',
         padding: '3px 8px',
         borderRadius: '4px',
         background: 'var(--figma-color-bg-inverse, #333)',
@@ -187,9 +217,10 @@ export function TooltipPortal() {
         fontSize: '11px',
         lineHeight: 1.4,
         whiteSpace: 'pre-line',
-        maxWidth: 'min(280px, calc(100vw - 24px))',
+        maxWidth: style?.maxWidth ?? fallbackMaxWidth,
         width: 'max-content',
         boxSizing: 'border-box',
+        visibility: style ? 'visible' : 'hidden',
       }}
       role="tooltip"
     >

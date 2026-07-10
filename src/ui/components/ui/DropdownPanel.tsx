@@ -19,7 +19,7 @@ export function DropdownPanel({
     >
       <div className="py-1.5">
         <div className="px-3 py-1.5 flex items-center justify-between">
-          <span className="text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
+          <span className="font-mono text-[11px] font-medium text-figma-text-secondary uppercase tracking-wider">
             {title}
           </span>
           {headerAction}

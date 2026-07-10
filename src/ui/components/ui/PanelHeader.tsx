@@ -7,16 +7,18 @@ interface PanelHeaderProps {
 
 export function PanelHeader({ title, onBack }: PanelHeaderProps) {
   return (
-    <div className="px-4 py-3 border-b border-figma-border flex items-center gap-2">
+    <div className="flex items-stretch w-full min-w-0 h-8 bg-figma-bg border-b border-figma-border-subtle">
       <button
         type="button"
         onClick={onBack}
-        className="p-1 -ml-1 rounded text-figma-text-secondary hover:text-figma-text hover:bg-figma-bg-hover active:bg-figma-border transition-colors"
+        className="flex items-center justify-center shrink-0 w-8 h-full text-figma-text-tertiary hover:text-figma-text transition-colors"
         aria-label="Back"
       >
-        <ChevronLeft size={20} />
+        <ChevronLeft size={14} strokeWidth={1.75} />
       </button>
-      <h1 className="text-sm font-semibold text-figma-text">{title}</h1>
+      <h1 className="flex items-center font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-figma-text pl-0.5 pr-3">
+        {title}
+      </h1>
     </div>
   );
 }

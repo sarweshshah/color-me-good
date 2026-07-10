@@ -1,5 +1,5 @@
 import { ScanContext } from '../../shared/types';
-import { X, Layers } from 'lucide-preact';
+import { X, Layers, Crosshair } from 'lucide-preact';
 
 interface ScopeIndicatorProps {
   context: ScanContext | null;
@@ -11,37 +11,45 @@ export function ScopeIndicator({ context, onClearScope }: ScopeIndicatorProps) {
   const hasScope = isSelection && context.scopeNodeIds && context.scopeNodeIds.length > 0;
   const isMultiSelect = hasScope && context.scopeNodeIds!.length > 1;
 
-  const scopeContent = !hasScope ? (
-    <span className="text-figma-text-secondary font-medium truncate min-w-0">None</span>
-  ) : isMultiSelect ? (
-    <span className="text-figma-text font-medium inline-flex items-center gap-1 shrink-0">
-      <Layers size={12} />
-      {context.scopeNodeIds!.length}
-    </span>
-  ) : context.scopeNodeName ? (
-    <span
-      className="text-figma-text font-medium truncate min-w-0"
-      data-tooltip={context.scopeNodeName}
-      data-tooltip-align="start"
-    >
-      {context.scopeNodeName}
-    </span>
-  ) : (
-    <span className="text-figma-text font-medium truncate min-w-0">Entire Page</span>
-  );
+  const scopeLabel = !hasScope
+    ? 'None'
+    : isMultiSelect
+      ? `${context.scopeNodeIds!.length} layers`
+      : context.scopeNodeName || 'Entire Page';
 
   return (
-    <div className="inline-flex items-center gap-2 min-w-0 max-w-full bg-figma-bg px-3 py-1.5 rounded border border-figma-border text-xs overflow-hidden">
-      <span className="text-figma-text-secondary shrink-0">Scope:</span>
-      {scopeContent}
+    <div className="scope-bar flex items-center gap-2.5 w-full min-w-0 h-10 px-3">
+      <span className="flex items-center justify-center shrink-0 text-figma-text-tertiary">
+        {isMultiSelect ? <Layers size={13} strokeWidth={1.75} /> : <Crosshair size={13} strokeWidth={1.75} />}
+      </span>
+
+      <div className="flex items-baseline gap-2 min-w-0 flex-1">
+        <span className="shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-figma-text-tertiary">
+          Scope
+        </span>
+        <span
+          className={`text-xs font-medium truncate min-w-0 ${
+            hasScope ? 'text-figma-text' : 'text-figma-text-secondary'
+          }`}
+          data-tooltip={hasScope && !isMultiSelect && context.scopeNodeName ? context.scopeNodeName : undefined}
+          data-tooltip-align="start"
+          data-tooltip-position="below"
+        >
+          {scopeLabel}
+        </span>
+      </div>
+
       {hasScope && (
         <button
+          type="button"
           onClick={onClearScope}
-          className="shrink-0 text-figma-text-secondary hover:text-figma-text transition-colors"
+          className="shrink-0 flex items-center justify-center w-6 h-6 -mr-1 rounded-sm text-figma-text-tertiary hover:text-figma-text hover:bg-figma-bg-hover transition-colors"
           data-tooltip="Clear selection"
-          data-tooltip-align="start"
+          data-tooltip-align="end"
+          data-tooltip-position="below"
+          aria-label="Clear selection"
         >
-          <X size={14} />
+          <X size={13} strokeWidth={2} />
         </button>
       )}
     </div>

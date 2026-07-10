@@ -37,7 +37,7 @@ export function SummaryStrip({
   );
 
   return (
-    <div ref={stripRef} className="bg-figma-bg border-b border-figma-border-strong">
+    <div ref={stripRef}>
       <div
         ref={rowRef}
         className="summary-strip-scroll flex items-stretch text-xs h-8"
