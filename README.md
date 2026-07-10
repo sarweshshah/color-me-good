@@ -4,7 +4,7 @@
 
 <h1 align="center">
   Color Me Good
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/v2.3-D1254B?style=flat" alt="v2.3" style="vertical-align: middle; margin-left: 6px;" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/v2.4-D1254B?style=flat" alt="v2.4" style="vertical-align: middle; margin-left: 6px;" /></a>
 </h1>
 
 <p align="center">A Figma plugin for color detection, auditing, and selection.</p>
@@ -22,7 +22,7 @@ Select elements on the canvas to scan every unique color in scope—fills, strok
 
 **Explore & act**
 - Search by hex or token; filter by binding, property, node type, and visibility
-- Sort by usage, hex, or token (toggle direction)
+- Sort by usage, color, or token (toggle direction)
 - Click a row to select all usages; expand for per-element list with progressive reveal
 - Single-click an element to scroll it into view; double-click to zoom; Shift/Cmd+Click for multi-select; ⌘/Ctrl+Click to add to selection
 - Copy swatch values; export filtered list as JSON, CSV, or clipboard

@@ -262,9 +262,13 @@ sequenceDiagram
 - Click summary strip stats to set binding filter
 
 ### Simplified for MVP
-- Virtual scrolling: Implemented for large lists (>150 colors) via `@tanstack/react-virtual`; smaller lists render plainly
 - Text variable binding: Simplified (Figma API limitation on text segments)
 - Effect colors: Deferred to Phase 2 as planned
+
+### Later additions
+- Virtual scrolling: Implemented for large lists (>150 colors) via `@tanstack/react-virtual`; smaller lists render plainly (2.4)
+- Detach variable from token-bound colors, including range-aware text detach (2.4)
+- Paint-style token resolution and character-level text color scanning (2.4)
 
 ### Enhanced Beyond PRD
 - Copy-to-clipboard on swatch click (PRD mentioned it but not UI placement)

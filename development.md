@@ -153,7 +153,7 @@ Before submitting a PR or release:
 - [ ] Test multi-select (Shift+Click, Cmd/Ctrl+Click)
 - [ ] Test search (hex, token name)
 - [ ] Test filters (token-bound, hard-coded, property types)
-- [ ] Test sort (usage, hex, token)
+- [ ] Test sort (usage, color, token)
 - [ ] Test copy-to-clipboard (click swatch)
 - [ ] Test live updates (edit color → list updates)
 - [ ] Test scope deletion (delete scoped frame → resets to full page)

@@ -2,20 +2,6 @@
 
 All notable changes to Color Me Good will be documented in this file.
 
-## [Unreleased]
-
-### Added
-
-- **Character-level text colors**: Mixed-color text layers are scanned per styled run via `getStyledTextSegments`, so each distinct fill color in a single text layer is detected (fixes cases where `node.fills` is `figma.mixed` and was previously skipped).
-- **Paint-style token resolution**: Colors applied via paint styles now resolve to their underlying variables (or hard-coded hex) by checking node bindings, paint bindings, and the linked style definition—including gradient stops when **Expand gradients** is enabled.
-
-### Fixed
-
-- **Plugin launch failure**: Fixed `code.js` emitting a cross-file import that Figma cannot load.
-- **Element usage counts**: Count unique layers per color (not per text range, fill/stroke slot, or property ref).
-
----
-
 ## [1.0] - 2026-02-21
 
 ### Added – Phase 1 (MVP) 🎉
@@ -230,3 +216,26 @@ All notable changes to Color Me Good will be documented in this file.
 - **Settings defers rescan**: Document changes while on the Settings page queue a rescan instead of running immediately; the scan runs when you return to the main view. ⚙️
 - **Toast positioning**: Copy confirmation toast anchors to the footer so it stays clear of the color list. 💬
 - **Summary strip**: Horizontal scroll support when stat labels overflow. 📐
+
+---
+
+## [2.4] – 2026-07-11
+
+### Added ✨
+
+- **Character-level text colors**: Mixed-color text layers are scanned per styled run via `getStyledTextSegments`, so each distinct fill color in a single text layer is detected (fixes cases where `node.fills` is `figma.mixed` and was previously skipped). 📝
+- **Paint-style token resolution**: Colors applied via paint styles now resolve to their underlying variables (or hard-coded hex) by checking node bindings, paint bindings, and the linked style definition—including gradient stops when **Expand gradients** is enabled. 🏷️
+- **Detach variable**: Unlink a token-bound color from its nodes (including range-aware detach for mixed-color text). 🔓
+- **Virtualized color list**: Lists with more than 150 colors use `@tanstack/react-virtual` for smoother scrolling on large scans. ⚡
+
+### Changed 🔧
+
+- **Perceptual color sort**: The hex sort option is now **Color**, ordering by LCH lightness → chroma → hue for a more natural palette order. 🎨
+- **UI structure**: Search/filter/sort/export menus, summary stats, settings rows, and panel headers use shared UI primitives for more consistent layout and styling. 🖼️
+- **Swatches**: Checkerboard transparency backdrop and smoother corner/stroke rendering for solid and gradient swatches. 🌈
+
+### Fixed 🐛
+
+- **Plugin launch failure**: Fixed `code.js` emitting a cross-file import that Figma cannot load. 🛡️
+- **Element usage counts**: Count unique layers per color (not per text range, fill/stroke slot, or property ref). 🔢
+
