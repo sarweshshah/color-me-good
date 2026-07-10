@@ -75,7 +75,6 @@ interface ColorRowProps {
 
 export const ColorRow = memo(function ColorRow({
   color,
-  isSelected,
   isExpanded,
   visibleCount,
   propertyFilters,

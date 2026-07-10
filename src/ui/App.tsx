@@ -28,8 +28,6 @@ import { SHAPE_NODE_TYPES } from '../shared/constants';
 import { matchesNodeFilters } from '../shared/filters';
 import { flattenNodeRefBindings } from '../shared/nodeRefs';
 import { formatResolvedColor } from './utils/format';
-import { exportColors, ExportFormat } from './utils/export';
-import { copyColorsDisplayValues } from './utils/clipboard';
 import { compareColorSort } from './utils/colorSort';
 
 export function App() {
@@ -286,25 +284,6 @@ export function App() {
     setShowCopiedToast(true);
     setTimeout(() => setShowCopiedToast(false), 1500);
   }, []);
-
-  const handleExport = useCallback(
-    async (format: ExportFormat) => {
-      if (format === 'clipboard') {
-        const success = await copyColorsDisplayValues(
-          filteredAndSortedColors,
-          colorDisplayFormat
-        );
-        if (success) handleCopySuccess();
-        return;
-      }
-      exportColors(format, {
-        colors: filteredAndSortedColors,
-        context: state.context,
-        colorDisplayFormat,
-      });
-    },
-    [filteredAndSortedColors, state.context, colorDisplayFormat, handleCopySuccess]
-  );
 
   if (state.isScanning) {
     return (
