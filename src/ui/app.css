@@ -89,9 +89,13 @@ body {
   border-left: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-/* Light theme only: default background for color rows (not when selected) */
+/* Default background for color rows (not when selected) — surface, elevated over chrome */
 .figma-light .color-row:not(.color-row-selected) {
   background: var(--figma-color-bg, #ffffff);
+}
+
+.figma-dark .color-row:not(.color-row-selected) {
+  background: var(--figma-color-bg, #2c2c2c);
 }
 
 /* Sticky chrome: list separation comes from the search bar edges */
@@ -147,36 +151,32 @@ body {
   background: var(--figma-color-bg-selected, #a7a7a7);
 }
 
-/* Search row: selected surface with bottom hairline */
+/* Search row: faint grey with bottom hairline */
 .chrome-toolbar {
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
-}
-
-.figma-light .chrome-toolbar {
-  background: var(--figma-color-bg-selected, #ffffff);
 }
 
 .figma-dark .chrome-toolbar {
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 
-/* Dark theme: explicit variable overrides (Figma injects vars based on its theme, so we override when user selects dark) */
+/* Dark theme: same bg hierarchy as light — chrome recessed, content elevated */
 .figma-dark {
-  --figma-color-bg-secondary: #363636;
+  --figma-color-bg-secondary: #1e1e1e;
   --figma-color-bg: #2c2c2c;
-  --figma-color-bg-hover: #404040;
-  --figma-color-border: #404040;
-  --figma-color-border-subtle: rgba(255, 255, 255, 0.03);
-  --figma-color-border-strong: #4a4a4a;
-  --figma-color-border-selected: #0d99ff;
-  --figma-color-bg-selected: #1a1a1a;
+  --figma-color-bg-hover: #333333;
+  --figma-color-border: #3a3a3a;
+  --figma-color-border-subtle: rgba(255, 255, 255, 0.04);
+  --figma-color-border-strong: #444444;
+  --figma-color-border-selected: #a61e6a;
+  --figma-color-bg-selected: #2c2c2c;
   --figma-color-icon: #ffffff;
   --figma-color-icon-secondary: #b3b3b3;
   --figma-color-text: #ffffff;
   --figma-color-text-secondary: #b3b3b3;
   --figma-color-text-tertiary: rgba(255, 255, 255, 0.4);
-  --figma-color-text-brand: #0d99ff;
-  --figma-color-bg-brand: #0d99ff;
+  --figma-color-text-brand: #e85a9a;
+  --figma-color-bg-brand: #a61e6a;
   --figma-color-text-onbrand: #ffffff;
   --figma-color-bg-success: #14a361;
   --figma-color-text-onsuccess: #ffffff;

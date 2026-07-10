@@ -18,7 +18,7 @@ export function ScopeIndicator({ context, onClearScope }: ScopeIndicatorProps) {
       : context.scopeNodeName || 'Entire Page';
 
   return (
-    <div className="scope-bar flex items-center gap-2.5 w-full min-w-0 h-10 px-3">
+    <div className="scope-bar flex items-center gap-2.5 w-full min-w-0 h-8 px-3">
       <span className="flex items-center justify-center shrink-0 text-figma-text-tertiary">
         {isMultiSelect ? <Layers size={13} strokeWidth={1.75} /> : <Crosshair size={13} strokeWidth={1.75} />}
       </span>
@@ -28,7 +28,7 @@ export function ScopeIndicator({ context, onClearScope }: ScopeIndicatorProps) {
           Scope
         </span>
         <span
-          className={`text-xs font-medium truncate min-w-0 ${
+          className={`text-[11px] font-medium truncate min-w-0 ${
             hasScope ? 'text-figma-text' : 'text-figma-text-secondary'
           }`}
           data-tooltip={hasScope && !isMultiSelect && context.scopeNodeName ? context.scopeNodeName : undefined}

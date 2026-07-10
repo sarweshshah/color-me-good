@@ -51,12 +51,17 @@ export function SummaryStat({
     <div className="flex items-center gap-1">
       <span
         className={`font-mono text-[10px] uppercase tracking-wider ${
-          active ? 'text-figma-text' : 'text-figma-text-secondary'
+          active ? 'text-figma-blue' : 'text-figma-text-secondary'
         }`}
       >
         {label}
       </span>
-      <span ref={valueRef} className="font-semibold text-figma-text tabular-nums">
+      <span
+        ref={valueRef}
+        className={`font-semibold tabular-nums ${
+          active ? 'text-figma-blue' : 'text-figma-text'
+        }`}
+      >
         {value}
       </span>
     </div>

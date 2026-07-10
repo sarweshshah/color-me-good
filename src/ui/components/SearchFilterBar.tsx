@@ -85,11 +85,11 @@ export function SearchFilterBar({
   }, [filterOpen, sortOpen, exportOpen]);
 
   return (
-    <div className="chrome-toolbar bg-figma-bg-selected overflow-visible">
-      <div className="flex items-center h-8 overflow-visible">
+    <div className="chrome-toolbar bg-figma-bg overflow-visible">
+      <div className="flex items-center h-9 overflow-visible">
         <SearchInput value={searchText} onChange={onSearchChange} />
 
-        <div className="flex items-center shrink-0 h-full border-t border-figma-border">
+        <div className="flex items-center shrink-0 h-full overflow-visible">
           <SortMenu
             open={sortOpen}
             sortBy={sortBy}
