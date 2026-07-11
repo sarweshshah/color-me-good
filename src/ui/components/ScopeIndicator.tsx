@@ -28,7 +28,7 @@ export function ScopeIndicator({ context, onClearScope }: ScopeIndicatorProps) {
           Selection
         </span>
         <span
-          className={`text-[11px] font-medium truncate min-w-0 ${
+          className={`pl-1 text-[11px] font-medium truncate min-w-0 ${
             hasScope ? 'text-figma-text' : 'text-figma-text-secondary'
           }`}
           data-tooltip={hasScope && !isMultiSelect && context.scopeNodeName ? context.scopeNodeName : undefined}
