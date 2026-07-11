@@ -1,8 +1,5 @@
-import { useRef } from 'preact/hooks';
 import { SerializedColorEntry } from '../../shared/types';
 import type { BindingFilter } from '../types/filters';
-import { useGsapContext } from '../hooks/useGsapContext';
-import { animateFromInScope, DURATION, EASE } from '../utils/motion';
 import { SummaryStat } from './ui/SummaryStat';
 
 interface SummaryStripProps {
@@ -19,27 +16,10 @@ export function SummaryStrip({
   const tokenBound = colors.filter((c) => c.isTokenBound).length;
   const hardCoded = colors.filter((c) => !c.isTokenBound).length;
   const totalElements = colors.reduce((sum, c) => sum + c.usageCount, 0);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const stripRef = useRef<HTMLDivElement>(null);
-
-  useGsapContext(
-    (scope) => {
-      animateFromInScope(scope, '.summary-stat', {
-        autoAlpha: 0,
-        y: 6,
-        duration: DURATION.normal,
-        stagger: 0.06,
-        ease: EASE.out,
-      });
-    },
-    [],
-    stripRef
-  );
 
   return (
-    <div ref={stripRef} className="summary-strip">
+    <div className="summary-strip">
       <div
-        ref={rowRef}
         className="summary-strip-scroll flex items-stretch text-xs h-8"
         role="region"
         aria-label="Color summary"

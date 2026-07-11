@@ -103,6 +103,19 @@ body {
   border-bottom: none;
 }
 
+/* Main results view: recessed base + soft dot texture */
+.main-view {
+  background-color: #e0e0e0;
+  background-image: radial-gradient(rgba(0, 0, 0, 0.07) 0.6px, transparent 0.6px);
+  background-size: 5px 5px;
+}
+
+.figma-dark .main-view {
+  background-color: #121212;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.6px, transparent 0.6px);
+  background-size: 5px 5px;
+}
+
 .app-footer {
   border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
@@ -111,14 +124,21 @@ body {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* Summary strip: faint top/bottom hairlines */
+/* Scope bar: bottom hairline separating from summary strip */
+.scope-bar {
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
+
+.figma-dark .scope-bar {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Summary strip: faint bottom hairline */
 .summary-strip {
-  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
 }
 
 .figma-dark .summary-strip {
-  border-top-color: rgba(255, 255, 255, 0.08);
   border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 

@@ -9,7 +9,7 @@ import {
   VISIBLE_ELEMENTS_STEP,
 } from './ColorRow';
 import { useGsapContext } from '../hooks/useGsapContext';
-import { animateFromInScope, DELAY, DURATION, EASE } from '../utils/motion';
+import { animateFromInScope, DURATION, EASE } from '../utils/motion';
 
 /** Above this row count, switch from a plain list to a virtualized one. */
 const VIRTUALIZE_THRESHOLD = 150;
@@ -146,7 +146,6 @@ function PlainColorList({ entranceKey, colors, renderRow }: PlainColorListProps)
         autoAlpha: 0,
         y: 6,
         duration: DURATION.normal,
-        delay: DELAY.afterHeader,
         stagger: { amount: 0.35, from: 'start' },
         ease: EASE.out,
         overwrite: 'auto',

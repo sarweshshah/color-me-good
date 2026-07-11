@@ -7,11 +7,6 @@ export const DURATION = {
   slow: 0.5,
 } as const;
 
-/** Pause list entrance until the top header chrome has settled. */
-export const DELAY = {
-  afterHeader: 0.3,
-} as const;
-
 export const EASE = {
   out: 'power2.out',
   inOut: 'power2.inOut',

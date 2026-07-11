@@ -20,8 +20,6 @@ import { AnimatedToast } from './components/AnimatedToast';
 import { ViewPanel } from './components/ViewPanel';
 import { ResizeHandles } from './components/ResizeHandles';
 import { PanelHeader } from './components/ui/PanelHeader';
-import { useGsapContext } from './hooks/useGsapContext';
-import { animateFromInScope, DURATION, EASE } from './utils/motion';
 import { SerializedColorEntry, PropertyType } from '../shared/types';
 import type { PluginSettings, UITheme } from '../shared/messages';
 import { SHAPE_NODE_TYPES } from '../shared/constants';
@@ -48,22 +46,7 @@ export function App() {
   const includeVectors = state.settings?.includeVectors ?? false;
   const colorDisplayFormat = state.settings?.colorDisplayFormat ?? 'hex';
   const uiTheme = state.settings?.uiTheme ?? 'system';
-  const mainContentRef = useRef<HTMLDivElement>(null);
   const statusBarRef = useRef<HTMLDivElement>(null);
-  const listEntranceKey = state.colors.map((c) => c.dedupKey).join('|');
-
-  useGsapContext(
-    (scope) => {
-      animateFromInScope(scope, '.app-chrome', {
-        autoAlpha: 0,
-        y: -6,
-        duration: DURATION.normal,
-        ease: EASE.out,
-      });
-    },
-    [view, listEntranceKey],
-    mainContentRef
-  );
 
   useEffect(() => {
     postMessage({ type: 'ui-view-changed', view });
@@ -285,36 +268,6 @@ export function App() {
     setTimeout(() => setShowCopiedToast(false), 1500);
   }, []);
 
-  if (state.isScanning) {
-    return (
-      <div className="h-screen bg-figma-bg flex flex-col">
-        <ResizeHandles postMessage={postMessage} />
-        <TooltipPortal />
-        <div className="flex-1 flex items-center justify-center">
-          <ScanningState
-            scanned={state.scanProgress?.scanned ?? 0}
-            total={state.scanProgress?.total ?? 0}
-            onCancel={() => postMessage({ type: 'cancel-scan' })}
-          />
-        </div>
-        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
-      </div>
-    );
-  }
-
-  if (state.error) {
-    return (
-      <div className="h-screen bg-figma-bg flex items-center justify-center">
-        <ResizeHandles postMessage={postMessage} />
-        <TooltipPortal />
-        <div className="text-center px-6">
-          <div className="text-figma-orange text-sm mb-2">Error</div>
-          <div className="text-figma-text-secondary text-xs">{state.error}</div>
-        </div>
-      </div>
-    );
-  }
-
   if (view === 'settings') {
     return (
       <div className="h-screen bg-figma-surface flex flex-col">
@@ -362,72 +315,70 @@ export function App() {
     !state.isScanning;
 
   const hasSelectionButNoColors =
-    state.context && state.colors.length === 0 && !hasNoSelection;
+    state.context && state.colors.length === 0 && !hasNoSelection && !state.isScanning;
 
-  const emptyChrome = (showScope: boolean) => (
-    <div className="app-chrome shrink-0 relative z-20 bg-figma-bg">
-      {showScope && (
-        <Header context={state.context} onClearScope={handleClearScope} />
-      )}
-      <SummaryStrip
-        colors={state.colors}
-        bindingFilter={bindingFilter}
-        onBindingFilterChange={setBindingFilter}
-      />
-      <SearchFilterBar
-        searchText={searchText}
-        onSearchChange={setSearchText}
-        propertyFilters={propertyFilters}
-        onPropertyFilterToggle={handlePropertyFilterToggle}
-        nodeTypeFilters={nodeTypeFilters}
-        onNodeTypeFilterToggle={handleNodeTypeFilterToggle}
-        hiddenOnlyFilter={hiddenOnlyFilter}
-        onHiddenOnlyFilterToggle={() => setHiddenOnlyFilter((v) => !v)}
-        onClearFilters={handleClearFilters}
-        sortBy={sortBy}
-        sortDirection={sortDirection}
-        onSortChange={handleSortChange}
-        includeVectors={includeVectors}
-      />
-    </div>
-  );
-
-  if (hasNoSelection) {
-    return (
-      <div className="h-screen bg-figma-bg flex flex-col">
-        <ResizeHandles postMessage={postMessage} />
-        {emptyChrome(false)}
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyState
-            title="Select elements to scan"
-            description="Select one or more elements in the canvas. Colors from your selection will appear here."
-          />
-        </div>
-        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
-        <TooltipPortal />
+  let mainContent;
+  if (state.isScanning) {
+    mainContent = (
+      <div className="flex-1 flex items-center justify-center">
+        <ScanningState
+          scanned={state.scanProgress?.scanned ?? 0}
+          total={state.scanProgress?.total ?? 0}
+          onCancel={() => postMessage({ type: 'cancel-scan' })}
+        />
       </div>
     );
-  }
-
-  if (hasSelectionButNoColors) {
-    return (
-      <div className="h-screen bg-figma-bg flex flex-col">
-        <ResizeHandles postMessage={postMessage} />
-        {emptyChrome(true)}
-        <div className="flex-1 flex items-center justify-center">
-          <EmptyState
-            title="No colors found in selection"
-            description="Try selecting different elements or expanding the selection."
-          />
+  } else if (state.error) {
+    mainContent = (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center px-6">
+          <div className="text-figma-orange text-sm mb-2">Error</div>
+          <div className="text-figma-text-secondary text-xs">{state.error}</div>
         </div>
-        <Footer view="list" onOpenSettings={handleOpenSettings} onOpenAbout={handleOpenAbout} onBack={() => {}} />
-        <TooltipPortal />
+      </div>
+    );
+  } else if (hasNoSelection) {
+    mainContent = (
+      <div className="flex-1 flex items-center justify-center">
+        <EmptyState
+          title="Select elements to scan"
+          description="Select one or more elements in the canvas. Colors from your selection will appear here."
+        />
+      </div>
+    );
+  } else if (hasSelectionButNoColors) {
+    mainContent = (
+      <div className="flex-1 flex items-center justify-center">
+        <EmptyState
+          title="No colors found in selection"
+          description="Try selecting different elements or expanding the selection."
+        />
+      </div>
+    );
+  } else {
+    mainContent = (
+      <div className="flex-1 min-h-0 flex flex-col relative z-0">
+        <ColorList
+          entranceKey={state.colors.map((c) => c.dedupKey).join('|')}
+          colors={filteredAndSortedColors}
+          selectedIds={selectedIds}
+          propertyFilters={propertyFilters}
+          nodeTypeFilters={nodeTypeFilters}
+          hiddenOnlyFilter={hiddenOnlyFilter}
+          colorDisplayFormat={colorDisplayFormat}
+          onSelectAll={handleSelectAll}
+          onDetachVariable={handleDetachVariable}
+          onRowClick={handleRowClick}
+          onElementClick={handleElementClick}
+          onElementDoubleClick={handleElementDoubleClick}
+          onCopySuccess={handleCopySuccess}
+        />
       </div>
     );
   }
 
   return (
-    <div ref={mainContentRef} className="h-screen bg-figma-bg flex flex-col overflow-hidden">
+    <div className="h-screen bg-figma-bg flex flex-col overflow-hidden">
       <div className="app-chrome shrink-0 relative z-20 bg-figma-bg">
         <Header context={state.context} onClearScope={handleClearScope} />
         <SummaryStrip
@@ -452,23 +403,7 @@ export function App() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col relative z-0">
-        <ColorList
-          entranceKey={state.colors.map((c) => c.dedupKey).join('|')}
-          colors={filteredAndSortedColors}
-          selectedIds={selectedIds}
-          propertyFilters={propertyFilters}
-          nodeTypeFilters={nodeTypeFilters}
-          hiddenOnlyFilter={hiddenOnlyFilter}
-          colorDisplayFormat={colorDisplayFormat}
-          onSelectAll={handleSelectAll}
-          onDetachVariable={handleDetachVariable}
-          onRowClick={handleRowClick}
-          onElementClick={handleElementClick}
-          onElementDoubleClick={handleElementDoubleClick}
-          onCopySuccess={handleCopySuccess}
-        />
-      </div>
+      {mainContent}
 
       <div className="relative shrink-0 isolate">
         {showCopiedToast && (

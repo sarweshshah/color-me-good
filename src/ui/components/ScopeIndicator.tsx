@@ -1,5 +1,5 @@
 import { ScanContext } from '../../shared/types';
-import { X, Layers, Crosshair } from 'lucide-preact';
+import { X, Layers, MousePointer2 } from 'lucide-preact';
 
 interface ScopeIndicatorProps {
   context: ScanContext | null;
@@ -18,14 +18,14 @@ export function ScopeIndicator({ context, onClearScope }: ScopeIndicatorProps) {
       : context.scopeNodeName || 'Entire Page';
 
   return (
-    <div className="scope-bar flex items-center gap-2.5 w-full min-w-0 h-8 px-3">
+    <div className="scope-bar flex items-center gap-1.5 w-full min-w-0 h-8 px-3">
       <span className="flex items-center justify-center shrink-0 text-figma-text-tertiary">
-        {isMultiSelect ? <Layers size={13} strokeWidth={1.75} /> : <Crosshair size={13} strokeWidth={1.75} />}
+        {isMultiSelect ? <Layers size={13} strokeWidth={1.75} /> : <MousePointer2 size={13} strokeWidth={1.75} />}
       </span>
 
       <div className="flex items-baseline gap-2 min-w-0 flex-1">
         <span className="shrink-0 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-figma-text-tertiary">
-          Scope
+          Selection
         </span>
         <span
           className={`text-[11px] font-medium truncate min-w-0 ${
