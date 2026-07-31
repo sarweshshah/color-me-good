@@ -70,6 +70,26 @@ export class VariableResolverCache {
       return null;
     }
   }
+
+  resolveCached(
+    boundVariable: VariableAlias | VariableAlias[] | undefined
+  ): TokenInfo | null | undefined {
+    if (!boundVariable) return null;
+
+    const alias = Array.isArray(boundVariable) ? boundVariable[0] : boundVariable;
+    if (!alias || alias.type !== 'VARIABLE_ALIAS') return null;
+
+    if (!this.tokenInfoCache.has(alias.id)) return undefined;
+    return this.tokenInfoCache.get(alias.id) ?? null;
+  }
+
+  async prefetchVariables(variableIds: Iterable<string>): Promise<void> {
+    const pending = Array.from(variableIds).filter((id) => !this.tokenInfoCache.has(id));
+    if (pending.length === 0) return;
+    await Promise.all(
+      pending.map((id) => this.resolve({ type: 'VARIABLE_ALIAS', id }))
+    );
+  }
 }
 
 export async function resolveVariableBinding(

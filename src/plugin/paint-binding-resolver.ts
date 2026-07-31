@@ -1,5 +1,10 @@
 type PaintBindingField = 'fills' | 'strokes';
 
+export interface NodePaintStyles {
+  fills: PaintStyle | null;
+  strokes: PaintStyle | null;
+}
+
 export class StyleResolverCache {
   private styleCache = new Map<string, PaintStyle | null>();
 
@@ -17,6 +22,16 @@ export class StyleResolverCache {
       this.styleCache.set(styleId, null);
       return null;
     }
+  }
+
+  async prefetchStyles(styleIds: Iterable<string>): Promise<void> {
+    const pending = Array.from(styleIds).filter((id) => !this.styleCache.has(id));
+    if (pending.length === 0) return;
+    await Promise.all(pending.map((id) => this.getPaintStyle(id)));
+  }
+
+  getCachedStyle(styleId: string): PaintStyle | null | undefined {
+    return this.styleCache.get(styleId);
   }
 }
 
@@ -40,10 +55,6 @@ function getStrokeStyleId(node: SceneNode): string | null {
   return id || null;
 }
 
-function getStyleId(node: SceneNode, field: PaintBindingField): string | null {
-  return field === 'fills' ? getFillStyleId(node) : getStrokeStyleId(node);
-}
-
 export async function resolveSolidPaintBinding(
   node: SceneNode,
   field: PaintBindingField,
@@ -51,16 +62,24 @@ export async function resolveSolidPaintBinding(
   paint: SolidPaint,
   styleCache: StyleResolverCache
 ): Promise<VariableAlias | undefined> {
+  const styles = await loadNodePaintStyles(node, styleCache);
+  return resolveSolidPaintBindingFromStyles(node, field, paintIndex, paint, styles);
+}
+
+export function resolveSolidPaintBindingFromStyles(
+  node: SceneNode,
+  field: PaintBindingField,
+  paintIndex: number,
+  paint: SolidPaint,
+  styles: NodePaintStyles
+): VariableAlias | undefined {
   const fromNode = firstAlias(node.boundVariables?.[field]?.[paintIndex]);
   if (fromNode) return fromNode;
 
   const fromPaint = paint.boundVariables?.color;
   if (fromPaint) return fromPaint;
 
-  const styleId = getStyleId(node, field);
-  if (!styleId) return undefined;
-
-  const style = await styleCache.getPaintStyle(styleId);
+  const style = field === 'fills' ? styles.fills : styles.strokes;
   if (!style) return undefined;
 
   const stylePaint = style.paints[paintIndex];
@@ -80,13 +99,29 @@ export async function resolveGradientStopBinding(
   paint: GradientPaint,
   styleCache: StyleResolverCache
 ): Promise<VariableAlias | undefined> {
+  const styles = await loadNodePaintStyles(node, styleCache);
+  return resolveGradientStopBindingFromStyles(
+    node,
+    field,
+    paintIndex,
+    stopIndex,
+    paint,
+    styles
+  );
+}
+
+export function resolveGradientStopBindingFromStyles(
+  _node: SceneNode,
+  field: PaintBindingField,
+  paintIndex: number,
+  stopIndex: number,
+  paint: GradientPaint,
+  styles: NodePaintStyles
+): VariableAlias | undefined {
   const fromStop = paint.gradientStops[stopIndex]?.boundVariables?.color;
   if (fromStop) return fromStop;
 
-  const styleId = getStyleId(node, field);
-  if (!styleId) return undefined;
-
-  const style = await styleCache.getPaintStyle(styleId);
+  const style = field === 'fills' ? styles.fills : styles.strokes;
   if (!style) return undefined;
 
   const stylePaint = style.paints[paintIndex];
@@ -101,4 +136,19 @@ export async function resolveGradientStopBinding(
   }
 
   return undefined;
+}
+
+export async function loadNodePaintStyles(
+  node: SceneNode,
+  styleCache: StyleResolverCache
+): Promise<NodePaintStyles> {
+  const fillStyleId = getFillStyleId(node);
+  const strokeStyleId = getStrokeStyleId(node);
+
+  const [fills, strokes] = await Promise.all([
+    fillStyleId ? styleCache.getPaintStyle(fillStyleId) : Promise.resolve(null),
+    strokeStyleId ? styleCache.getPaintStyle(strokeStyleId) : Promise.resolve(null),
+  ]);
+
+  return { fills, strokes };
 }
