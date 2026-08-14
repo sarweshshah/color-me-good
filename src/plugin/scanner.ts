@@ -62,8 +62,18 @@ type ChildrenContainer = SceneNode & {
   findAll: (callback?: (node: SceneNode) => boolean) => SceneNode[];
 };
 
+function safeNodeVisible(node: SceneNode): boolean {
+  if (!('visible' in node)) return true;
+  try {
+    return node.visible;
+  } catch {
+    // Instance sublayers can be inaccessible when skipInvisibleInstanceChildren is on.
+    return false;
+  }
+}
+
 function isVisibleForScan(node: SceneNode, includeHidden: boolean): boolean {
-  return includeHidden || !('visible' in node) || node.visible;
+  return includeHidden || safeNodeVisible(node);
 }
 
 /** Stack-based walk that skips boolean subtrees — avoids stack overflow and wasted work. */
@@ -818,7 +828,7 @@ function buildNodeRef(
           characterEnd: segment.characterEnd,
         }
       : {}),
-    visible: 'visible' in node ? node.visible : true,
+    visible: safeNodeVisible(node),
   };
 }
 
